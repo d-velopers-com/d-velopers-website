@@ -233,7 +233,7 @@ export default function DashboardPage() {
                     {t.dashboard.syncRequiredDesc}
                   </p>
                   <Button
-                    color="info"
+                    color="primary"
                     isLoading={syncing}
                     size="sm"
                     startContent={
