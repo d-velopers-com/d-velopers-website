@@ -6,7 +6,7 @@ export const en = {
   },
   nav: {
     home: "Home",
-    profile: "Profile",
+    profile: "Edit Profile",
     login: "Login",
   },
   home: {

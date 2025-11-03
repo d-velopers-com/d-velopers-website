@@ -6,7 +6,7 @@ export const es = {
   },
   nav: {
     home: "Inicio",
-    profile: "Perfil",
+    profile: "Editar Perfil",
     login: "Iniciar Sesión",
   },
   home: {

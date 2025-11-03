@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { Card, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
-import { Chip } from "@heroui/chip";
 import { Button } from "@heroui/button";
 
 import { getUserByHandler } from "@/lib/user";
@@ -99,50 +98,6 @@ export default async function ProfilePage({ params }: PageProps) {
                 >
                   Visit Website
                 </Button>
-              </div>
-            )}
-
-            {user.roles && user.roles.length > 0 && (
-              <div className="bg-default-50/50 dark:bg-default-100/10 rounded-lg p-4 border border-default-200/50">
-                <div className="flex items-center gap-2 mb-3">
-                  <svg
-                    className="w-4 h-4 text-purple"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                    />
-                  </svg>
-                  <span className="text-xs font-bold text-default-700">
-                    Server Roles
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {user.roles.map((roleId, index) => (
-                    <Chip
-                      key={roleId}
-                      className="font-medium"
-                      color={
-                        index % 4 === 0
-                          ? "primary"
-                          : index % 4 === 1
-                            ? "secondary"
-                            : index % 4 === 2
-                              ? "success"
-                              : "warning"
-                      }
-                      size="sm"
-                      variant="flat"
-                    >
-                      {roleId}
-                    </Chip>
-                  ))}
-                </div>
               </div>
             )}
           </div>

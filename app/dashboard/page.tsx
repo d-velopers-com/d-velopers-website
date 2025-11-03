@@ -145,7 +145,7 @@ export default function DashboardPage() {
             src={avatarUrl}
           />
           <h1 className="text-2xl font-bold mt-4">
-            {user.username}#{user.discriminator}
+            {user.username}
           </h1>
           {user.email && (
             <p className="text-default-500 text-sm">{user.email}</p>
@@ -164,9 +164,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <Divider className="my-2" />
-
-          {!isServerMember ? (
+          {!isServerMember && (
             <div className="flex flex-col gap-4 p-6 bg-warning/10 border-2 border-warning/30 rounded-lg">
               <div className="flex items-start gap-3">
                 <svg
@@ -214,35 +212,9 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">{t.dashboard.roles}</span>
-              <p className="text-xs text-default-400">Role IDs from server:</p>
-              {user.roles && user.roles.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {user.roles.map((roleId) => (
-                    <Chip
-                      key={roleId}
-                      color={
-                        allowedRoles.includes(roleId) ? "success" : "primary"
-                      }
-                      size="sm"
-                      variant="flat"
-                    >
-                      {roleId}
-                      {allowedRoles.includes(roleId) && " ✓"}
-                    </Chip>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-default-400">
-                  {t.dashboard.noRoles}
-                </p>
-              )}
-            </div>
           )}
 
-          <Divider className="my-2" />
+          {isServerMember && <Divider className="my-2" />}
 
           <div className="bg-default-50 dark:bg-default-100/20 rounded-lg p-6 border-2 border-dashed border-default-200 dark:border-default-100/30">
             <div className="flex items-center gap-2 mb-4">
@@ -448,9 +420,7 @@ export default function DashboardPage() {
                     Rol requerido
                   </p>
                   <p className="text-xs text-foreground/70">
-                    Necesitas tener uno de los roles permitidos para hacer
-                    público tu perfil. Los roles permitidos están marcados con ✓
-                    en la sección de arriba.
+                    Necesitas tener uno de los roles permitidos en el servidor de Discord para hacer público tu perfil.
                   </p>
                 </div>
               </div>
