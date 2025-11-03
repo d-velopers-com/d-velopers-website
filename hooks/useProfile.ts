@@ -7,6 +7,7 @@ interface ProfileData {
   isPublic: boolean;
   description: string | null;
   link: string | null;
+  joinedServerAt: string | null;
 }
 
 export function useProfile() {

@@ -3,6 +3,7 @@ export const en = {
     language: "Language",
     close: "Close",
     logout: "Logout",
+    memberSince: "Member Since",
   },
   nav: {
     home: "Home",
@@ -16,6 +17,7 @@ export const en = {
     beFirst: "Be the first!",
     login: "Login",
     dashboard: "Dashboard",
+    joinCommunity: "Join the Community",
   },
   login: {
     title: "Welcome Back",
@@ -48,5 +50,13 @@ export const en = {
     save: "Save Changes",
     saved: "Saved!",
     invalidUrl: "Please enter a valid URL",
+    joinedServer: "Member Since",
+    syncProfile: "Sync with Discord",
+    syncing: "Syncing...",
+    syncSuccess: "Profile synced successfully!",
+    syncError: "Failed to sync profile",
+    syncRequired: "Sync Required",
+    syncRequiredDesc:
+      "Your profile needs to be synced with Discord to display your member since date.",
   },
 };

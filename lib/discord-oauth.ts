@@ -66,7 +66,7 @@ export async function getDiscordUser(
 export async function getGuildMember(
   accessToken: string,
   guildId: string,
-): Promise<{ roles: string[]; isMember: boolean }> {
+): Promise<{ roles: string[]; isMember: boolean; joinedAt?: string }> {
   const response = await fetch(
     `https://discord.com/api/v10/users/@me/guilds/${guildId}/member`,
     {
@@ -86,5 +86,5 @@ export async function getGuildMember(
 
   const member: DiscordGuildMember = await response.json();
 
-  return { roles: member.roles, isMember: true };
+  return { roles: member.roles, isMember: true, joinedAt: member.joined_at };
 }

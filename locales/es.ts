@@ -3,6 +3,7 @@ export const es = {
     language: "Idioma",
     close: "Cerrar",
     logout: "Cerrar Sesión",
+    memberSince: "Miembro desde",
   },
   nav: {
     home: "Inicio",
@@ -17,6 +18,7 @@ export const es = {
     beFirst: "¡Sé el primero!",
     login: "Iniciar Sesión",
     dashboard: "Panel",
+    joinCommunity: "Únete a esta comunidad",
   },
   login: {
     title: "Bienvenido de Nuevo",
@@ -49,5 +51,13 @@ export const es = {
     save: "Guardar Cambios",
     saved: "¡Guardado!",
     invalidUrl: "Por favor ingresa una URL válida",
+    joinedServer: "Miembro desde",
+    syncProfile: "Sincronizar con Discord",
+    syncing: "Sincronizando...",
+    syncSuccess: "¡Perfil sincronizado!",
+    syncError: "Error al sincronizar perfil",
+    syncRequired: "Sincronización Requerida",
+    syncRequiredDesc:
+      "Tu perfil necesita sincronizarse con Discord para mostrar tu fecha de ingreso.",
   },
 };

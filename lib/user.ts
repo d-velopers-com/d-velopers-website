@@ -7,6 +7,7 @@ interface CreateUserData {
   email: string | null;
   avatar: string | null;
   roles: string[];
+  joinedServerAt?: string | null;
 }
 
 function generateHandler(username: string): string {
@@ -45,6 +46,9 @@ export async function upsertUser(data: CreateUserData) {
         email: data.email,
         avatar: data.avatar,
         roles: data.roles,
+        joinedServerAt: data.joinedServerAt
+          ? new Date(data.joinedServerAt)
+          : null,
         updatedAt: new Date(),
       },
     });
@@ -62,6 +66,9 @@ export async function upsertUser(data: CreateUserData) {
       avatar: data.avatar,
       handler: uniqueHandler,
       roles: data.roles,
+      joinedServerAt: data.joinedServerAt
+        ? new Date(data.joinedServerAt)
+        : null,
       isPublic: false,
     },
   });
@@ -82,6 +89,7 @@ export async function getUserByDiscordId(discordId: string) {
       description: true,
       link: true,
       roles: true,
+      joinedServerAt: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -103,6 +111,7 @@ export async function getUserByHandler(handler: string) {
       description: true,
       link: true,
       roles: true,
+      joinedServerAt: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -136,7 +145,6 @@ export async function updateUserProfile(
 export async function getPublicUsers() {
   return await prisma.user.findMany({
     where: { isPublic: true },
-    orderBy: { createdAt: "desc" },
     select: {
       handler: true,
       username: true,
@@ -145,6 +153,8 @@ export async function getPublicUsers() {
       discordId: true,
       description: true,
       link: true,
+      roles: true,
+      joinedServerAt: true,
       createdAt: true,
     },
   });

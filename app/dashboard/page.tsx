@@ -33,6 +33,11 @@ export default function DashboardPage() {
   const [saveMessage, setSaveMessage] = useState("");
   const [linkError, setLinkError] = useState("");
   const [allowedRoles, setAllowedRoles] = useState<string[]>([]);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -136,6 +141,29 @@ export default function DashboardPage() {
     await signOut();
   };
 
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncMessage(null);
+
+    try {
+      const response = await fetch("/api/user/sync", {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        setSyncMessage({ type: "success", text: t.dashboard.syncSuccess });
+        window.location.reload();
+      } else {
+        setSyncMessage({ type: "error", text: t.dashboard.syncError });
+      }
+    } catch {
+      setSyncMessage({ type: "error", text: t.dashboard.syncError });
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setSyncMessage(null), 5000);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-8">
       <Card className="max-w-2xl w-full">
@@ -162,7 +190,123 @@ export default function DashboardPage() {
               </span>
               <span className="text-sm font-mono">{user.id}</span>
             </div>
+            {profile?.joinedServerAt && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-default-500">
+                  {t.dashboard.joinedServer}
+                </span>
+                <span className="text-sm">
+                  {new Date(profile.joinedServerAt).toLocaleDateString(
+                    undefined,
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    },
+                  )}
+                </span>
+              </div>
+            )}
           </div>
+
+          {!profile?.joinedServerAt && isServerMember && (
+            <div className="flex flex-col gap-3 p-4 bg-info/10 border-2 border-info/30 rounded-lg">
+              <div className="flex items-start gap-3">
+                <svg
+                  className="w-5 h-5 text-info flex-shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-info mb-1">
+                    {t.dashboard.syncRequired}
+                  </p>
+                  <p className="text-xs text-foreground/70 mb-3">
+                    {t.dashboard.syncRequiredDesc}
+                  </p>
+                  <Button
+                    color="info"
+                    isLoading={syncing}
+                    size="sm"
+                    startContent={
+                      !syncing && (
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                          />
+                        </svg>
+                      )
+                    }
+                    variant="flat"
+                    onPress={handleSync}
+                  >
+                    {syncing ? t.dashboard.syncing : t.dashboard.syncProfile}
+                  </Button>
+                </div>
+              </div>
+              {syncMessage && (
+                <div
+                  className={`flex items-center gap-2 p-2 rounded-md ${
+                    syncMessage.type === "success"
+                      ? "bg-success/10 border border-success/20"
+                      : "bg-danger/10 border border-danger/20"
+                  }`}
+                >
+                  <svg
+                    className={`w-4 h-4 ${
+                      syncMessage.type === "success"
+                        ? "text-success"
+                        : "text-danger"
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    {syncMessage.type === "success" ? (
+                      <path
+                        d="M5 13l4 4L19 7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    ) : (
+                      <path
+                        d="M6 18L18 6M6 6l12 12"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    )}
+                  </svg>
+                  <span
+                    className={`text-xs font-medium ${
+                      syncMessage.type === "success"
+                        ? "text-success"
+                        : "text-danger"
+                    }`}
+                  >
+                    {syncMessage.text}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
           {!isServerMember && (
             <div className="flex flex-col gap-4 p-6 bg-warning/10 border-2 border-warning/30 rounded-lg">
@@ -345,11 +489,11 @@ export default function DashboardPage() {
                 className="font-semibold"
                 color="primary"
                 isLoading={saving}
-                size="lg"
+                size="md"
                 startContent={
                   !saving && (
                     <svg
-                      className="w-5 h-5"
+                      className="w-4 h-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
