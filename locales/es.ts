@@ -10,8 +10,9 @@ export const es = {
     login: "Iniciar Sesión",
   },
   home: {
-    title: "Perfiles Públicos",
-    subtitle: "Descubre los miembros de nuestra comunidad",
+    title: "Nuestros D-velopers",
+    subtitle:
+      "Conoce nuestro equipo de desarrolladores capacitados y experimentados.",
     noProfiles: "Aún no hay perfiles públicos",
     beFirst: "¡Sé el primero!",
     login: "Iniciar Sesión",

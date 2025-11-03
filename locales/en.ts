@@ -10,8 +10,8 @@ export const en = {
     login: "Login",
   },
   home: {
-    title: "Public Profiles",
-    subtitle: "Discover our community members",
+    title: "Our D-velopers",
+    subtitle: "Meet our team of skilled and experienced developers.",
     noProfiles: "No public profiles yet",
     beFirst: "Be the first!",
     login: "Login",

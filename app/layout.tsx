@@ -6,7 +6,7 @@ import { Providers } from "./providers";
 
 import { Navbar } from "@/components/navbar";
 import { siteConfig } from "@/config/site";
-import { fontSans } from "@/config/fonts";
+import { fontSans, fontMono } from "@/config/fonts";
 
 export const metadata: Metadata = {
   title: {
@@ -38,6 +38,7 @@ export default function RootLayout({
         className={clsx(
           "min-h-screen text-foreground bg-background font-sans antialiased",
           fontSans.variable,
+          fontMono.variable,
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
