@@ -1,0 +1,506 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
+import { Avatar } from "@heroui/avatar";
+import { Button } from "@heroui/button";
+import { Chip } from "@heroui/chip";
+import { Divider } from "@heroui/divider";
+import { Skeleton } from "@heroui/skeleton";
+import { Switch } from "@heroui/switch";
+import { Input } from "@heroui/input";
+import { Textarea } from "@heroui/input";
+
+import { useLanguage } from "@/contexts/language-context";
+import { useSession, signOut } from "@/hooks/useSession";
+import { useProfile } from "@/hooks/useProfile";
+
+export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const {
+    profile,
+    loading: profileLoading,
+    updatePublicStatus,
+    updateProfile,
+  } = useProfile();
+  const { t } = useLanguage();
+  const router = useRouter();
+  const [copied, setCopied] = useState(false);
+  const [description, setDescription] = useState("");
+  const [link, setLink] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+  const [linkError, setLinkError] = useState("");
+  const [allowedRoles, setAllowedRoles] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  useEffect(() => {
+    if (profile) {
+      setDescription(profile.description || "");
+      setLink(profile.link || "");
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    fetch("/api/config/allowed-roles")
+      .then((res) => res.json())
+      .then((data) => setAllowedRoles(data.roles || []))
+      .catch(() => setAllowedRoles([]));
+  }, []);
+
+  const handleTogglePublic = async (isPublic: boolean) => {
+    await updatePublicStatus(isPublic);
+  };
+
+  const handleCopyUrl = () => {
+    if (profile?.handler) {
+      const url = `${window.location.origin}/users/${profile.handler}`;
+
+      navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    setLinkError("");
+    setSaveMessage("");
+
+    if (link && link.trim() !== "") {
+      try {
+        new URL(link);
+      } catch {
+        setLinkError(t.dashboard.invalidUrl);
+
+        return;
+      }
+    }
+
+    setSaving(true);
+    const result = await updateProfile({
+      description: description.trim() || null,
+      link: link.trim() || null,
+    });
+
+    setSaving(false);
+
+    if (result.success) {
+      setSaveMessage(t.dashboard.saved);
+      setTimeout(() => setSaveMessage(""), 3000);
+    } else {
+      setLinkError(result.error || "Error saving");
+    }
+  };
+
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <Card className="max-w-md w-full">
+          <CardBody className="gap-4 p-8">
+            <div className="flex flex-col items-center gap-4">
+              <Skeleton className="rounded-full w-24 h-24" />
+              <Skeleton className="rounded-lg w-48 h-6" />
+              <Skeleton className="rounded-lg w-64 h-4" />
+              <Skeleton className="rounded-lg w-full h-20" />
+            </div>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!session?.user) {
+    return null;
+  }
+
+  const user = session.user;
+
+  const avatarUrl = user.avatar
+    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+    : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator) % 5}.png`;
+
+  const isServerMember = user.roles && user.roles.length > 0;
+  const hasAllowedRole =
+    isServerMember &&
+    allowedRoles.length > 0 &&
+    user.roles.some((roleId) => allowedRoles.includes(roleId));
+  const canMakePublic = hasAllowedRole || allowedRoles.length === 0;
+
+  const handleLogout = async () => {
+    await signOut();
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen px-4 py-8">
+      <Card className="max-w-2xl w-full">
+        <CardHeader className="flex flex-col gap-1 items-center justify-center pt-8 pb-4">
+          <Avatar
+            className="w-24 h-24 ring-4 ring-primary/10"
+            src={avatarUrl}
+          />
+          <h1 className="text-2xl font-bold mt-4">
+            {user.username}#{user.discriminator}
+          </h1>
+          {user.email && (
+            <p className="text-default-500 text-sm">{user.email}</p>
+          )}
+        </CardHeader>
+
+        <Divider />
+
+        <CardBody className="gap-6 px-8 py-6">
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-default-500">
+                {t.dashboard.userId}
+              </span>
+              <span className="text-sm font-mono">{user.id}</span>
+            </div>
+          </div>
+
+          <Divider className="my-2" />
+
+          {!isServerMember ? (
+            <div className="flex flex-col gap-4 p-6 bg-warning/10 border-2 border-warning/30 rounded-lg">
+              <div className="flex items-start gap-3">
+                <svg
+                  className="w-6 h-6 text-warning flex-shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                  />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="font-bold text-warning mb-2">
+                    No eres miembro del servidor
+                  </h3>
+                  <p className="text-sm text-foreground/80 mb-4">
+                    Para poder crear un perfil público y acceder a todas las
+                    funciones, necesitas ser miembro del servidor de Discord.
+                  </p>
+                  <Button
+                    as="a"
+                    className="font-semibold"
+                    color="warning"
+                    href="https://www.youtube.com/channel/UCFKZxStYsOVrzdN_FCZ0NGg/membership"
+                    rel="noopener noreferrer"
+                    size="md"
+                    startContent={
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                      </svg>
+                    }
+                    target="_blank"
+                    variant="shadow"
+                  >
+                    Hacerse Miembro
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">{t.dashboard.roles}</span>
+              <p className="text-xs text-default-400">Role IDs from server:</p>
+              {user.roles && user.roles.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {user.roles.map((roleId) => (
+                    <Chip
+                      key={roleId}
+                      color={
+                        allowedRoles.includes(roleId) ? "success" : "primary"
+                      }
+                      size="sm"
+                      variant="flat"
+                    >
+                      {roleId}
+                      {allowedRoles.includes(roleId) && " ✓"}
+                    </Chip>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-default-400">
+                  {t.dashboard.noRoles}
+                </p>
+              )}
+            </div>
+          )}
+
+          <Divider className="my-2" />
+
+          <div className="bg-default-50 dark:bg-default-100/20 rounded-lg p-6 border-2 border-dashed border-default-200 dark:border-default-100/30">
+            <div className="flex items-center gap-2 mb-4">
+              <svg
+                className="w-5 h-5 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                />
+              </svg>
+              <h2 className="text-base font-bold">Editar Perfil Público</h2>
+            </div>
+            <p className="text-xs text-default-500 mb-6">
+              Personaliza cómo se ve tu perfil para otros usuarios
+            </p>
+
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold">
+                    {t.dashboard.description}
+                  </span>
+                  <Chip color="warning" size="sm" variant="flat">
+                    Editable
+                  </Chip>
+                </div>
+                <Textarea
+                  classNames={{
+                    input: "bg-background",
+                    inputWrapper:
+                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                  }}
+                  maxLength={500}
+                  maxRows={6}
+                  placeholder={t.dashboard.descriptionPlaceholder}
+                  startContent={
+                    <svg
+                      className="w-4 h-4 text-default-400 flex-shrink-0 mt-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M4 6h16M4 12h16M4 18h7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    </svg>
+                  }
+                  value={description}
+                  variant="bordered"
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+                <span className="text-xs text-default-400 text-right">
+                  {description.length}/500 caracteres
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold">
+                    {t.dashboard.link}
+                  </span>
+                  <Chip color="warning" size="sm" variant="flat">
+                    Editable
+                  </Chip>
+                </div>
+                <Input
+                  classNames={{
+                    input: "bg-background",
+                    inputWrapper:
+                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                  }}
+                  errorMessage={linkError}
+                  isInvalid={!!linkError}
+                  placeholder={t.dashboard.linkPlaceholder}
+                  startContent={
+                    <svg
+                      className="w-4 h-4 text-default-400 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    </svg>
+                  }
+                  type="url"
+                  value={link}
+                  variant="bordered"
+                  onChange={(e) => setLink(e.target.value)}
+                />
+              </div>
+
+              {saveMessage && (
+                <div className="flex items-center gap-2 p-3 bg-success/10 border border-success/20 rounded-lg">
+                  <svg
+                    className="w-5 h-5 text-success"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M5 13l4 4L19 7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                  <span className="text-sm font-medium text-success">
+                    {saveMessage}
+                  </span>
+                </div>
+              )}
+
+              <Button
+                className="font-semibold"
+                color="primary"
+                isLoading={saving}
+                size="lg"
+                startContent={
+                  !saving && (
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M5 13l4 4L19 7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    </svg>
+                  )
+                }
+                variant="shadow"
+                onPress={handleSaveProfile}
+              >
+                {t.dashboard.save}
+              </Button>
+            </div>
+          </div>
+
+          <Divider className="my-2" />
+
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold">
+                    {t.dashboard.publicProfile}
+                  </span>
+                  {!profileLoading && profile?.isPublic && canMakePublic && (
+                    <Chip color="success" size="sm" variant="dot">
+                      Activo
+                    </Chip>
+                  )}
+                </div>
+                <span className="text-xs text-default-400">
+                  {t.dashboard.publicProfileDesc}
+                </span>
+              </div>
+              {!profileLoading && profile && (
+                <Switch
+                  color="success"
+                  isDisabled={!canMakePublic}
+                  isSelected={profile.isPublic && canMakePublic}
+                  onValueChange={handleTogglePublic}
+                />
+              )}
+            </div>
+
+            {!canMakePublic && isServerMember && (
+              <div className="flex items-start gap-2 p-3 bg-danger/10 border border-danger/20 rounded-lg">
+                <svg
+                  className="w-5 h-5 text-danger flex-shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-danger mb-1">
+                    Rol requerido
+                  </p>
+                  <p className="text-xs text-foreground/70">
+                    Necesitas tener uno de los roles permitidos para hacer
+                    público tu perfil. Los roles permitidos están marcados con ✓
+                    en la sección de arriba.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {!profileLoading &&
+              profile &&
+              profile.isPublic &&
+              canMakePublic && (
+                <div className="flex flex-col gap-2 p-4 bg-success/10 rounded-lg border border-success/20">
+                  <span className="text-xs font-semibold text-success">
+                    {t.dashboard.profileUrl}
+                  </span>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      classNames={{
+                        input: "text-xs",
+                      }}
+                      size="sm"
+                      value={`${typeof window !== "undefined" ? window.location.origin : ""}/users/${profile.handler}`}
+                      variant="flat"
+                    />
+                    <Button
+                      color="success"
+                      size="sm"
+                      variant="flat"
+                      onPress={handleCopyUrl}
+                    >
+                      {copied ? "✓" : t.dashboard.copyUrl}
+                    </Button>
+                  </div>
+                </div>
+              )}
+          </div>
+        </CardBody>
+
+        <Divider />
+
+        <CardFooter className="px-8 py-6">
+          <Button
+            className="w-full font-semibold"
+            color="danger"
+            variant="flat"
+            onPress={handleLogout}
+          >
+            {t.common.logout}
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
