@@ -1,19 +1,77 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, notFound } from "next/navigation";
 import { Card, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
+import { Skeleton } from "@heroui/skeleton";
 
-import { getUserByHandler } from "@/lib/user";
+import { useLanguage } from "@/contexts/language-context";
 
-interface PageProps {
-  params: Promise<{ handler: string }>;
+interface User {
+  username: string;
+  discriminator: string | null;
+  handler: string;
+  avatar: string | null;
+  discordId: string;
+  description: string | null;
+  link: string | null;
+  joinedServerAt: string | null;
 }
 
-export default async function ProfilePage({ params }: PageProps) {
-  const { handler } = await params;
-  const user = await getUserByHandler(handler);
+export default function ProfilePage() {
+  const params = useParams();
+  const handler = params.handler as string;
+  const { t } = useLanguage();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFoundError, setNotFoundError] = useState(false);
 
-  if (!user || !user.isPublic) {
+  useEffect(() => {
+    fetch(`/api/users/handler/${handler}`)
+      .then((res) => {
+        if (res.status === 404) {
+          setNotFoundError(true);
+
+          return null;
+        }
+
+        return res.json();
+      })
+      .then((data) => {
+        if (data) {
+          setUser(data);
+        }
+
+        setLoading(false);
+      })
+      .catch(() => {
+        setNotFoundError(true);
+        setLoading(false);
+      });
+  }, [handler]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen px-4 py-8">
+        <Card className="max-w-2xl w-full shadow-lg border-1 border-default-200">
+          <CardBody className="p-0">
+            <Skeleton className="h-32 w-full rounded-t-lg" />
+            <div className="relative px-6 pb-6">
+              <div className="flex flex-col items-center -mt-12 mb-4">
+                <Skeleton className="w-24 h-24 rounded-full" />
+                <Skeleton className="w-32 h-6 mt-4 rounded-lg" />
+                <Skeleton className="w-24 h-4 mt-2 rounded-lg" />
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
+  if (notFoundError || !user) {
     notFound();
   }
 
@@ -40,6 +98,34 @@ export default async function ProfilePage({ params }: PageProps) {
               <p className="text-default-500 text-sm font-medium">
                 @{user.handler}
               </p>
+              {user.joinedServerAt && (
+                <div className="flex items-center gap-2 mt-2 text-xs text-default-400">
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                  <span>
+                    {t.common.memberSince}{" "}
+                    {new Date(user.joinedServerAt).toLocaleDateString(
+                      undefined,
+                      {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      },
+                    )}
+                  </span>
+                </div>
+              )}
             </div>
 
             {user.description && (

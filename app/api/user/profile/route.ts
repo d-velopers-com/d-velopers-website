@@ -31,6 +31,7 @@ export async function GET() {
     isPublic: user.isPublic,
     description: user.description,
     link: user.link,
+    joinedServerAt: user.joinedServerAt,
   });
 }
 
@@ -105,5 +106,6 @@ export async function PATCH(request: Request) {
     isPublic: user.isPublic,
     description: user.description,
     link: user.link,
+    joinedServerAt: user.joinedServerAt,
   });
 }

@@ -18,6 +18,8 @@ interface PublicUser {
   discordId: string;
   description: string | null;
   link: string | null;
+  roles: string[];
+  joinedServerAt: string | null;
   createdAt: string;
 }
 
@@ -44,9 +46,23 @@ export default function Home() {
           <h1 className="text-5xl sm:text-6xl font-black mb-4 text-foreground">
             {t.home.title}
           </h1>
-          <p className="text-xl text-default-600 max-w-2xl mx-auto">
+          <p className="text-xl text-default-600 max-w-2xl mx-auto mb-8">
             {t.home.subtitle}
           </p>
+          {status === "unauthenticated" && (
+            <div className="mt-8 flex justify-center">
+              <Button
+                as={Link}
+                className="font-bold text-lg px-8 py-6"
+                color="primary"
+                href="/login"
+                size="lg"
+                variant="shadow"
+              >
+                {t.home.joinCommunity}
+              </Button>
+            </div>
+          )}
         </div>
 
         {loading ? (
