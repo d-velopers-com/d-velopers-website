@@ -50,17 +50,16 @@ export default function Home() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="p-6">
-                <div className="flex gap-4">
-                  <Skeleton className="rounded-full w-24 h-24 flex-shrink-0" />
-                  <div className="flex-1 space-y-3">
-                    <Skeleton className="rounded-lg w-32 h-6" />
-                    <Skeleton className="rounded-lg w-full h-3" />
-                    <Skeleton className="rounded-lg w-5/6 h-3" />
-                    <Skeleton className="rounded-lg w-4/6 h-3" />
-                  </div>
+                <div className="flex flex-col items-center space-y-4">
+                  <Skeleton className="rounded-full w-28 h-28" />
+                  <Skeleton className="rounded-lg w-32 h-6" />
+                  <Skeleton className="rounded-lg w-full h-3" />
+                  <Skeleton className="rounded-lg w-5/6 h-3" />
+                  <Skeleton className="rounded-lg w-4/6 h-3 mb-2" />
+                  <Skeleton className="rounded-lg w-full h-9" />
                 </div>
               </Card>
             ))}
@@ -83,7 +82,7 @@ export default function Home() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {users.map((user) => {
               const avatarUrl = user.avatar
                 ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`
@@ -92,21 +91,28 @@ export default function Home() {
               return (
                 <Card
                   key={user.handler}
-                  className="group h-full transition-all duration-300 hover:shadow-xl"
+                  className="group relative h-full overflow-hidden transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl"
                 >
-                  <CardBody className="p-6">
+                  <CardBody className="relative p-6">
                     <Link href={`/users/${user.handler}`}>
-                      <div className="flex gap-6 mb-6 cursor-pointer">
-                        <Avatar
-                          className="w-24 h-24 text-large flex-shrink-0 ring-2 ring-cyan/20 group-hover:ring-cyan transition-all duration-300"
-                          src={avatarUrl}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-2xl mb-2 group-hover:text-cyan transition-colors">
+                      <div className="flex flex-col items-center text-center gap-4 mb-6 cursor-pointer">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-cyan to-info rounded-full blur-xl opacity-0 group-hover:opacity-60 transition-opacity duration-500 animate-pulse" />
+                          <Avatar
+                            className="w-28 h-28 text-large relative z-10 ring-4 ring-cyan/20 group-hover:ring-cyan/60 group-hover:ring-offset-4 group-hover:ring-offset-background transition-all duration-500 group-hover:scale-110"
+                            src={avatarUrl}
+                          />
+                          <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-br from-cyan to-info rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300">
+                            ✨
+                          </div>
+                        </div>
+
+                        <div className="w-full">
+                          <h3 className="font-bold text-xl mb-2 transition-all duration-300">
                             {user.username}
                           </h3>
                           {user.description ? (
-                            <p className="text-sm text-default-600 line-clamp-3 leading-relaxed">
+                            <p className="text-sm text-default-600 line-clamp-3 leading-relaxed px-2">
                               {user.description}
                             </p>
                           ) : (
@@ -118,29 +124,27 @@ export default function Home() {
                       </div>
                     </Link>
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
                       <Button
                         as={Link}
-                        className="flex-1 font-semibold bg-info text-white hover:bg-info/90"
+                        className="flex-1 font-semibold bg-gradient-to-r from-info to-cyan text-white shadow-lg hover:shadow-info/50 hover:scale-105 transition-all duration-300"
                         href={`/users/${user.handler}`}
-                        size="md"
-                        variant="shadow"
+                        size="sm"
                       >
-                        View Profile
+                        Ver Perfil
                       </Button>
                       {user.link && (
                         <Button
                           isIconOnly
                           as="a"
-                          className="font-medium bg-cyan/10 text-cyan border-cyan/30 hover:bg-cyan hover:text-white"
+                          className="font-medium bg-gradient-to-br from-cyan/20 to-info/20 text-cyan border-2 border-cyan/30 hover:border-cyan hover:bg-gradient-to-br hover:from-cyan hover:to-info hover:text-white hover:scale-110 hover:rotate-12 transition-all duration-300"
                           href={user.link}
                           rel="noopener noreferrer"
-                          size="md"
+                          size="sm"
                           target="_blank"
-                          variant="bordered"
                         >
                           <svg
-                            className="w-5 h-5"
+                            className="w-4 h-4"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
