@@ -83,13 +83,12 @@ export default function Home() {
                 : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator) % 5}.png`;
 
               return (
-                <Card
-                  key={user.handler}
-                  isPressable
-                  className="group h-full transition-all duration-300 hover:shadow-lg"
-                >
-                  <CardBody className="flex flex-col items-center text-center p-6 gap-4">
-                    <Link className="contents" href={`/users/${user.handler}`}>
+                <Link key={user.handler} href={`/users/${user.handler}`}>
+                  <Card
+                    isPressable
+                    className="group h-full transition-all duration-300 hover:shadow-lg"
+                  >
+                    <CardBody className="flex flex-col items-center text-center p-6 gap-4">
                       <Avatar
                         className="w-32 h-32 text-large transition-transform duration-300 group-hover:scale-105"
                         src={avatarUrl}
@@ -98,50 +97,50 @@ export default function Home() {
                       <h3 className="font-semibold text-lg mt-2">
                         {user.username}
                       </h3>
-                    </Link>
 
-                    {user.description ? (
-                      <p className="text-sm text-default-500 line-clamp-3 leading-relaxed min-h-[3.75rem]">
-                        {user.description}
-                      </p>
-                    ) : (
-                      <p className="text-sm text-default-400 italic min-h-[3.75rem] flex items-center justify-center">
-                        Sin descripción
-                      </p>
-                    )}
+                      {user.description ? (
+                        <p className="text-sm text-default-500 line-clamp-3 leading-relaxed min-h-[3.75rem]">
+                          {user.description}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-default-400 italic min-h-[3.75rem] flex items-center justify-center">
+                          Sin descripción
+                        </p>
+                      )}
 
-                    {user.link && (
-                      <Button
-                        as="a"
-                        className="w-full font-medium"
-                        color="default"
-                        href={user.link}
-                        rel="noopener noreferrer"
-                        size="sm"
-                        startContent={
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                            />
-                          </svg>
-                        }
-                        target="_blank"
-                        variant="bordered"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Ver más
-                      </Button>
-                    )}
-                  </CardBody>
-                </Card>
+                      {user.link && (
+                        <Button
+                          as="a"
+                          className="w-full font-medium"
+                          color="default"
+                          href={user.link}
+                          rel="noopener noreferrer"
+                          size="sm"
+                          startContent={
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                              />
+                            </svg>
+                          }
+                          target="_blank"
+                          variant="bordered"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Ver más
+                        </Button>
+                      )}
+                    </CardBody>
+                  </Card>
+                </Link>
               );
             })}
           </div>
