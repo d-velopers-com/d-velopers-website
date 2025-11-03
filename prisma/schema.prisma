@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  discordId     String   @unique
+  username      String
+  discriminator String
+  email         String?
+  avatar        String?
+  handler       String   @unique
+  
+  isPublic      Boolean  @default(false)
+  description   String?
+  link          String?
+  
+  roles         String[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([handler])
+  @@index([discordId])
+}
