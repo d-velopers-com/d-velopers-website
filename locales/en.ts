@@ -29,7 +29,7 @@ export const en = {
     privacyLink: "Privacy Policy",
   },
   dashboard: {
-    title: "User Profile",
+    pageTitle: "User Profile",
     username: "Username",
     email: "Email",
     userId: "User ID",

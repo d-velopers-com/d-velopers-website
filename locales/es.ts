@@ -30,7 +30,7 @@ export const es = {
     privacyLink: "Política de Privacidad",
   },
   dashboard: {
-    title: "Perfil de Usuario",
+    pageTitle: "Perfil de Usuario",
     username: "Usuario",
     email: "Correo",
     userId: "ID de Usuario",
@@ -64,7 +64,8 @@ export const es = {
       "Para poder crear un perfil público y acceder a todas las funciones, necesitas ser miembro del servidor de Discord.",
     becomeMember: "Hacerse Miembro",
     editPublicProfile: "Editar Perfil Público",
-    editPublicProfileDesc: "Personaliza cómo se ve tu perfil para otros usuarios",
+    editPublicProfileDesc:
+      "Personaliza cómo se ve tu perfil para otros usuarios",
     editable: "Editable",
     characters: "caracteres",
     active: "Activo",
