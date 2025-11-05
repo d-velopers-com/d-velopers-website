@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
+import { Chip } from "@heroui/chip";
 import { Skeleton } from "@heroui/skeleton";
 
 import { useLanguage } from "@/contexts/language-context";
@@ -16,8 +17,9 @@ interface PublicUser {
   discriminator: string;
   avatar: string | null;
   discordId: string;
-  description: string | null;
-  link: string | null;
+  name: string | null;
+  title: string | null;
+  tags: string[];
   roles: string[];
   joinedServerAt: string | null;
   createdAt: string;
@@ -68,14 +70,20 @@ export default function Home() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <Card key={i} className="p-6">
-                <div className="flex flex-col items-center space-y-4">
-                  <Skeleton className="rounded-full w-28 h-28" />
-                  <Skeleton className="rounded-lg w-32 h-6" />
-                  <Skeleton className="rounded-lg w-full h-3" />
-                  <Skeleton className="rounded-lg w-5/6 h-3" />
-                  <Skeleton className="rounded-lg w-4/6 h-3 mb-2" />
-                  <Skeleton className="rounded-lg w-full h-9" />
+              <Card key={i} className="h-[220px] p-6 overflow-hidden">
+                <div className="flex flex-col gap-3 h-full">
+                  <Skeleton className="rounded-full w-16 h-16 flex-shrink-0" />
+                  <div className="flex-1 flex flex-col">
+                    <div className="space-y-2 mb-3">
+                      <Skeleton className="rounded-lg w-3/4 h-5" />
+                      <Skeleton className="rounded-lg w-1/2 h-4" />
+                    </div>
+                    <div className="flex gap-1.5 mt-auto">
+                      <Skeleton className="rounded-full w-16 h-6" />
+                      <Skeleton className="rounded-full w-20 h-6" />
+                      <Skeleton className="rounded-full w-14 h-6" />
+                    </div>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -104,77 +112,58 @@ export default function Home() {
                 ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`
                 : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator) % 5}.png`;
 
+              const displayTags = user.tags?.slice(0, 4) || [];
+              const remainingTags = (user.tags?.length || 0) - 4;
+
               return (
                 <Card
                   key={user.handler}
-                  className="group relative h-full overflow-hidden transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl"
+                  className="relative h-[220px] overflow-hidden transition-colors hover:bg-default-100 dark:hover:bg-default-50/10"
                 >
-                  <CardBody className="relative p-6">
+                  <CardBody className="relative p-6 h-full flex flex-col overflow-hidden">
                     <Link href={`/users/${user.handler}`}>
-                      <div className="flex flex-col items-center text-center gap-4 mb-6 cursor-pointer">
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-gradient-to-r from-cyan to-info rounded-full blur-xl opacity-0 group-hover:opacity-60 transition-opacity duration-500 animate-pulse" />
-                          <Avatar
-                            className="w-28 h-28 text-large relative z-10 ring-4 ring-cyan/20 group-hover:ring-cyan/60 group-hover:ring-offset-4 group-hover:ring-offset-background transition-all duration-500 group-hover:scale-110"
-                            src={avatarUrl}
-                          />
-                          <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-br from-cyan to-info rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300">
-                            ✨
-                          </div>
-                        </div>
-
-                        <div className="w-full">
-                          <h3 className="font-bold text-xl mb-2 transition-all duration-300">
-                            {user.username}
+                      <div className="flex flex-col gap-3 h-full">
+                        <Avatar
+                          className="w-16 h-16 flex-shrink-0 ring-2 ring-cyan/20"
+                          src={avatarUrl}
+                        />
+                        <div className="flex-1 min-w-0 flex flex-col">
+                          <h3 className="font-bold text-lg mb-1 truncate">
+                            {user.name || user.username}
                           </h3>
-                          {user.description ? (
-                            <p className="text-sm text-default-600 line-clamp-3 leading-relaxed px-2">
-                              {user.description}
+                          {user.title && (
+                            <p className="text-sm text-default-600 mb-3 line-clamp-2 overflow-hidden">
+                              {user.title}
                             </p>
-                          ) : (
-                            <p className="text-sm text-default-400 italic">
-                              Sin descripción
-                            </p>
+                          )}
+                          {displayTags.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-auto">
+                              {displayTags.map((tag) => (
+                                <Chip
+                                  key={tag}
+                                  className="text-xs"
+                                  color="primary"
+                                  size="sm"
+                                  variant="flat"
+                                >
+                                  {tag}
+                                </Chip>
+                              ))}
+                              {remainingTags > 0 && (
+                                <Chip
+                                  className="text-xs"
+                                  color="default"
+                                  size="sm"
+                                  variant="flat"
+                                >
+                                  +{remainingTags}
+                                </Chip>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
                     </Link>
-
-                    <div className="flex gap-2">
-                      <Button
-                        as={Link}
-                        className="flex-1 font-semibold bg-gradient-to-r from-info to-cyan text-white shadow-lg hover:shadow-info/50 hover:scale-105 transition-all duration-300"
-                        href={`/users/${user.handler}`}
-                        size="sm"
-                      >
-                        Ver Perfil
-                      </Button>
-                      {user.link && (
-                        <Button
-                          isIconOnly
-                          as="a"
-                          className="font-medium bg-gradient-to-br from-cyan/20 to-info/20 text-cyan border-2 border-cyan/30 hover:border-cyan hover:bg-gradient-to-br hover:from-cyan hover:to-info hover:text-white hover:scale-110 hover:rotate-12 transition-all duration-300"
-                          href={user.link}
-                          rel="noopener noreferrer"
-                          size="sm"
-                          target="_blank"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                            />
-                          </svg>
-                        </Button>
-                      )}
-                    </div>
                   </CardBody>
                 </Card>
               );

@@ -7,6 +7,9 @@ interface ProfileData {
   isPublic: boolean;
   description: string | null;
   link: string | null;
+  name: string | null;
+  title: string | null;
+  tags: string[];
   joinedServerAt: string | null;
 }
 
@@ -58,6 +61,9 @@ export function useProfile() {
     isPublic?: boolean;
     description?: string | null;
     link?: string | null;
+    name?: string | null;
+    title?: string | null;
+    tags?: string[];
   }) => {
     try {
       const res = await fetch("/api/user/profile", {
@@ -82,5 +88,19 @@ export function useProfile() {
     }
   };
 
-  return { profile, loading, updatePublicStatus, updateProfile };
+  const refreshProfile = async () => {
+    try {
+      const res = await fetch("/api/user/profile");
+
+      if (res.ok) {
+        const data = await res.json();
+
+        setProfile(data);
+      }
+    } catch {
+      // Silently fail on refresh
+    }
+  };
+
+  return { profile, loading, updatePublicStatus, updateProfile, refreshProfile };
 }

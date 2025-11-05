@@ -88,6 +88,9 @@ export async function getUserByDiscordId(discordId: string) {
       isPublic: true,
       description: true,
       link: true,
+      name: true,
+      title: true,
+      tags: true,
       roles: true,
       joinedServerAt: true,
       createdAt: true,
@@ -110,6 +113,9 @@ export async function getUserByHandler(handler: string) {
       isPublic: true,
       description: true,
       link: true,
+      name: true,
+      title: true,
+      tags: true,
       roles: true,
       joinedServerAt: true,
       createdAt: true,
@@ -134,6 +140,9 @@ export async function updateUserProfile(
     isPublic?: boolean;
     description?: string | null;
     link?: string | null;
+    name?: string | null;
+    title?: string | null;
+    tags?: string[];
   },
 ) {
   return await prisma.user.update({
@@ -153,6 +162,9 @@ export async function getPublicUsers() {
       discordId: true,
       description: true,
       link: true,
+      name: true,
+      title: true,
+      tags: true,
       roles: true,
       joinedServerAt: true,
       createdAt: true,

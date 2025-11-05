@@ -22,6 +22,9 @@ export async function GET(request: Request, { params }: Params) {
     discordId: user.discordId,
     description: user.description,
     link: user.link,
+    name: user.name,
+    title: user.title,
+    tags: user.tags,
     joinedServerAt: user.joinedServerAt,
   });
 }

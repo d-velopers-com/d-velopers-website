@@ -31,6 +31,9 @@ export async function GET() {
     isPublic: user.isPublic,
     description: user.description,
     link: user.link,
+    name: user.name,
+    title: user.title,
+    tags: user.tags,
     joinedServerAt: user.joinedServerAt,
   });
 }
@@ -43,12 +46,15 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json();
-  const { isPublic, description, link } = body;
+  const { isPublic, description, link, name, title, tags } = body;
 
   const updateData: {
     isPublic?: boolean;
     description?: string | null;
     link?: string | null;
+    name?: string | null;
+    title?: string | null;
+    tags?: string[];
   } = {};
 
   if (isPublic !== undefined) {
@@ -99,6 +105,67 @@ export async function PATCH(request: Request) {
     }
   }
 
+  if (name !== undefined) {
+    if (name === null || name === "") {
+      updateData.name = null;
+    } else if (typeof name === "string") {
+      if (name.length > 100) {
+        return NextResponse.json(
+          { error: "Name must be 100 characters or less" },
+          { status: 400 },
+        );
+      }
+      updateData.name = name.trim();
+    } else {
+      return NextResponse.json(
+        { error: "Invalid name value" },
+        { status: 400 },
+      );
+    }
+  }
+
+  if (title !== undefined) {
+    if (title === null || title === "") {
+      updateData.title = null;
+    } else if (typeof title === "string") {
+      if (title.length > 100) {
+        return NextResponse.json(
+          { error: "Title must be 100 characters or less" },
+          { status: 400 },
+        );
+      }
+      updateData.title = title.trim();
+    } else {
+      return NextResponse.json(
+        { error: "Invalid title value" },
+        { status: 400 },
+      );
+    }
+  }
+
+  if (tags !== undefined) {
+    if (!Array.isArray(tags)) {
+      return NextResponse.json(
+        { error: "Tags must be an array" },
+        { status: 400 },
+      );
+    }
+    if (tags.length > 15) {
+      return NextResponse.json(
+        { error: "Maximum 15 tags allowed" },
+        { status: 400 },
+      );
+    }
+    // Validar que todos los tags sean strings válidos
+    const validTags = tags
+      .filter((tag) => typeof tag === "string" && tag.trim().length > 0)
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length <= 50)
+      .slice(0, 15); // Limitar a 15 tags
+
+    updateData.tags = validTags;
+  }
+
   const user = await updateUserProfile(session.discordId, updateData);
 
   return NextResponse.json({
@@ -106,6 +173,9 @@ export async function PATCH(request: Request) {
     isPublic: user.isPublic,
     description: user.description,
     link: user.link,
+    name: user.name,
+    title: user.title,
+    tags: user.tags,
     joinedServerAt: user.joinedServerAt,
   });
 }
