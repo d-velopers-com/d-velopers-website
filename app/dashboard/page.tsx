@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
+import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
@@ -11,9 +11,10 @@ import { Skeleton } from "@heroui/skeleton";
 import { Switch } from "@heroui/switch";
 import { Input } from "@heroui/input";
 import { Textarea } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
 
 import { useLanguage } from "@/contexts/language-context";
-import { useSession, signOut } from "@/hooks/useSession";
+import { useSession } from "@/hooks/useSession";
 import { useProfile } from "@/hooks/useProfile";
 
 export default function DashboardPage() {
@@ -23,12 +24,17 @@ export default function DashboardPage() {
     loading: profileLoading,
     updatePublicStatus,
     updateProfile,
+    refreshProfile,
   } = useProfile();
   const { t } = useLanguage();
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [description, setDescription] = useState("");
   const [link, setLink] = useState("");
+  const [name, setName] = useState("");
+  const [title, setTitle] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [technologies, setTechnologies] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [linkError, setLinkError] = useState("");
@@ -49,8 +55,18 @@ export default function DashboardPage() {
     if (profile) {
       setDescription(profile.description || "");
       setLink(profile.link || "");
+      setName(profile.name || "");
+      setTitle(profile.title || "");
+      setTags(profile.tags || []);
     }
   }, [profile]);
+
+  useEffect(() => {
+    fetch("/api/config/technologies")
+      .then((res) => res.json())
+      .then((data) => setTechnologies(data.technologies || []))
+      .catch(() => setTechnologies([]));
+  }, []);
 
   useEffect(() => {
     fetch("/api/config/allowed-roles")
@@ -91,14 +107,36 @@ export default function DashboardPage() {
     const result = await updateProfile({
       description: description.trim() || null,
       link: link.trim() || null,
+      name: name.trim() || null,
+      title: title.trim() || null,
+      tags: tags,
     });
-
-    setSaving(false);
 
     if (result.success) {
       setSaveMessage(t.dashboard.saved);
-      setTimeout(() => setSaveMessage(""), 3000);
+
+      // Sync with Discord after saving
+      try {
+        const syncResponse = await fetch("/api/user/sync", {
+          method: "POST",
+        });
+
+        if (syncResponse.ok) {
+          // Refresh profile data without reloading page
+          await refreshProfile();
+          setSaving(false);
+        } else {
+          // If sync fails, still show success message for profile save
+          setSaving(false);
+          setTimeout(() => setSaveMessage(""), 3000);
+        }
+      } catch {
+        // If sync fails, still show success message for profile save
+        setSaving(false);
+        setTimeout(() => setSaveMessage(""), 3000);
+      }
     } else {
+      setSaving(false);
       setLinkError(result.error || "Error saving");
     }
   };
@@ -137,10 +175,6 @@ export default function DashboardPage() {
     user.roles.some((roleId) => allowedRoles.includes(roleId));
   const canMakePublic = hasAllowedRole || allowedRoles.length === 0;
 
-  const handleLogout = async () => {
-    await signOut();
-  };
-
   const handleSync = async () => {
     setSyncing(true);
     setSyncMessage(null);
@@ -172,9 +206,7 @@ export default function DashboardPage() {
             className="w-24 h-24 ring-4 ring-primary/10"
             src={avatarUrl}
           />
-          <h1 className="text-2xl font-bold mt-4">
-            {user.username}
-          </h1>
+          <h1 className="text-2xl font-bold mt-4">{user.username}</h1>
           {user.email && (
             <p className="text-default-500 text-sm">{user.email}</p>
           )}
@@ -183,31 +215,23 @@ export default function DashboardPage() {
         <Divider />
 
         <CardBody className="gap-6 px-8 py-6">
-          <div className="flex flex-col gap-2">
+          {profile?.joinedServerAt && (
             <div className="flex justify-between items-center">
               <span className="text-sm text-default-500">
-                {t.dashboard.userId}
+                {t.dashboard.joinedServer}
               </span>
-              <span className="text-sm font-mono">{user.id}</span>
+              <span className="text-sm">
+                {new Date(profile.joinedServerAt).toLocaleDateString(
+                  undefined,
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  },
+                )}
+              </span>
             </div>
-            {profile?.joinedServerAt && (
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-default-500">
-                  {t.dashboard.joinedServer}
-                </span>
-                <span className="text-sm">
-                  {new Date(profile.joinedServerAt).toLocaleDateString(
-                    undefined,
-                    {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    },
-                  )}
-                </span>
-              </div>
-            )}
-          </div>
+          )}
 
           {!profile?.joinedServerAt && isServerMember && (
             <div className="flex flex-col gap-3 p-4 bg-info/10 border-2 border-info/30 rounded-lg">
@@ -236,23 +260,6 @@ export default function DashboardPage() {
                     color="primary"
                     isLoading={syncing}
                     size="sm"
-                    startContent={
-                      !syncing && (
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                          />
-                        </svg>
-                      )
-                    }
                     variant="flat"
                     onPress={handleSync}
                   >
@@ -326,11 +333,10 @@ export default function DashboardPage() {
                 </svg>
                 <div className="flex-1">
                   <h3 className="font-bold text-warning mb-2">
-                    No eres miembro del servidor
+                    {t.dashboard.notServerMember}
                   </h3>
                   <p className="text-sm text-foreground/80 mb-4">
-                    Para poder crear un perfil público y acceder a todas las
-                    funciones, necesitas ser miembro del servidor de Discord.
+                    {t.dashboard.notServerMemberDesc}
                   </p>
                   <Button
                     as="a"
@@ -339,19 +345,10 @@ export default function DashboardPage() {
                     href="https://www.youtube.com/channel/UCFKZxStYsOVrzdN_FCZ0NGg/membership"
                     rel="noopener noreferrer"
                     size="md"
-                    startContent={
-                      <svg
-                        className="w-5 h-5"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                      </svg>
-                    }
                     target="_blank"
                     variant="shadow"
                   >
-                    Hacerse Miembro
+                    {t.dashboard.becomeMember}
                   </Button>
                 </div>
               </div>
@@ -375,22 +372,61 @@ export default function DashboardPage() {
                   strokeWidth={2}
                 />
               </svg>
-              <h2 className="text-base font-bold">Editar Perfil Público</h2>
+              <h2 className="text-base font-bold">
+                {t.dashboard.editPublicProfile}
+              </h2>
             </div>
             <p className="text-xs text-default-500 mb-6">
-              Personaliza cómo se ve tu perfil para otros usuarios
+              {t.dashboard.editPublicProfileDesc}
             </p>
 
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">
-                    {t.dashboard.description}
-                  </span>
-                  <Chip color="warning" size="sm" variant="flat">
-                    Editable
-                  </Chip>
-                </div>
+                <span className="text-sm font-semibold">
+                  {t.dashboard.name}
+                </span>
+                <Input
+                  classNames={{
+                    input: "bg-background",
+                    inputWrapper:
+                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                  }}
+                  maxLength={100}
+                  placeholder={t.dashboard.namePlaceholder}
+                  value={name}
+                  variant="bordered"
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <span className="text-xs text-default-400 text-right">
+                  {name.length}/100 {t.dashboard.characters}
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-semibold">
+                  {t.dashboard.title}
+                </span>
+                <Input
+                  classNames={{
+                    input: "bg-background",
+                    inputWrapper:
+                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                  }}
+                  maxLength={100}
+                  placeholder={t.dashboard.titlePlaceholder}
+                  value={title}
+                  variant="bordered"
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+                <span className="text-xs text-default-400 text-right">
+                  {title.length}/100 {t.dashboard.characters}
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-semibold">
+                  {t.dashboard.description}
+                </span>
                 <Textarea
                   classNames={{
                     input: "bg-background",
@@ -420,19 +456,14 @@ export default function DashboardPage() {
                   onChange={(e) => setDescription(e.target.value)}
                 />
                 <span className="text-xs text-default-400 text-right">
-                  {description.length}/500 caracteres
+                  {description.length}/500 {t.dashboard.characters}
                 </span>
               </div>
 
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">
-                    {t.dashboard.link}
-                  </span>
-                  <Chip color="warning" size="sm" variant="flat">
-                    Editable
-                  </Chip>
-                </div>
+                <span className="text-sm font-semibold">
+                  {t.dashboard.link}
+                </span>
                 <Input
                   classNames={{
                     input: "bg-background",
@@ -464,6 +495,31 @@ export default function DashboardPage() {
                 />
               </div>
 
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-semibold">
+                  {t.dashboard.tags}
+                </span>
+                <Select
+                  classNames={{
+                    trigger: "bg-background",
+                  }}
+                  placeholder={t.dashboard.tagsPlaceholder}
+                  selectedKeys={tags}
+                  selectionMode="multiple"
+                  variant="bordered"
+                  onSelectionChange={(keys) =>
+                    setTags(Array.from(keys) as string[])
+                  }
+                >
+                  {technologies.map((tech) => (
+                    <SelectItem key={tech}>{tech}</SelectItem>
+                  ))}
+                </Select>
+                <span className="text-xs text-default-400 text-right">
+                  {tags.length}/15 {t.dashboard.maxTags}
+                </span>
+              </div>
+
               {saveMessage && (
                 <div className="flex items-center gap-2 p-3 bg-success/10 border border-success/20 rounded-lg">
                   <svg
@@ -490,23 +546,6 @@ export default function DashboardPage() {
                 color="primary"
                 isLoading={saving}
                 size="md"
-                startContent={
-                  !saving && (
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M5 13l4 4L19 7"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                      />
-                    </svg>
-                  )
-                }
                 variant="shadow"
                 onPress={handleSaveProfile}
               >
@@ -526,7 +565,7 @@ export default function DashboardPage() {
                   </span>
                   {!profileLoading && profile?.isPublic && canMakePublic && (
                     <Chip color="success" size="sm" variant="dot">
-                      Activo
+                      {t.dashboard.active}
                     </Chip>
                   )}
                 </div>
@@ -561,10 +600,10 @@ export default function DashboardPage() {
                 </svg>
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-danger mb-1">
-                    Rol requerido
+                    {t.dashboard.roleRequired}
                   </p>
                   <p className="text-xs text-foreground/70">
-                    Necesitas tener uno de los roles permitidos en el servidor de Discord para hacer público tu perfil.
+                    {t.dashboard.roleRequiredDesc}
                   </p>
                 </div>
               </div>
@@ -601,19 +640,6 @@ export default function DashboardPage() {
               )}
           </div>
         </CardBody>
-
-        <Divider />
-
-        <CardFooter className="px-8 py-6">
-          <Button
-            className="w-full font-semibold"
-            color="danger"
-            variant="flat"
-            onPress={handleLogout}
-          >
-            {t.common.logout}
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   );

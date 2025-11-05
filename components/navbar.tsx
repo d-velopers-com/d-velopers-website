@@ -30,13 +30,6 @@ export function Navbar() {
   const { data: session, status } = useSession();
   const { t } = useLanguage();
 
-  const menuItems =
-    status === "authenticated"
-      ? [
-          { label: t.nav.home, href: "/" },
-          { label: t.nav.profile, href: "/dashboard" },
-        ]
-      : [{ label: t.nav.home, href: "/" }];
 
   const avatarUrl = session?.user
     ? session.user.avatar
@@ -71,18 +64,6 @@ export function Navbar() {
             D-VELOPERS
           </Link>
         </NavbarBrand>
-        <NavbarItem>
-          <Link color="foreground" href="/">
-            {t.nav.home}
-          </Link>
-        </NavbarItem>
-        {status === "authenticated" && (
-          <NavbarItem>
-            <Link color="foreground" href="/dashboard">
-              {t.nav.profile}
-            </Link>
-          </NavbarItem>
-        )}
       </NavbarContent>
 
       <NavbarContent justify="end">
@@ -110,16 +91,6 @@ export function Navbar() {
                   />
                 </DropdownTrigger>
                 <DropdownMenu aria-label="Profile Actions" variant="flat">
-                  <DropdownItem key="profile" className="h-14 gap-2">
-                    <p className="font-semibold">
-                      {session.user.username}#{session.user.discriminator}
-                    </p>
-                    {session.user.email && (
-                      <p className="text-sm text-default-400">
-                        {session.user.email}
-                      </p>
-                    )}
-                  </DropdownItem>
                   <DropdownItem key="dashboard" href="/dashboard">
                     {t.nav.profile}
                   </DropdownItem>
@@ -138,18 +109,6 @@ export function Navbar() {
       </NavbarContent>
 
       <NavbarMenu>
-        {menuItems.map((item, index) => (
-          <NavbarMenuItem key={`${item.label}-${index}`}>
-            <Link
-              className="w-full"
-              color="foreground"
-              href={item.href}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {item.label}
-            </Link>
-          </NavbarMenuItem>
-        ))}
         {status === "authenticated" && (
           <NavbarMenuItem>
             <Button

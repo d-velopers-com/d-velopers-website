@@ -5,6 +5,7 @@ import { useParams, notFound } from "next/navigation";
 import { Card, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
+import { Chip } from "@heroui/chip";
 import { Skeleton } from "@heroui/skeleton";
 
 import { useLanguage } from "@/contexts/language-context";
@@ -17,6 +18,9 @@ interface User {
   discordId: string;
   description: string | null;
   link: string | null;
+  name: string | null;
+  title: string | null;
+  tags: string[];
   joinedServerAt: string | null;
 }
 
@@ -93,8 +97,13 @@ export default function ProfilePage() {
               />
 
               <h1 className="text-2xl font-bold mt-4 mb-1 text-foreground">
-                {user.username}
+                {user.name || user.username}
               </h1>
+              {user.title && (
+                <p className="text-default-600 text-sm font-medium mb-1">
+                  {user.title}
+                </p>
+              )}
               <p className="text-default-500 text-sm font-medium">
                 @{user.handler}
               </p>
@@ -151,6 +160,18 @@ export default function ProfilePage() {
                 <p className="text-sm text-default-600 leading-relaxed whitespace-pre-wrap">
                   {user.description}
                 </p>
+              </div>
+            )}
+
+            {user.tags && user.tags.length > 0 && (
+              <div className="mb-4">
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {user.tags.map((tag) => (
+                    <Chip key={tag} color="primary" size="sm" variant="flat">
+                      {tag}
+                    </Chip>
+                  ))}
+                </div>
               </div>
             )}
 

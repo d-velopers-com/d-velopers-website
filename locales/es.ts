@@ -59,5 +59,24 @@ export const es = {
     syncRequired: "Sincronización Requerida",
     syncRequiredDesc:
       "Tu perfil necesita sincronizarse con Discord para mostrar tu fecha de ingreso.",
+    notServerMember: "No eres miembro del servidor",
+    notServerMemberDesc:
+      "Para poder crear un perfil público y acceder a todas las funciones, necesitas ser miembro del servidor de Discord.",
+    becomeMember: "Hacerse Miembro",
+    editPublicProfile: "Editar Perfil Público",
+    editPublicProfileDesc: "Personaliza cómo se ve tu perfil para otros usuarios",
+    editable: "Editable",
+    characters: "caracteres",
+    active: "Activo",
+    roleRequired: "Rol requerido",
+    roleRequiredDesc:
+      "Necesitas tener uno de los roles permitidos en el servidor de Discord para hacer público tu perfil.",
+    name: "Nombre",
+    namePlaceholder: "Tu nombre para mostrar",
+    title: "Título",
+    titlePlaceholder: "ej., Desarrollador Frontend Senior",
+    tags: "Tecnologías",
+    tagsPlaceholder: "Selecciona tus tecnologías",
+    maxTags: "tecnologías",
   },
 };

@@ -58,5 +58,24 @@ export const en = {
     syncRequired: "Sync Required",
     syncRequiredDesc:
       "Your profile needs to be synced with Discord to display your member since date.",
+    notServerMember: "You're not a server member",
+    notServerMemberDesc:
+      "To create a public profile and access all features, you need to be a member of the Discord server.",
+    becomeMember: "Become a Member",
+    editPublicProfile: "Edit Public Profile",
+    editPublicProfileDesc: "Customize how your profile looks to other users",
+    editable: "Editable",
+    characters: "characters",
+    active: "Active",
+    roleRequired: "Role Required",
+    roleRequiredDesc:
+      "You need to have one of the allowed roles in the Discord server to make your profile public.",
+    name: "Name",
+    namePlaceholder: "Your display name",
+    title: "Title",
+    titlePlaceholder: "e.g., Senior Frontend Developer",
+    tags: "Technologies",
+    tagsPlaceholder: "Select your technologies",
+    maxTags: "tags",
   },
 };
