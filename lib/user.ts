@@ -88,11 +88,14 @@ export async function getUserByDiscordId(discordId: string) {
       isPublic: true,
       description: true,
       link: true,
+      contactEmail: true,
+      country: true,
       name: true,
       title: true,
       tags: true,
       roles: true,
       joinedServerAt: true,
+      profileActivatedAt: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -113,11 +116,14 @@ export async function getUserByHandler(handler: string) {
       isPublic: true,
       description: true,
       link: true,
+      contactEmail: true,
+      country: true,
       name: true,
       title: true,
       tags: true,
       roles: true,
       joinedServerAt: true,
+      profileActivatedAt: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -128,9 +134,23 @@ export async function updateUserPublicStatus(
   discordId: string,
   isPublic: boolean,
 ) {
+  const user = await prisma.user.findUnique({
+    where: { discordId },
+    select: { isPublic: true, profileActivatedAt: true },
+  });
+
+  const updateData: { isPublic: boolean; profileActivatedAt?: Date } = {
+    isPublic,
+  };
+
+  // Si el perfil se está activando por primera vez (cambiando de false a true)
+  if (isPublic && user && !user.isPublic && !user.profileActivatedAt) {
+    updateData.profileActivatedAt = new Date();
+  }
+
   return await prisma.user.update({
     where: { discordId },
-    data: { isPublic },
+    data: updateData,
   });
 }
 
@@ -140,11 +160,32 @@ export async function updateUserProfile(
     isPublic?: boolean;
     description?: string | null;
     link?: string | null;
+    contactEmail?: string | null;
+    country?: string | null;
     name?: string | null;
     title?: string | null;
     tags?: string[];
   },
 ) {
+  // Si se está activando el perfil, verificar si es la primera vez
+  if (data.isPublic === true) {
+    const user = await prisma.user.findUnique({
+      where: { discordId },
+      select: { isPublic: true, profileActivatedAt: true },
+    });
+
+    // Si el perfil se está activando por primera vez
+    if (user && !user.isPublic && !user.profileActivatedAt) {
+      return await prisma.user.update({
+        where: { discordId },
+        data: {
+          ...data,
+          profileActivatedAt: new Date(),
+        },
+      });
+    }
+  }
+
   return await prisma.user.update({
     where: { discordId },
     data,
@@ -162,11 +203,13 @@ export async function getPublicUsers() {
       discordId: true,
       description: true,
       link: true,
+      contactEmail: true,
       name: true,
       title: true,
       tags: true,
       roles: true,
       joinedServerAt: true,
+      profileActivatedAt: true,
       createdAt: true,
     },
   });

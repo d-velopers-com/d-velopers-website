@@ -30,7 +30,6 @@ export function Navbar() {
   const { data: session, status } = useSession();
   const { t } = useLanguage();
 
-
   const avatarUrl = session?.user
     ? session.user.avatar
       ? `https://cdn.discordapp.com/avatars/${session.user.id}/${session.user.avatar}.png`
