@@ -12,10 +12,19 @@ import { Switch } from "@heroui/switch";
 import { Input } from "@heroui/input";
 import { Textarea } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+} from "@heroui/modal";
 
 import { useLanguage } from "@/contexts/language-context";
 import { useSession } from "@/hooks/useSession";
 import { useProfile } from "@/hooks/useProfile";
+import { countries, getCountryFlagUrl, getCountryName } from "@/lib/countries";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -31,19 +40,30 @@ export default function DashboardPage() {
   const [copied, setCopied] = useState(false);
   const [description, setDescription] = useState("");
   const [link, setLink] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [country, setCountry] = useState<string>("");
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [technologies, setTechnologies] = useState<string[]>([]);
+  const [searchValue, setSearchValue] = useState("");
+  const [countrySearchValue, setCountrySearchValue] = useState("");
   const [saving, setSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState("");
   const [linkError, setLinkError] = useState("");
+  const [tagsError, setTagsError] = useState("");
   const [allowedRoles, setAllowedRoles] = useState<string[]>([]);
+  const [technologiesLoading, setTechnologiesLoading] = useState(true);
+  const [allowedRolesLoading, setAllowedRolesLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const {
+    isOpen: isConfirmOpen,
+    onOpen: onConfirmOpen,
+    onOpenChange: onConfirmOpenChange,
+  } = useDisclosure();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -55,6 +75,9 @@ export default function DashboardPage() {
     if (profile) {
       setDescription(profile.description || "");
       setLink(profile.link || "");
+      setContactEmail(profile.contactEmail || "");
+      setCountry(profile.country || "");
+      setCountrySearchValue("");
       setName(profile.name || "");
       setTitle(profile.title || "");
       setTags(profile.tags || []);
@@ -62,17 +85,21 @@ export default function DashboardPage() {
   }, [profile]);
 
   useEffect(() => {
+    setTechnologiesLoading(true);
     fetch("/api/config/technologies")
       .then((res) => res.json())
       .then((data) => setTechnologies(data.technologies || []))
-      .catch(() => setTechnologies([]));
+      .catch(() => setTechnologies([]))
+      .finally(() => setTechnologiesLoading(false));
   }, []);
 
   useEffect(() => {
+    setAllowedRolesLoading(true);
     fetch("/api/config/allowed-roles")
       .then((res) => res.json())
       .then((data) => setAllowedRoles(data.roles || []))
-      .catch(() => setAllowedRoles([]));
+      .catch(() => setAllowedRoles([]))
+      .finally(() => setAllowedRolesLoading(false));
   }, []);
 
   const handleTogglePublic = async (isPublic: boolean) => {
@@ -89,9 +116,14 @@ export default function DashboardPage() {
     }
   };
 
-  const handleSaveProfile = async () => {
+  const handleSaveProfile = () => {
+    onConfirmOpen();
+  };
+
+  const confirmSaveProfile = async () => {
+    onConfirmOpenChange();
     setLinkError("");
-    setSaveMessage("");
+    setTagsError("");
 
     if (link && link.trim() !== "") {
       try {
@@ -103,18 +135,24 @@ export default function DashboardPage() {
       }
     }
 
+    if (tags.length > 15) {
+      setTagsError(t.dashboard.maxTagsError);
+
+      return;
+    }
+
     setSaving(true);
     const result = await updateProfile({
       description: description.trim() || null,
       link: link.trim() || null,
+      contactEmail: contactEmail.trim() || null,
+      country: country || null,
       name: name.trim() || null,
       title: title.trim() || null,
       tags: tags,
     });
 
     if (result.success) {
-      setSaveMessage(t.dashboard.saved);
-
       // Sync with Discord after saving
       try {
         const syncResponse = await fetch("/api/user/sync", {
@@ -128,20 +166,32 @@ export default function DashboardPage() {
         } else {
           // If sync fails, still show success message for profile save
           setSaving(false);
-          setTimeout(() => setSaveMessage(""), 3000);
         }
       } catch {
         // If sync fails, still show success message for profile save
         setSaving(false);
-        setTimeout(() => setSaveMessage(""), 3000);
       }
     } else {
       setSaving(false);
-      setLinkError(result.error || "Error saving");
+      // Check if error is about tags
+      if (
+        result.error?.includes("Maximum 15 tags") ||
+        result.error?.includes("tags")
+      ) {
+        setTagsError(t.dashboard.maxTagsError);
+      } else {
+        setLinkError(result.error || "Error saving");
+      }
     }
   };
 
-  if (status === "loading") {
+  const isLoading =
+    status === "loading" ||
+    profileLoading ||
+    technologiesLoading ||
+    allowedRolesLoading;
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen px-4">
         <Card className="max-w-md w-full">
@@ -173,7 +223,23 @@ export default function DashboardPage() {
     isServerMember &&
     allowedRoles.length > 0 &&
     user.roles.some((roleId) => allowedRoles.includes(roleId));
-  const canMakePublic = hasAllowedRole || allowedRoles.length === 0;
+
+  const hasRecentActivation =
+    profile?.profileActivatedAt &&
+    new Date(profile.profileActivatedAt).getTime() >
+      Date.now() - 30 * 24 * 60 * 60 * 1000;
+
+  const canMakePublic =
+    hasAllowedRole || allowedRoles.length === 0 || hasRecentActivation;
+
+  const isInTrialPeriod =
+    hasRecentActivation && !hasAllowedRole && allowedRoles.length > 0;
+
+  const trialEndDate =
+    profile?.profileActivatedAt &&
+    new Date(
+      new Date(profile.profileActivatedAt).getTime() + 30 * 24 * 60 * 60 * 1000,
+    );
 
   const handleSync = async () => {
     setSyncing(true);
@@ -215,6 +281,110 @@ export default function DashboardPage() {
         <Divider />
 
         <CardBody className="gap-6 px-8 py-6">
+          <div className="flex flex-col gap-4">
+            {!canMakePublic && isServerMember && (
+              <div
+                className={`flex items-start gap-2 p-3 rounded-lg ${
+                  isInTrialPeriod
+                    ? "bg-warning/10 border border-warning/20"
+                    : "bg-danger/10 border border-danger/20"
+                }`}
+              >
+                <svg
+                  className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                    isInTrialPeriod ? "text-warning" : "text-danger"
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  {isInTrialPeriod ? (
+                    <path
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  ) : (
+                    <path
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  )}
+                </svg>
+                <div className="flex-1">
+                  <p
+                    className={`text-sm font-semibold mb-1 ${
+                      isInTrialPeriod ? "text-warning" : "text-danger"
+                    }`}
+                  >
+                    {isInTrialPeriod
+                      ? t.dashboard.trialPeriod
+                      : t.dashboard.roleRequired}
+                  </p>
+                  <p className="text-xs text-foreground/70">
+                    {isInTrialPeriod
+                      ? t.dashboard.trialPeriodDesc
+                      : t.dashboard.roleRequiredDesc}
+                  </p>
+                  {isInTrialPeriod && trialEndDate && (
+                    <div className="mt-3 pt-3 border-t border-warning/20">
+                      <p className="text-xs text-foreground/70 mb-2">
+                        {t.dashboard.trialPeriodNote}
+                      </p>
+                      <Chip
+                        className="text-xs"
+                        color="warning"
+                        size="sm"
+                        variant="flat"
+                      >
+                        {trialEndDate.toLocaleDateString(undefined, {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </Chip>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {!profileLoading &&
+              profile &&
+              profile.isPublic &&
+              canMakePublic && (
+                <div className="flex flex-col gap-2 p-4 bg-success/10 rounded-lg border border-success/20">
+                  <span className="text-xs font-semibold text-success">
+                    {t.dashboard.profileUrl}
+                  </span>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      classNames={{
+                        input: "text-xs",
+                      }}
+                      size="sm"
+                      value={`${typeof window !== "undefined" ? window.location.origin : ""}/users/${profile.handler}`}
+                      variant="flat"
+                    />
+                    <Button
+                      color="success"
+                      size="sm"
+                      variant="flat"
+                      onPress={handleCopyUrl}
+                    >
+                      {copied ? "✓" : t.dashboard.copyUrl}
+                    </Button>
+                  </div>
+                </div>
+              )}
+          </div>
+
+          <Divider className="my-2" />
+
           {profile?.joinedServerAt && (
             <div className="flex justify-between items-center">
               <span className="text-sm text-default-500">
@@ -382,9 +552,30 @@ export default function DashboardPage() {
 
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold">
-                  {t.dashboard.name}
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">
+                    {t.dashboard.name}
+                  </span>
+                  {!profileLoading && profile && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-default-400">
+                        {t.dashboard.publicProfile}
+                      </span>
+                      {profile.isPublic && canMakePublic && (
+                        <Chip color="success" size="sm" variant="dot">
+                          {t.dashboard.active}
+                        </Chip>
+                      )}
+                      <Switch
+                        color="success"
+                        isDisabled={!canMakePublic}
+                        isSelected={!!(profile.isPublic && canMakePublic)}
+                        size="sm"
+                        onValueChange={handleTogglePublic}
+                      />
+                    </div>
+                  )}
+                </div>
                 <Input
                   classNames={{
                     input: "bg-background",
@@ -397,9 +588,14 @@ export default function DashboardPage() {
                   variant="bordered"
                   onChange={(e) => setName(e.target.value)}
                 />
-                <span className="text-xs text-default-400 text-right">
-                  {name.length}/100 {t.dashboard.characters}
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-default-400">
+                    {name.length}/100 {t.dashboard.characters}
+                  </span>
+                  <span className="text-xs text-default-400">
+                    {t.dashboard.publicProfileDesc}
+                  </span>
+                </div>
               </div>
 
               <div className="flex flex-col gap-2">
@@ -497,49 +693,280 @@ export default function DashboardPage() {
 
               <div className="flex flex-col gap-2">
                 <span className="text-sm font-semibold">
-                  {t.dashboard.tags}
+                  {t.dashboard.contactEmail}
                 </span>
-                <Select
+                <Input
                   classNames={{
-                    trigger: "bg-background",
+                    input: "bg-background",
+                    inputWrapper:
+                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
                   }}
-                  placeholder={t.dashboard.tagsPlaceholder}
-                  selectedKeys={tags}
-                  selectionMode="multiple"
-                  variant="bordered"
-                  onSelectionChange={(keys) =>
-                    setTags(Array.from(keys) as string[])
+                  placeholder={t.dashboard.contactEmailPlaceholder}
+                  startContent={
+                    <svg
+                      className="w-4 h-4 text-default-400 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    </svg>
                   }
-                >
-                  {technologies.map((tech) => (
-                    <SelectItem key={tech}>{tech}</SelectItem>
-                  ))}
-                </Select>
-                <span className="text-xs text-default-400 text-right">
-                  {tags.length}/15 {t.dashboard.maxTags}
-                </span>
+                  type="email"
+                  value={contactEmail}
+                  variant="bordered"
+                  onChange={(e) => setContactEmail(e.target.value)}
+                />
               </div>
 
-              {saveMessage && (
-                <div className="flex items-center gap-2 p-3 bg-success/10 border border-success/20 rounded-lg">
-                  <svg
-                    className="w-5 h-5 text-success"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M5 13l4 4L19 7"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                    />
-                  </svg>
-                  <span className="text-sm font-medium text-success">
-                    {saveMessage}
-                  </span>
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-semibold">
+                  {t.dashboard.country}
+                </span>
+                <div className="relative">
+                  <Card className="border border-default-200 dark:border-default-100">
+                    <CardBody className="p-4 gap-3">
+                      <div className="relative">
+                        <Input
+                          classNames={{
+                            input: "bg-background pl-10",
+                            inputWrapper:
+                              "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                          }}
+                          placeholder={t.dashboard.countryPlaceholder}
+                          value={countrySearchValue || (country ? countries.find((c) => c.code === country)?.name || "" : "")}
+                          variant="bordered"
+                          startContent={country && !countrySearchValue ? (
+                            <img
+                              alt={getCountryName(country)}
+                              className="w-5 h-4 rounded object-cover"
+                              src={getCountryFlagUrl(country, "24")}
+                            />
+                          ) : null}
+                          onChange={(e) => {
+                            setCountrySearchValue(e.target.value);
+                            if (!e.target.value) {
+                              setCountry("");
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && countrySearchValue.trim()) {
+                              const filtered = countries.filter((c) =>
+                                c.name.toLowerCase().includes(countrySearchValue.toLowerCase())
+                              );
+
+                              if (filtered.length > 0) {
+                                const selected = filtered[0];
+                                setCountry(selected.code);
+                                setCountrySearchValue("");
+                              }
+                            }
+                          }}
+                        />
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <svg
+                            className="w-4 h-4 text-default-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                            />
+                          </svg>
+                        </div>
+                      </div>
+
+                      {countrySearchValue.length > 0 && (
+                        <div className="border-t border-default-200 dark:border-default-100 pt-3 mt-2">
+                          <div className="max-h-48 overflow-y-auto">
+                            {countries
+                              .filter((c) =>
+                                c.name.toLowerCase().includes(countrySearchValue.toLowerCase())
+                              )
+                              .slice(0, 10)
+                              .map((countryOption) => (
+                                <button
+                                  key={countryOption.code}
+                                  className="w-full text-left px-3 py-2 hover:bg-default-100 dark:hover:bg-default-50 rounded-md text-sm transition-colors flex items-center gap-2"
+                                  type="button"
+                                  onClick={() => {
+                                    setCountry(countryOption.code);
+                                    setCountrySearchValue("");
+                                  }}
+                                >
+                                  <img
+                                    alt={countryOption.name}
+                                    className="w-5 h-4 rounded object-cover"
+                                    src={getCountryFlagUrl(countryOption.code, "24")}
+                                  />
+                                  <span>{countryOption.name}</span>
+                                </button>
+                              ))}
+                            {countries.filter((c) =>
+                              c.name.toLowerCase().includes(countrySearchValue.toLowerCase())
+                            ).length === 0 && (
+                              <div className="px-3 py-2 text-sm text-default-400">
+                                {t.dashboard.noTechnologiesFound}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </CardBody>
+                  </Card>
                 </div>
-              )}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-semibold">
+                  {t.dashboard.tags}
+                </span>
+                <div className="relative">
+                  <Card className="border border-default-200 dark:border-default-100">
+                    <CardBody className="p-4 gap-3">
+                      <div className="relative">
+                        <Input
+                          classNames={{
+                            input: "bg-background pl-10",
+                            inputWrapper:
+                              "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                          }}
+                          errorMessage={tagsError}
+                          isInvalid={!!tagsError}
+                          placeholder={t.dashboard.tagsPlaceholder}
+                          value={searchValue}
+                          variant="bordered"
+                          onChange={(e) => {
+                            setSearchValue(e.target.value);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && searchValue.trim()) {
+                              const filtered = technologies.filter(
+                                (tech) =>
+                                  !tags.includes(tech) &&
+                                  tech
+                                    .toLowerCase()
+                                    .includes(searchValue.toLowerCase()),
+                              );
+
+                              if (filtered.length > 0) {
+                                const selected = filtered[0];
+
+                                if (tags.length < 15) {
+                                  setTagsError("");
+                                  setTags([...tags, selected]);
+                                  setSearchValue("");
+                                } else {
+                                  setTagsError(t.dashboard.maxTagsError);
+                                }
+                              }
+                            }
+                          }}
+                        />
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <svg
+                            className="w-4 h-4 text-default-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                            />
+                          </svg>
+                        </div>
+                      </div>
+
+                      {searchValue.length > 0 && (
+                        <div className="border-t border-default-200 dark:border-default-100 pt-3 mt-2">
+                          <div className="max-h-48 overflow-y-auto">
+                            {technologies
+                              .filter(
+                                (tech) =>
+                                  !tags.includes(tech) &&
+                                  tech
+                                    .toLowerCase()
+                                    .includes(searchValue.toLowerCase()),
+                              )
+                              .slice(0, 10)
+                              .map((tech) => (
+                                <button
+                                  key={tech}
+                                  className="w-full text-left px-3 py-2 hover:bg-default-100 dark:hover:bg-default-50 rounded-md text-sm transition-colors"
+                                  type="button"
+                                  onClick={() => {
+                                    if (tags.length >= 15) {
+                                      setTagsError(t.dashboard.maxTagsError);
+
+                                      return;
+                                    }
+                                    if (!tags.includes(tech)) {
+                                      setTagsError("");
+                                      setTags([...tags, tech]);
+                                      setSearchValue("");
+                                    }
+                                  }}
+                                >
+                                  {tech}
+                                </button>
+                              ))}
+                            {technologies.filter(
+                              (tech) =>
+                                !tags.includes(tech) &&
+                                tech
+                                  .toLowerCase()
+                                  .includes(searchValue.toLowerCase()),
+                            ).length === 0 && (
+                              <div className="px-3 py-2 text-sm text-default-400">
+                                {t.dashboard.noTechnologiesFound}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {tags.length > 0 && (
+                        <div className="border-t border-default-200 dark:border-default-100 pt-3 mt-2">
+                          <div className="flex flex-wrap gap-2">
+                            {tags.map((tag) => (
+                              <Chip
+                                key={tag}
+                                variant="flat"
+                                onClose={() => {
+                                  setTags(tags.filter((t) => t !== tag));
+                                  setTagsError("");
+                                }}
+                              >
+                                {tag}
+                              </Chip>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardBody>
+                  </Card>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-default-400">
+                    {tags.length}/15 {t.dashboard.maxTags}
+                  </span>
+                  {tagsError && (
+                    <span className="text-xs text-danger">{tagsError}</span>
+                  )}
+                </div>
+              </div>
 
               <Button
                 className="font-semibold"
@@ -553,94 +980,37 @@ export default function DashboardPage() {
               </Button>
             </div>
           </div>
-
-          <Divider className="my-2" />
-
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">
-                    {t.dashboard.publicProfile}
-                  </span>
-                  {!profileLoading && profile?.isPublic && canMakePublic && (
-                    <Chip color="success" size="sm" variant="dot">
-                      {t.dashboard.active}
-                    </Chip>
-                  )}
-                </div>
-                <span className="text-xs text-default-400">
-                  {t.dashboard.publicProfileDesc}
-                </span>
-              </div>
-              {!profileLoading && profile && (
-                <Switch
-                  color="success"
-                  isDisabled={!canMakePublic}
-                  isSelected={profile.isPublic && canMakePublic}
-                  onValueChange={handleTogglePublic}
-                />
-              )}
-            </div>
-
-            {!canMakePublic && isServerMember && (
-              <div className="flex items-start gap-2 p-3 bg-danger/10 border border-danger/20 rounded-lg">
-                <svg
-                  className="w-5 h-5 text-danger flex-shrink-0 mt-0.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                  />
-                </svg>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-danger mb-1">
-                    {t.dashboard.roleRequired}
-                  </p>
-                  <p className="text-xs text-foreground/70">
-                    {t.dashboard.roleRequiredDesc}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {!profileLoading &&
-              profile &&
-              profile.isPublic &&
-              canMakePublic && (
-                <div className="flex flex-col gap-2 p-4 bg-success/10 rounded-lg border border-success/20">
-                  <span className="text-xs font-semibold text-success">
-                    {t.dashboard.profileUrl}
-                  </span>
-                  <div className="flex gap-2">
-                    <Input
-                      readOnly
-                      classNames={{
-                        input: "text-xs",
-                      }}
-                      size="sm"
-                      value={`${typeof window !== "undefined" ? window.location.origin : ""}/users/${profile.handler}`}
-                      variant="flat"
-                    />
-                    <Button
-                      color="success"
-                      size="sm"
-                      variant="flat"
-                      onPress={handleCopyUrl}
-                    >
-                      {copied ? "✓" : t.dashboard.copyUrl}
-                    </Button>
-                  </div>
-                </div>
-              )}
-          </div>
         </CardBody>
       </Card>
+
+      <Modal isOpen={isConfirmOpen} onOpenChange={onConfirmOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                {t.dashboard.confirmSaveTitle}
+              </ModalHeader>
+              <ModalBody>
+                <p>{t.dashboard.confirmSaveMessage}</p>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="default" variant="light" onPress={onClose}>
+                  {t.dashboard.cancel}
+                </Button>
+                <Button
+                  color="primary"
+                  onPress={() => {
+                    onClose();
+                    confirmSaveProfile();
+                  }}
+                >
+                  {t.dashboard.confirm}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

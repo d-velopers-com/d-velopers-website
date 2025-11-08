@@ -7,10 +7,13 @@ interface ProfileData {
   isPublic: boolean;
   description: string | null;
   link: string | null;
+  contactEmail: string | null;
+  country: string | null;
   name: string | null;
   title: string | null;
   tags: string[];
   joinedServerAt: string | null;
+  profileActivatedAt: string | null;
 }
 
 export function useProfile() {
@@ -61,6 +64,8 @@ export function useProfile() {
     isPublic?: boolean;
     description?: string | null;
     link?: string | null;
+    contactEmail?: string | null;
+    country?: string | null;
     name?: string | null;
     title?: string | null;
     tags?: string[];
@@ -102,5 +107,11 @@ export function useProfile() {
     }
   };
 
-  return { profile, loading, updatePublicStatus, updateProfile, refreshProfile };
+  return {
+    profile,
+    loading,
+    updatePublicStatus,
+    updateProfile,
+    refreshProfile,
+  };
 }

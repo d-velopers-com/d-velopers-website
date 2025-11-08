@@ -32,13 +32,28 @@ export default function Home() {
   const { status } = useSession();
 
   useEffect(() => {
+    let isMounted = true;
+    
     fetch("/api/users/public")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!isMounted) return;
+        return res.json();
+      })
       .then((data) => {
-        setUsers(data.users || []);
+        if (!isMounted) return;
+        const usersData = data.users || [];
+        setUsers(usersData);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        if (isMounted) {
+          setLoading(false);
+        }
+      });
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
@@ -68,9 +83,9 @@ export default function Home() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {[...Array(6)].map((_, i) => (
-              <Card key={i} className="h-[220px] p-6 overflow-hidden">
+              <Card key={i} className="h-[300px] p-6 overflow-hidden">
                 <div className="flex flex-col gap-3 h-full">
                   <Skeleton className="rounded-full w-16 h-16 flex-shrink-0" />
                   <div className="flex-1 flex flex-col">
@@ -106,7 +121,7 @@ export default function Home() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2  xl:grid-cols-4 gap-6">
             {users.map((user) => {
               const avatarUrl = user.avatar
                 ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`
@@ -118,7 +133,7 @@ export default function Home() {
               return (
                 <Card
                   key={user.handler}
-                  className="relative h-[220px] overflow-hidden transition-colors hover:bg-default-100 dark:hover:bg-default-50/10"
+                  className="relative h-[300px] overflow-hidden transition-colors hover:bg-default-100 dark:hover:bg-default-50/10"
                 >
                   <CardBody className="relative p-6 h-full flex flex-col overflow-hidden">
                     <Link href={`/users/${user.handler}`}>

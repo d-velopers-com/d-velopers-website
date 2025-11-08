@@ -19,12 +19,15 @@ model User {
   isPublic        Boolean   @default(false)
   description     String?
   link            String?
+  contactEmail    String?
+  country         String?
   name            String?
   title           String?
   tags            String[]
   
   roles           String[]
   joinedServerAt  DateTime?
+  profileActivatedAt DateTime?
   
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

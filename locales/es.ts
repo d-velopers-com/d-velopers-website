@@ -51,6 +51,11 @@ export const es = {
     save: "Guardar Cambios",
     saved: "¡Guardado!",
     invalidUrl: "Por favor ingresa una URL válida",
+    confirmSaveTitle: "Confirmar Cambios",
+    confirmSaveMessage:
+      "¿Estás seguro de que deseas guardar estos cambios en tu perfil?",
+    confirm: "Confirmar",
+    cancel: "Cancelar",
     joinedServer: "Miembro desde",
     syncProfile: "Sincronizar con Discord",
     syncing: "Sincronizando...",
@@ -72,12 +77,23 @@ export const es = {
     roleRequired: "Rol requerido",
     roleRequiredDesc:
       "Necesitas tener uno de los roles permitidos en el servidor de Discord para hacer público tu perfil.",
+    trialPeriod: "Período de Prueba Activo",
+    trialPeriodDesc:
+      "Tu rol actual no cumple con los requisitos para activar, pero tienes un mes para probar todas las funcionalidades.",
+    trialPeriodNote:
+      "El período de prueba se activa una vez que actives tu perfil por primera vez y dura un mes. El período termina:",
     name: "Nombre",
     namePlaceholder: "Tu nombre para mostrar",
     title: "Título",
     titlePlaceholder: "ej., Desarrollador Frontend Senior",
     tags: "Tecnologías",
-    tagsPlaceholder: "Selecciona tus tecnologías",
+    tagsPlaceholder: "Escribe para buscar tecnologías...",
     maxTags: "tecnologías",
+    maxTagsError: "Máximo 15 tecnologías permitidas",
+    noTechnologiesFound: "No se encontraron tecnologías",
+    contactEmail: "Email de Contacto",
+    contactEmailPlaceholder: "tu.email@ejemplo.com",
+    country: "País",
+    countryPlaceholder: "Selecciona tu país",
   },
 };

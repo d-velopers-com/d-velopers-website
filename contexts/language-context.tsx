@@ -28,16 +28,18 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
-    const savedLocale = localStorage.getItem("locale") as Locale;
+    try {
+      const savedLocale = localStorage.getItem("locale") as Locale;
 
-    if (savedLocale && (savedLocale === "en" || savedLocale === "es")) {
-      setLocaleState(savedLocale);
-    } else {
-      const browserLang = navigator.language.toLowerCase();
-      const detectedLocale = browserLang.startsWith("es") ? "es" : "en";
-
-      setLocaleState(detectedLocale);
-      localStorage.setItem("locale", detectedLocale);
+      if (savedLocale && (savedLocale === "en" || savedLocale === "es")) {
+        setLocaleState(savedLocale);
+      } else {
+        const browserLang = navigator.language.toLowerCase();
+        const detectedLocale = browserLang.startsWith("es") ? "es" : "en";
+        setLocaleState(detectedLocale);
+        localStorage.setItem("locale", detectedLocale);
+      }
+    } catch (error) {
     }
   }, []);
 

@@ -9,6 +9,7 @@ import { Chip } from "@heroui/chip";
 import { Skeleton } from "@heroui/skeleton";
 
 import { useLanguage } from "@/contexts/language-context";
+import { getCountryName, getCountryFlagUrl } from "@/lib/countries";
 
 interface User {
   username: string;
@@ -18,6 +19,8 @@ interface User {
   discordId: string;
   description: string | null;
   link: string | null;
+  contactEmail: string | null;
+  country: string | null;
   name: string | null;
   title: string | null;
   tags: string[];
@@ -31,6 +34,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFoundError, setNotFoundError] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
 
   useEffect(() => {
     fetch(`/api/users/handler/${handler}`)
@@ -83,65 +87,90 @@ export default function ProfilePage() {
     ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`
     : `https://cdn.discordapp.com/embed/avatars/0.png`;
 
+  const handleCopyEmail = () => {
+    if (user.contactEmail) {
+      navigator.clipboard.writeText(user.contactEmail);
+      setEmailCopied(true);
+      setTimeout(() => setEmailCopied(false), 2000);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-8">
-      <Card className="max-w-2xl w-full shadow-lg border-1 border-default-200">
+      <Card className="max-w-3xl w-full shadow-lg border-1 border-default-200">
         <CardBody className="p-0">
-          <div className="relative bg-info h-32 rounded-t-lg" />
+          <div className="relative bg-gradient-to-r from-primary-500 to-info-500 h-40 rounded-t-lg" />
 
-          <div className="relative px-6 pb-6">
-            <div className="flex flex-col items-center -mt-12 mb-4">
+          <div className="relative px-8 pb-8">
+            <div className="flex items-start gap-6 -mt-16 mb-6">
               <Avatar
-                className="w-24 h-24 border-4 border-background shadow-lg ring-2 ring-info/30"
+                className="w-28 h-28 border-4 border-background shadow-xl ring-4 ring-primary/20 flex-shrink-0"
                 src={avatarUrl}
               />
 
-              <h1 className="text-2xl font-bold mt-4 mb-1 text-foreground">
-                {user.name || user.username}
-              </h1>
-              {user.title && (
-                <p className="text-default-600 text-sm font-medium mb-1">
-                  {user.title}
-                </p>
-              )}
-              <p className="text-default-500 text-sm font-medium">
-                @{user.handler}
-              </p>
-              {user.joinedServerAt && (
-                <div className="flex items-center gap-2 mt-2 text-xs text-default-400">
-                  <svg
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                    />
-                  </svg>
-                  <span>
-                    {t.common.memberSince}{" "}
-                    {new Date(user.joinedServerAt).toLocaleDateString(
-                      undefined,
-                      {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      },
-                    )}
-                  </span>
+              <div className="flex-1 pt-20">
+                <div className="flex flex-col gap-2 mb-4">
+                  <h1 className="text-3xl font-bold text-foreground">
+                    {user.name || user.username}
+                  </h1>
+                  {user.title && (
+                    <p className="text-lg text-default-600 font-medium">
+                      {user.title}
+                    </p>
+                  )}
+                  <p className="text-sm text-default-500 font-medium">
+                    @{user.handler}
+                  </p>
                 </div>
-              )}
+
+                <div className="flex flex-wrap items-center gap-4 text-sm text-default-500">
+                  {user.country && (
+                    <div className="flex items-center gap-2">
+                      <img
+                        alt={getCountryName(user.country)}
+                        className="w-5 h-4 rounded object-cover"
+                        src={getCountryFlagUrl(user.country, "24")}
+                      />
+                      <span>{getCountryName(user.country)}</span>
+                    </div>
+                  )}
+                  {user.joinedServerAt && (
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="w-4 h-4 text-default-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                        />
+                      </svg>
+                      <span>
+                        {t.common.memberSince}{" "}
+                        {new Date(user.joinedServerAt).toLocaleDateString(
+                          undefined,
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          },
+                        )}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {user.description && (
-              <div className="mb-4 bg-default-50/50 dark:bg-default-100/10 rounded-lg p-4 border border-default-200/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="mb-6 bg-default-50/50 dark:bg-default-100/10 rounded-lg p-5 border border-default-200/50">
+                <div className="flex items-center gap-2 mb-3">
                   <svg
-                    className="w-4 h-4 text-info"
+                    className="w-5 h-5 text-primary"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -153,7 +182,7 @@ export default function ProfilePage() {
                       strokeWidth={2}
                     />
                   </svg>
-                  <span className="text-xs font-bold text-default-700">
+                  <span className="text-sm font-semibold text-default-700">
                     About
                   </span>
                 </div>
@@ -164,10 +193,10 @@ export default function ProfilePage() {
             )}
 
             {user.tags && user.tags.length > 0 && (
-              <div className="mb-4">
-                <div className="flex flex-wrap gap-2 justify-center">
+              <div className="mb-6">
+                <div className="flex flex-wrap gap-2">
                   {user.tags.map((tag) => (
-                    <Chip key={tag} color="primary" size="sm" variant="flat">
+                    <Chip key={tag} color="primary" size="md" variant="flat">
                       {tag}
                     </Chip>
                   ))}
@@ -175,19 +204,77 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {user.link && (
-              <div className="mb-4">
+            <div className="flex flex-col gap-3">
+              {user.contactEmail && (
+                <div className="flex items-center gap-3 bg-default-50/50 dark:bg-default-100/10 rounded-lg p-4 border border-default-200/50">
+                  <svg
+                    className="w-5 h-5 text-default-400 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                  <span className="flex-1 text-sm text-default-600 font-medium">
+                    {user.contactEmail}
+                  </span>
+                  <Button
+                    className="min-w-fit"
+                    color={emailCopied ? "success" : "default"}
+                    size="sm"
+                    variant="flat"
+                    onPress={handleCopyEmail}
+                  >
+                    {emailCopied ? (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M5 13l4 4L19 7"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                        />
+                      </svg>
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {user.link && (
                 <Button
                   fullWidth
                   as="a"
-                  className="font-medium text-sm"
+                  className="font-medium"
                   color="primary"
                   href={user.link}
                   rel="noopener noreferrer"
-                  size="sm"
+                  size="md"
                   startContent={
                     <svg
-                      className="w-3.5 h-3.5"
+                      className="w-4 h-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -205,8 +292,8 @@ export default function ProfilePage() {
                 >
                   Visit Website
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </CardBody>
       </Card>

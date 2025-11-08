@@ -13,6 +13,12 @@ function isValidUrl(url: string): boolean {
   }
 }
 
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  return emailRegex.test(email);
+}
+
 export async function GET() {
   const session = await getSession();
 
@@ -31,10 +37,13 @@ export async function GET() {
     isPublic: user.isPublic,
     description: user.description,
     link: user.link,
+    contactEmail: user.contactEmail,
+    country: user.country,
     name: user.name,
     title: user.title,
     tags: user.tags,
     joinedServerAt: user.joinedServerAt,
+    profileActivatedAt: user.profileActivatedAt,
   });
 }
 
@@ -46,12 +55,23 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json();
-  const { isPublic, description, link, name, title, tags } = body;
+  const {
+    isPublic,
+    description,
+    link,
+    contactEmail,
+    country,
+    name,
+    title,
+    tags,
+  } = body;
 
   const updateData: {
     isPublic?: boolean;
     description?: string | null;
     link?: string | null;
+    contactEmail?: string | null;
+    country?: string | null;
     name?: string | null;
     title?: string | null;
     tags?: string[];
@@ -64,6 +84,45 @@ export async function PATCH(request: Request) {
         { status: 400 },
       );
     }
+
+    if (isPublic === true) {
+      const user = await getUserByDiscordId(session.discordId);
+
+      if (!user) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+
+      const allowedRolesEnv = process.env.ALLOWED_ROLES || "";
+      const allowedRoles = allowedRolesEnv
+        .split(",")
+        .map((role) => role.trim())
+        .filter((role) => role.length > 0);
+
+      const isServerMember = session.roles && session.roles.length > 0;
+      const hasAllowedRole =
+        isServerMember &&
+        allowedRoles.length > 0 &&
+        session.roles.some((roleId) => allowedRoles.includes(roleId));
+
+      const hasRecentActivation =
+        user.profileActivatedAt &&
+        new Date(user.profileActivatedAt).getTime() >
+          Date.now() - 30 * 24 * 60 * 60 * 1000;
+
+      const canMakePublic =
+        hasAllowedRole || allowedRoles.length === 0 || hasRecentActivation;
+
+      if (!canMakePublic) {
+        return NextResponse.json(
+          {
+            error:
+              "You need to have one of the allowed roles to make your profile public",
+          },
+          { status: 403 },
+        );
+      }
+    }
+
     updateData.isPublic = isPublic;
   }
 
@@ -100,6 +159,50 @@ export async function PATCH(request: Request) {
     } else {
       return NextResponse.json(
         { error: "Invalid link value" },
+        { status: 400 },
+      );
+    }
+  }
+
+  if (contactEmail !== undefined) {
+    if (contactEmail === null || contactEmail === "") {
+      updateData.contactEmail = null;
+    } else if (typeof contactEmail === "string") {
+      if (!isValidEmail(contactEmail)) {
+        return NextResponse.json(
+          { error: "Invalid email format" },
+          { status: 400 },
+        );
+      }
+      if (contactEmail.length > 255) {
+        return NextResponse.json(
+          { error: "Email must be 255 characters or less" },
+          { status: 400 },
+        );
+      }
+      updateData.contactEmail = contactEmail.trim();
+    } else {
+      return NextResponse.json(
+        { error: "Invalid contactEmail value" },
+        { status: 400 },
+      );
+    }
+  }
+
+  if (country !== undefined) {
+    if (country === null || country === "") {
+      updateData.country = null;
+    } else if (typeof country === "string") {
+      if (country.length !== 2) {
+        return NextResponse.json(
+          { error: "Country code must be 2 characters (ISO 3166-1 alpha-2)" },
+          { status: 400 },
+        );
+      }
+      updateData.country = country.toUpperCase().trim();
+    } else {
+      return NextResponse.json(
+        { error: "Invalid country value" },
         { status: 400 },
       );
     }
@@ -173,9 +276,12 @@ export async function PATCH(request: Request) {
     isPublic: user.isPublic,
     description: user.description,
     link: user.link,
+    contactEmail: user.contactEmail,
+    country: user.country,
     name: user.name,
     title: user.title,
     tags: user.tags,
     joinedServerAt: user.joinedServerAt,
+    profileActivatedAt: user.profileActivatedAt,
   });
 }

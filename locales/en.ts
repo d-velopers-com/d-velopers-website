@@ -50,6 +50,11 @@ export const en = {
     save: "Save Changes",
     saved: "Saved!",
     invalidUrl: "Please enter a valid URL",
+    confirmSaveTitle: "Confirm Changes",
+    confirmSaveMessage:
+      "Are you sure you want to save these changes to your profile?",
+    confirm: "Confirm",
+    cancel: "Cancel",
     joinedServer: "Member Since",
     syncProfile: "Sync with Discord",
     syncing: "Syncing...",
@@ -70,12 +75,23 @@ export const en = {
     roleRequired: "Role Required",
     roleRequiredDesc:
       "You need to have one of the allowed roles in the Discord server to make your profile public.",
+    trialPeriod: "Trial Period Active",
+    trialPeriodDesc:
+      "Your current role does not meet the requirements to activate, but you have one month to try all features.",
+    trialPeriodNote:
+      "The trial period activates once you activate your profile for the first time and lasts one month. Trial ends:",
     name: "Name",
     namePlaceholder: "Your display name",
     title: "Title",
     titlePlaceholder: "e.g., Senior Frontend Developer",
     tags: "Technologies",
-    tagsPlaceholder: "Select your technologies",
+    tagsPlaceholder: "Type to search technologies...",
     maxTags: "tags",
+    maxTagsError: "Maximum 15 tags allowed",
+    noTechnologiesFound: "No technologies found",
+    contactEmail: "Contact Email",
+    contactEmailPlaceholder: "your.email@example.com",
+    country: "Country",
+    countryPlaceholder: "Select your country",
   },
 };
