@@ -721,8 +721,7 @@ export default function DashboardPage() {
                 </span>
                 <Autocomplete
                   classNames={{
-                    input: "bg-background",
-                    inputWrapper:
+                    selectorButton:
                       "bg-background hover:bg-background group-data-[focus=true]:bg-background",
                   }}
                   inputValue={countrySearchValue || (country ? countries.find((c) => c.code === country)?.name || "" : "")}
@@ -753,7 +752,8 @@ export default function DashboardPage() {
                       setCountrySearchValue("");
                     }
                   }}
-                  startContent={country && !countrySearchValue ? (
+                startContent={
+                  country && !countrySearchValue ? (
                     <img
                       alt={getCountryName(country)}
                       className="w-5 h-4 rounded object-cover"
@@ -785,8 +785,7 @@ export default function DashboardPage() {
                 </span>
                 <Autocomplete
                   classNames={{
-                    input: "bg-background",
-                    inputWrapper:
+                    selectorButton:
                       "bg-background hover:bg-background group-data-[focus=true]:bg-background",
                   }}
                   errorMessage={tagsError}
