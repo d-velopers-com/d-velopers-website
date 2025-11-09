@@ -18,7 +18,9 @@ import {
   DropdownItem,
 } from "@heroui/dropdown";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
+import { useTheme } from "next-themes";
 
 import { ThemeSwitch } from "@/components/theme-switch";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -29,12 +31,16 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: session, status } = useSession();
   const { t } = useLanguage();
+  const { theme } = useTheme();
 
   const avatarUrl = session?.user
     ? session.user.avatar
       ? `https://cdn.discordapp.com/avatars/${session.user.id}/${session.user.avatar}.png`
       : `https://cdn.discordapp.com/embed/avatars/${parseInt(session.user.discriminator) % 5}.png`
     : undefined;
+
+  const logoSrc =
+    theme === "dark" || !theme ? "/png_logo_light.png" : "/png_logo_dark.png";
 
   return (
     <HeroNavbar
@@ -51,25 +57,37 @@ export function Navbar() {
 
       <NavbarContent className="sm:hidden pr-3" justify="center">
         <NavbarBrand>
-          <Link className="font-bold text-inherit" href="/">
-            D-VELOPERS
+          <Link href="/">
+            <Image
+              alt="D-VELOPERS"
+              className="h-10 w-auto"
+              height={50}
+              src={logoSrc}
+              width={150}
+            />
           </Link>
         </NavbarBrand>
       </NavbarContent>
 
       <NavbarContent className="hidden sm:flex gap-4" justify="start">
         <NavbarBrand>
-          <Link className="font-bold text-inherit" href="/">
-            D-VELOPERS
+          <Link href="/">
+            <Image
+              alt="D-VELOPERS"
+              className="h-10 w-auto"
+              height={50}
+              src={logoSrc}
+              width={150}
+            />
           </Link>
         </NavbarBrand>
       </NavbarContent>
 
       <NavbarContent justify="end">
-        <NavbarItem>
+        <NavbarItem className="hidden sm:flex">
           <ThemeSwitch />
         </NavbarItem>
-        <NavbarItem>
+        <NavbarItem className="hidden sm:flex">
           <LanguageSwitcher />
         </NavbarItem>
         {status === "loading" ? (
@@ -79,7 +97,7 @@ export function Navbar() {
         ) : (
           status === "authenticated" &&
           session?.user && (
-            <NavbarItem>
+            <NavbarItem className="hidden sm:flex">
               <Dropdown placement="bottom-end">
                 <DropdownTrigger>
                   <Avatar
@@ -108,20 +126,68 @@ export function Navbar() {
       </NavbarContent>
 
       <NavbarMenu>
+        {status === "authenticated" && session?.user && (
+          <>
+            <NavbarMenuItem>
+              <div className="flex items-center gap-3 w-full py-2">
+                <Avatar size="sm" src={avatarUrl} />
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="text-sm font-semibold truncate">
+                    {session.user.username}
+                  </span>
+                  <Link
+                    className="text-xs text-default-500 hover:text-default-700"
+                    href="/dashboard"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {t.nav.profile}
+                  </Link>
+                </div>
+              </div>
+            </NavbarMenuItem>
+            <NavbarMenuItem>
+              <div className="border-t border-default-200 dark:border-default-100 my-2" />
+            </NavbarMenuItem>
+          </>
+        )}
+        <NavbarMenuItem>
+          <div className="flex items-center justify-between w-full py-1">
+            <span className="text-sm font-medium flex items-center h-6">
+              {t.common.language}
+            </span>
+            <div className="flex items-center justify-center h-6 min-w-[2.5rem]">
+              <LanguageSwitcher />
+            </div>
+          </div>
+        </NavbarMenuItem>
+        <NavbarMenuItem>
+          <div className="flex items-center justify-between w-full py-1">
+            <span className="text-sm font-medium flex items-center h-6">
+              Theme
+            </span>
+            <div className="flex items-center justify-center h-6 min-w-[2.5rem]">
+              <ThemeSwitch />
+            </div>
+          </div>
+        </NavbarMenuItem>
         {status === "authenticated" && (
-          <NavbarMenuItem>
-            <Button
-              className="w-full justify-start"
-              color="danger"
-              variant="flat"
-              onPress={() => {
-                setIsMenuOpen(false);
-                signOut();
-              }}
-            >
-              {t.common.logout}
-            </Button>
-          </NavbarMenuItem>
+          <>
+            <NavbarMenuItem>
+              <div className="border-t border-default-200 dark:border-default-100 my-2" />
+            </NavbarMenuItem>
+            <NavbarMenuItem>
+              <Button
+                className="w-full justify-start"
+                variant="light"
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  signOut();
+                }}
+              >
+                {t.common.logout}
+              </Button>
+            </NavbarMenuItem>
+          </>
         )}
       </NavbarMenu>
     </HeroNavbar>

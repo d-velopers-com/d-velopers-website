@@ -35,6 +35,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [notFoundError, setNotFoundError] = useState(false);
   const [emailCopied, setEmailCopied] = useState(false);
+  const [emailButtonPressed, setEmailButtonPressed] = useState(false);
 
   useEffect(() => {
     fetch(`/api/users/handler/${handler}`)
@@ -91,7 +92,11 @@ export default function ProfilePage() {
     if (user.contactEmail) {
       navigator.clipboard.writeText(user.contactEmail);
       setEmailCopied(true);
-      setTimeout(() => setEmailCopied(false), 2000);
+      setEmailButtonPressed(true);
+      setTimeout(() => {
+        setEmailCopied(false);
+        setEmailButtonPressed(false);
+      }, 2000);
     }
   };
 
@@ -134,34 +139,6 @@ export default function ProfilePage() {
                       <span>{getCountryName(user.country)}</span>
                     </div>
                   )}
-                  {user.joinedServerAt && (
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4 text-default-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                        />
-                      </svg>
-                      <span>
-                        {t.common.memberSince}{" "}
-                        {new Date(user.joinedServerAt).toLocaleDateString(
-                          undefined,
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          },
-                        )}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -196,7 +173,16 @@ export default function ProfilePage() {
               <div className="mb-6">
                 <div className="flex flex-wrap gap-2">
                   {user.tags.map((tag) => (
-                    <Chip key={tag} color="primary" size="md" variant="flat">
+                    <Chip
+                      key={tag}
+                      classNames={{
+                        base: "bg-primary-100 dark:!bg-[#111111]",
+                        content: "text-primary-800 dark:!text-[#00C8FF] font-semibold",
+                      }}
+                      color="primary"
+                      size="md"
+                      variant="flat"
+                    >
                       {tag}
                     </Chip>
                   ))}
@@ -206,7 +192,18 @@ export default function ProfilePage() {
 
             <div className="flex flex-col gap-3">
               {user.contactEmail && (
-                <div className="flex items-center gap-3 bg-default-50/50 dark:bg-default-100/10 rounded-lg p-4 border border-default-200/50">
+                <div 
+                  className="flex items-center gap-3 bg-default-50/50 dark:bg-default-100/10 rounded-lg p-4 border border-default-200/50 cursor-pointer transition-all duration-200 hover:bg-default-100/70 dark:hover:bg-default-100/20 hover:border-default-300/50 active:scale-[0.98]"
+                  onClick={handleCopyEmail}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleCopyEmail();
+                    }
+                  }}
+                >
                   <svg
                     className="w-5 h-5 text-default-400 flex-shrink-0"
                     fill="none"
@@ -224,11 +221,11 @@ export default function ProfilePage() {
                     {user.contactEmail}
                   </span>
                   <Button
-                    className="min-w-fit"
+                    className={`min-w-fit pointer-events-none transition-transform duration-150 ${emailButtonPressed ? 'scale-95' : ''}`}
                     color={emailCopied ? "success" : "default"}
                     size="sm"
                     variant="flat"
-                    onPress={handleCopyEmail}
+                    isPressed={emailButtonPressed}
                   >
                     {emailCopied ? (
                       <svg
@@ -268,7 +265,7 @@ export default function ProfilePage() {
                   fullWidth
                   as="a"
                   className="font-medium"
-                  color="primary"
+                  color="default"
                   href={user.link}
                   rel="noopener noreferrer"
                   size="md"

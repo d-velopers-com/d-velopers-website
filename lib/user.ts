@@ -204,6 +204,7 @@ export async function getPublicUsers() {
       description: true,
       link: true,
       contactEmail: true,
+      country: true,
       name: true,
       title: true,
       tags: true,
