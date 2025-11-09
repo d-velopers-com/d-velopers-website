@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
@@ -12,6 +12,7 @@ import { Switch } from "@heroui/switch";
 import { Input } from "@heroui/input";
 import { Textarea } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
+import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import {
   Modal,
   ModalContent,
@@ -83,6 +84,38 @@ export default function DashboardPage() {
       setTags(profile.tags || []);
     }
   }, [profile]);
+
+  const filteredCountries = useMemo(() => {
+    if (!countrySearchValue) {
+      return countries;
+    }
+    return countries.filter((c) =>
+      c.name.toLowerCase().includes(countrySearchValue.toLowerCase())
+    );
+  }, [countrySearchValue]);
+
+  const filteredTechnologies = useMemo(() => {
+    // Filtrar tecnologías que ya están en tags y valores inválidos
+    const available = technologies.filter(
+      (tech) => 
+        tech && 
+        typeof tech === "string" && 
+        tech.trim().length > 0 && 
+        !tags.includes(tech)
+    );
+    
+    if (!searchValue) {
+      // Convertir strings a objetos para que Autocomplete funcione
+      return available.map((tech) => ({ value: tech, label: tech }));
+    }
+    
+    // Filtrar y convertir a objetos
+    return available
+      .filter((tech) =>
+        tech && tech.toLowerCase().includes(searchValue.toLowerCase())
+      )
+      .map((tech) => ({ value: tech, label: tech }));
+  }, [technologies, tags, searchValue]);
 
   useEffect(() => {
     setTechnologiesLoading(true);
@@ -381,27 +414,34 @@ export default function DashboardPage() {
                   </div>
                 </div>
               )}
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold">
+                {t.dashboard.name}
+              </span>
+              {!profileLoading && profile && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-default-400">
+                    {t.dashboard.publicProfile}
+                  </span>
+                  {profile.isPublic && canMakePublic && (
+                    <Chip color="success" size="sm" variant="dot">
+                      {t.dashboard.active}
+                    </Chip>
+                  )}
+                  <Switch
+                    color="success"
+                    isDisabled={!canMakePublic}
+                    isSelected={!!(profile.isPublic && canMakePublic)}
+                    size="sm"
+                    onValueChange={handleTogglePublic}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           <Divider className="my-2" />
-
-          {profile?.joinedServerAt && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-default-500">
-                {t.dashboard.joinedServer}
-              </span>
-              <span className="text-sm">
-                {new Date(profile.joinedServerAt).toLocaleDateString(
-                  undefined,
-                  {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  },
-                )}
-              </span>
-            </div>
-          )}
 
           {!profile?.joinedServerAt && isServerMember && (
             <div className="flex flex-col gap-3 p-4 bg-info/10 border-2 border-info/30 rounded-lg">
@@ -525,57 +565,8 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {isServerMember && <Divider className="my-2" />}
-
-          <div className="bg-default-50 dark:bg-default-100/20 rounded-lg p-6 border-2 border-dashed border-default-200 dark:border-default-100/30">
-            <div className="flex items-center gap-2 mb-4">
-              <svg
-                className="w-5 h-5 text-primary"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                />
-              </svg>
-              <h2 className="text-base font-bold">
-                {t.dashboard.editPublicProfile}
-              </h2>
-            </div>
-            <p className="text-xs text-default-500 mb-6">
-              {t.dashboard.editPublicProfileDesc}
-            </p>
-
-            <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold">
-                    {t.dashboard.name}
-                  </span>
-                  {!profileLoading && profile && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-default-400">
-                        {t.dashboard.publicProfile}
-                      </span>
-                      {profile.isPublic && canMakePublic && (
-                        <Chip color="success" size="sm" variant="dot">
-                          {t.dashboard.active}
-                        </Chip>
-                      )}
-                      <Switch
-                        color="success"
-                        isDisabled={!canMakePublic}
-                        isSelected={!!(profile.isPublic && canMakePublic)}
-                        size="sm"
-                        onValueChange={handleTogglePublic}
-                      />
-                    </div>
-                  )}
-                </div>
                 <Input
                   classNames={{
                     input: "bg-background",
@@ -728,236 +719,128 @@ export default function DashboardPage() {
                 <span className="text-sm font-semibold">
                   {t.dashboard.country}
                 </span>
-                <div className="relative">
-                  <Card className="border border-default-200 dark:border-default-100">
-                    <CardBody className="p-4 gap-3">
-                      <div className="relative">
-                        <Input
-                          classNames={{
-                            input: "bg-background pl-10",
-                            inputWrapper:
-                              "bg-background hover:bg-background group-data-[focus=true]:bg-background",
-                          }}
-                          placeholder={t.dashboard.countryPlaceholder}
-                          value={countrySearchValue || (country ? countries.find((c) => c.code === country)?.name || "" : "")}
-                          variant="bordered"
-                          startContent={country && !countrySearchValue ? (
-                            <img
-                              alt={getCountryName(country)}
-                              className="w-5 h-4 rounded object-cover"
-                              src={getCountryFlagUrl(country, "24")}
-                            />
-                          ) : null}
-                          onChange={(e) => {
-                            setCountrySearchValue(e.target.value);
-                            if (!e.target.value) {
-                              setCountry("");
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && countrySearchValue.trim()) {
-                              const filtered = countries.filter((c) =>
-                                c.name.toLowerCase().includes(countrySearchValue.toLowerCase())
-                              );
-
-                              if (filtered.length > 0) {
-                                const selected = filtered[0];
-                                setCountry(selected.code);
-                                setCountrySearchValue("");
-                              }
-                            }
-                          }}
+                <Autocomplete
+                  classNames={{
+                    input: "bg-background",
+                    inputWrapper:
+                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                  }}
+                  inputValue={countrySearchValue || (country ? countries.find((c) => c.code === country)?.name || "" : "")}
+                  items={filteredCountries}
+                  placeholder={t.dashboard.countryPlaceholder}
+                  selectedKey={country || undefined}
+                  variant="bordered"
+                  onInputChange={(value) => {
+                    setCountrySearchValue(value);
+                    if (!value) {
+                      setCountry("");
+                    } else {
+                      // Si el usuario está escribiendo y el valor no coincide con el país seleccionado, limpiar la selección
+                      if (country) {
+                        const selectedCountry = countries.find((c) => c.code === country);
+                        if (selectedCountry && !selectedCountry.name.toLowerCase().startsWith(value.toLowerCase())) {
+                          setCountry("");
+                        }
+                      }
+                    }
+                  }}
+                  onSelectionChange={(key) => {
+                    if (key) {
+                      setCountry(key as string);
+                      setCountrySearchValue("");
+                    } else {
+                      setCountry("");
+                      setCountrySearchValue("");
+                    }
+                  }}
+                  startContent={country && !countrySearchValue ? (
+                    <img
+                      alt={getCountryName(country)}
+                      className="w-5 h-4 rounded object-cover"
+                      src={getCountryFlagUrl(country, "24")}
+                    />
+                  ) : null}
+                >
+                  {(country) => (
+                    <AutocompleteItem
+                      key={country.code}
+                      startContent={
+                        <img
+                          alt={country.name}
+                          className="w-5 h-4 rounded object-cover"
+                          src={getCountryFlagUrl(country.code, "24")}
                         />
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                          <svg
-                            className="w-4 h-4 text-default-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                            />
-                          </svg>
-                        </div>
-                      </div>
-
-                      {countrySearchValue.length > 0 && (
-                        <div className="border-t border-default-200 dark:border-default-100 pt-3 mt-2">
-                          <div className="max-h-48 overflow-y-auto">
-                            {countries
-                              .filter((c) =>
-                                c.name.toLowerCase().includes(countrySearchValue.toLowerCase())
-                              )
-                              .slice(0, 10)
-                              .map((countryOption) => (
-                                <button
-                                  key={countryOption.code}
-                                  className="w-full text-left px-3 py-2 hover:bg-default-100 dark:hover:bg-default-50 rounded-md text-sm transition-colors flex items-center gap-2"
-                                  type="button"
-                                  onClick={() => {
-                                    setCountry(countryOption.code);
-                                    setCountrySearchValue("");
-                                  }}
-                                >
-                                  <img
-                                    alt={countryOption.name}
-                                    className="w-5 h-4 rounded object-cover"
-                                    src={getCountryFlagUrl(countryOption.code, "24")}
-                                  />
-                                  <span>{countryOption.name}</span>
-                                </button>
-                              ))}
-                            {countries.filter((c) =>
-                              c.name.toLowerCase().includes(countrySearchValue.toLowerCase())
-                            ).length === 0 && (
-                              <div className="px-3 py-2 text-sm text-default-400">
-                                {t.dashboard.noTechnologiesFound}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </CardBody>
-                  </Card>
-                </div>
+                      }
+                      textValue={country.name}
+                    >
+                      {country.name}
+                    </AutocompleteItem>
+                  )}
+                </Autocomplete>
               </div>
 
               <div className="flex flex-col gap-2">
                 <span className="text-sm font-semibold">
                   {t.dashboard.tags}
                 </span>
-                <div className="relative">
-                  <Card className="border border-default-200 dark:border-default-100">
-                    <CardBody className="p-4 gap-3">
-                      <div className="relative">
-                        <Input
-                          classNames={{
-                            input: "bg-background pl-10",
-                            inputWrapper:
-                              "bg-background hover:bg-background group-data-[focus=true]:bg-background",
-                          }}
-                          errorMessage={tagsError}
-                          isInvalid={!!tagsError}
-                          placeholder={t.dashboard.tagsPlaceholder}
-                          value={searchValue}
-                          variant="bordered"
-                          onChange={(e) => {
-                            setSearchValue(e.target.value);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && searchValue.trim()) {
-                              const filtered = technologies.filter(
-                                (tech) =>
-                                  !tags.includes(tech) &&
-                                  tech
-                                    .toLowerCase()
-                                    .includes(searchValue.toLowerCase()),
-                              );
-
-                              if (filtered.length > 0) {
-                                const selected = filtered[0];
-
-                                if (tags.length < 15) {
-                                  setTagsError("");
-                                  setTags([...tags, selected]);
-                                  setSearchValue("");
-                                } else {
-                                  setTagsError(t.dashboard.maxTagsError);
-                                }
-                              }
-                            }
-                          }}
-                        />
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                          <svg
-                            className="w-4 h-4 text-default-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                            />
-                          </svg>
-                        </div>
-                      </div>
-
-                      {searchValue.length > 0 && (
-                        <div className="border-t border-default-200 dark:border-default-100 pt-3 mt-2">
-                          <div className="max-h-48 overflow-y-auto">
-                            {technologies
-                              .filter(
-                                (tech) =>
-                                  !tags.includes(tech) &&
-                                  tech
-                                    .toLowerCase()
-                                    .includes(searchValue.toLowerCase()),
-                              )
-                              .slice(0, 10)
-                              .map((tech) => (
-                                <button
-                                  key={tech}
-                                  className="w-full text-left px-3 py-2 hover:bg-default-100 dark:hover:bg-default-50 rounded-md text-sm transition-colors"
-                                  type="button"
-                                  onClick={() => {
-                                    if (tags.length >= 15) {
-                                      setTagsError(t.dashboard.maxTagsError);
-
-                                      return;
-                                    }
-                                    if (!tags.includes(tech)) {
-                                      setTagsError("");
-                                      setTags([...tags, tech]);
-                                      setSearchValue("");
-                                    }
-                                  }}
-                                >
-                                  {tech}
-                                </button>
-                              ))}
-                            {technologies.filter(
-                              (tech) =>
-                                !tags.includes(tech) &&
-                                tech
-                                  .toLowerCase()
-                                  .includes(searchValue.toLowerCase()),
-                            ).length === 0 && (
-                              <div className="px-3 py-2 text-sm text-default-400">
-                                {t.dashboard.noTechnologiesFound}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {tags.length > 0 && (
-                        <div className="border-t border-default-200 dark:border-default-100 pt-3 mt-2">
-                          <div className="flex flex-wrap gap-2">
-                            {tags.map((tag) => (
-                              <Chip
-                                key={tag}
-                                variant="flat"
-                                onClose={() => {
-                                  setTags(tags.filter((t) => t !== tag));
-                                  setTagsError("");
-                                }}
-                              >
-                                {tag}
-                              </Chip>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </CardBody>
-                  </Card>
-                </div>
+                <Autocomplete
+                  classNames={{
+                    input: "bg-background",
+                    inputWrapper:
+                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                  }}
+                  errorMessage={tagsError}
+                  inputValue={searchValue}
+                  isInvalid={!!tagsError}
+                  items={filteredTechnologies}
+                  placeholder={t.dashboard.tagsPlaceholder}
+                  variant="bordered"
+                  onInputChange={(value) => {
+                    setSearchValue(value);
+                    if (tagsError && value) {
+                      setTagsError("");
+                    }
+                  }}
+                  onSelectionChange={(key) => {
+                    if (key && typeof key === "string" && key.length > 0) {
+                      const selected = key;
+                      if (tags.length < 15) {
+                        setTagsError("");
+                        setTags([...tags, selected]);
+                        setSearchValue("");
+                      } else {
+                        setTagsError(t.dashboard.maxTagsError);
+                      }
+                    }
+                  }}
+                >
+                  {(tech) => {
+                    if (!tech || !tech.value || typeof tech.value !== "string" || tech.value.trim().length === 0) {
+                      return null;
+                    }
+                    return (
+                      <AutocompleteItem key={tech.value} textValue={tech.label}>
+                        {tech.label}
+                      </AutocompleteItem>
+                    );
+                  }}
+                </Autocomplete>
+                {tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {tags.map((tag) => (
+                      <Chip
+                        key={tag}
+                        variant="flat"
+                        onClose={() => {
+                          setTags(tags.filter((t) => t !== tag));
+                          setTagsError("");
+                        }}
+                      >
+                        {tag}
+                      </Chip>
+                    ))}
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-default-400">
                     {tags.length}/15 {t.dashboard.maxTags}
@@ -979,7 +862,6 @@ export default function DashboardPage() {
                 {t.dashboard.save}
               </Button>
             </div>
-          </div>
         </CardBody>
       </Card>
 

@@ -83,6 +83,67 @@ export const countries: Country[] = [
   { code: "LU", name: "Luxembourg" },
   { code: "MT", name: "Malta" },
   { code: "CY", name: "Cyprus" },
+  { code: "PK", name: "Pakistan" },
+  { code: "BD", name: "Bangladesh" },
+  { code: "AF", name: "Afghanistan" },
+  { code: "IR", name: "Iran" },
+  { code: "IQ", name: "Iraq" },
+  { code: "JO", name: "Jordan" },
+  { code: "LB", name: "Lebanon" },
+  { code: "SY", name: "Syria" },
+  { code: "YE", name: "Yemen" },
+  { code: "OM", name: "Oman" },
+  { code: "KW", name: "Kuwait" },
+  { code: "QA", name: "Qatar" },
+  { code: "BH", name: "Bahrain" },
+  { code: "LK", name: "Sri Lanka" },
+  { code: "NP", name: "Nepal" },
+  { code: "BT", name: "Bhutan" },
+  { code: "MM", name: "Myanmar" },
+  { code: "KH", name: "Cambodia" },
+  { code: "LA", name: "Laos" },
+  { code: "MN", name: "Mongolia" },
+  { code: "KP", name: "North Korea" },
+  { code: "TW", name: "Taiwan" },
+  { code: "HK", name: "Hong Kong" },
+  { code: "MO", name: "Macao" },
+  { code: "KZ", name: "Kazakhstan" },
+  { code: "UZ", name: "Uzbekistan" },
+  { code: "KG", name: "Kyrgyzstan" },
+  { code: "TJ", name: "Tajikistan" },
+  { code: "TM", name: "Turkmenistan" },
+  { code: "AZ", name: "Azerbaijan" },
+  { code: "AM", name: "Armenia" },
+  { code: "GE", name: "Georgia" },
+  { code: "BY", name: "Belarus" },
+  { code: "MD", name: "Moldova" },
+  { code: "AL", name: "Albania" },
+  { code: "BA", name: "Bosnia and Herzegovina" },
+  { code: "MK", name: "North Macedonia" },
+  { code: "ME", name: "Montenegro" },
+  { code: "MC", name: "Monaco" },
+  { code: "SM", name: "San Marino" },
+  { code: "LI", name: "Liechtenstein" },
+  { code: "AD", name: "Andorra" },
+  { code: "VA", name: "Vatican City" },
+  { code: "GH", name: "Ghana" },
+  { code: "ET", name: "Ethiopia" },
+  { code: "TZ", name: "Tanzania" },
+  { code: "UG", name: "Uganda" },
+  { code: "SD", name: "Sudan" },
+  { code: "AO", name: "Angola" },
+  { code: "MZ", name: "Mozambique" },
+  { code: "MG", name: "Madagascar" },
+  { code: "CM", name: "Cameroon" },
+  { code: "CI", name: "Ivory Coast" },
+  { code: "SN", name: "Senegal" },
+  { code: "ML", name: "Mali" },
+  { code: "BF", name: "Burkina Faso" },
+  { code: "NE", name: "Niger" },
+  { code: "TD", name: "Chad" },
+  { code: "TN", name: "Tunisia" },
+  { code: "DZ", name: "Algeria" },
+  { code: "LY", name: "Libya" },
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 export function getCountryByCode(code: string): Country | undefined {
@@ -93,22 +154,6 @@ export function getCountryName(code: string): string {
   const country = getCountryByCode(code);
 
   return country?.name || code;
-}
-
-export function getCountryFlag(code: string): string {
-  if (!code || code.length !== 2) return "🌍";
-  
-  try {
-    const countryCode = code.toUpperCase();
-    const flagEmoji = countryCode
-      .split("")
-      .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
-      .join("");
-    
-    return flagEmoji;
-  } catch {
-    return "🌍";
-  }
 }
 
 export function getCountryFlagUrl(code: string, size: "16" | "24" | "32" | "48" | "64" = "24"): string {
