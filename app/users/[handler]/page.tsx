@@ -225,7 +225,6 @@ export default function ProfilePage() {
                     color={emailCopied ? "success" : "default"}
                     size="sm"
                     variant="flat"
-                    isPressed={emailButtonPressed}
                   >
                     {emailCopied ? (
                       <svg
