@@ -11,7 +11,7 @@ export const es = {
     login: "Iniciar Sesión",
   },
   home: {
-    title: "Nuestros D-velopers",
+    title: "D-velopers",
     subtitle: "Mentes brillantes, listas para generar impacto",
     noProfiles: "Aún no hay perfiles públicos",
     beFirst: "¡Sé el primero!",
