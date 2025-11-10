@@ -20,7 +20,14 @@ export async function GET(request: NextRequest) {
   const clientId = process.env.DISCORD_CLIENT_ID;
   const redirectUri = getRedirectUri(request);
 
+  console.log("[AUTH LOGIN] Starting login process");
+  console.log("[AUTH LOGIN] Request URL:", request.url);
+  console.log("[AUTH LOGIN] Client ID:", clientId ? "✓ Set" : "✗ Missing");
+  console.log("[AUTH LOGIN] Redirect URI:", redirectUri);
+  console.log("[AUTH LOGIN] NODE_ENV:", process.env.NODE_ENV);
+
   if (!clientId) {
+    console.error("[AUTH LOGIN] ERROR: Missing Discord CLIENT_ID");
     return NextResponse.json(
       { error: "Missing Discord configuration" },
       { status: 500 },
@@ -35,6 +42,7 @@ export async function GET(request: NextRequest) {
   });
 
   const discordAuthUrl = `https://discord.com/oauth2/authorize?${params.toString()}`;
+  console.log("[AUTH LOGIN] Redirecting to Discord:", discordAuthUrl);
 
   return NextResponse.redirect(discordAuthUrl);
 }
