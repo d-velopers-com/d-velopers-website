@@ -56,7 +56,7 @@ export function Navbar() {
       </NavbarContent>
 
       <NavbarContent className="sm:hidden pr-3" justify="center">
-        <NavbarBrand>
+        <NavbarBrand className="mt-1">
           <Link href="/">
             <Image
               alt="D-VELOPERS"
@@ -70,7 +70,7 @@ export function Navbar() {
       </NavbarContent>
 
       <NavbarContent className="hidden sm:flex gap-4" justify="start">
-        <NavbarBrand>
+        <NavbarBrand className="mt-1">
           <Link href="/">
             <Image
               alt="D-VELOPERS"
