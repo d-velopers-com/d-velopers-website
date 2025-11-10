@@ -25,9 +25,16 @@ export async function exchangeCodeForToken(
   code: string,
   redirectUri: string,
 ): Promise<TokenResponse> {
+  const clientId = process.env.DISCORD_CLIENT_ID;
+  const clientSecret = process.env.DISCORD_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    throw new Error("Missing Discord OAuth configuration. Check DISCORD_CLIENT_ID and DISCORD_CLIENT_SECRET environment variables.");
+  }
+
   const params = new URLSearchParams({
-    client_id: process.env.DISCORD_CLIENT_ID!,
-    client_secret: process.env.DISCORD_CLIENT_SECRET!,
+    client_id: clientId,
+    client_secret: clientSecret,
     grant_type: "authorization_code",
     code,
     redirect_uri: redirectUri,
