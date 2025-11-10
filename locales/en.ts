@@ -11,7 +11,7 @@ export const en = {
     login: "Login",
   },
   home: {
-    title: "Our D-velopers",
+    title: "D-velopers",
     subtitle: "Smart minds, ready to make an impact",
     noProfiles: "No public profiles yet",
     beFirst: "Be the first!",
