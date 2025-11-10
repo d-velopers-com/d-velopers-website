@@ -105,24 +105,38 @@ export default function LoginPage() {
                 {t.login.termsLink}
               </ModalHeader>
               <ModalBody>
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Nullam pulvinar risus non risus hendrerit venenatis.
-                  Pellentesque sit amet hendrerit risus, sed porttitor quam.
-                  Magna exercitation reprehenderit magna aute tempor cupidatat
-                  consequat elit dolor adipisicing.
-                </p>
-                <p>
-                  Mollit dolor eiusmod sunt ex incididunt cillum quis. Velit
-                  duis sit officia eiusmod Lorem aliqua enim laboris do dolor
-                  eiusmod. Et mollit incididunt nisi consectetur esse laborum
-                  eiusmod pariatur.
-                </p>
-                <p>
-                  Duis anim sweet dispirulo parla nom de tabera quick ad est
-                  gracilis at vendra. Qui marin nostrud qui a qui parla dori
-                  officia consequat laboris amet in dolor duis.
-                </p>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">1. Acceptance of Terms</h3>
+                    <p className="text-sm text-default-600">
+                      By accessing and using this platform, you accept and agree to be bound by these Terms of Service. If you do not agree, please do not use our services.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">2. User Account</h3>
+                    <p className="text-sm text-default-600">
+                      You are responsible for maintaining the security of your account. You must not share your account credentials with others or use another user's account.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">3. User Conduct</h3>
+                    <p className="text-sm text-default-600">
+                      You agree to use the platform in a lawful manner and not to engage in any activity that could harm, disable, or impair the service or interfere with other users' access.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">4. Content</h3>
+                    <p className="text-sm text-default-600">
+                      You retain ownership of any content you post. By posting content, you grant us a license to use, display, and distribute it on our platform.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">5. Termination</h3>
+                    <p className="text-sm text-default-600">
+                      We reserve the right to suspend or terminate your account at any time if you violate these terms or engage in harmful behavior.
+                    </p>
+                  </div>
+                </div>
               </ModalBody>
               <ModalFooter>
                 <Button color="primary" onPress={onClose}>
@@ -142,24 +156,38 @@ export default function LoginPage() {
                 {t.login.privacyLink}
               </ModalHeader>
               <ModalBody>
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Nullam pulvinar risus non risus hendrerit venenatis.
-                  Pellentesque sit amet hendrerit risus, sed porttitor quam.
-                  Magna exercitation reprehenderit magna aute tempor cupidatat
-                  consequat elit dolor adipisicing.
-                </p>
-                <p>
-                  Mollit dolor eiusmod sunt ex incididunt cillum quis. Velit
-                  duis sit officia eiusmod Lorem aliqua enim laboris do dolor
-                  eiusmod. Et mollit incididunt nisi consectetur esse laborum
-                  eiusmod pariatur.
-                </p>
-                <p>
-                  Duis anim sweet dispirulo parla nom de tabera quick ad est
-                  gracilis at vendra. Qui marin nostrud qui a qui parla dori
-                  officia consequat laboris amet in dolor duis.
-                </p>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">1. Information We Collect</h3>
+                    <p className="text-sm text-default-600">
+                      We collect information you provide directly, such as your Discord username, email, and profile information. We also collect data about how you use our platform.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">2. How We Use Your Information</h3>
+                    <p className="text-sm text-default-600">
+                      We use your information to provide and improve our services, authenticate your account, and communicate with you about your account and our services.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">3. Information Sharing</h3>
+                    <p className="text-sm text-default-600">
+                      We do not sell your personal information. We may share your information only with your consent, to comply with legal obligations, or to protect our rights.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">4. Data Security</h3>
+                    <p className="text-sm text-default-600">
+                      We implement appropriate security measures to protect your personal information. However, no method of transmission over the internet is 100% secure.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">5. Your Rights</h3>
+                    <p className="text-sm text-default-600">
+                      You have the right to access, update, or delete your personal information. You can manage your account settings or contact us to exercise these rights.
+                    </p>
+                  </div>
+                </div>
               </ModalBody>
               <ModalFooter>
                 <Button color="primary" onPress={onClose}>

@@ -13,7 +13,7 @@ export interface SessionData {
 }
 
 const SECRET_KEY = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || "your-secret-key-min-32-characters-long",
+  process.env.NEXTAUTH_SECRET as string,
 );
 
 export async function createSession(data: SessionData): Promise<void> {
