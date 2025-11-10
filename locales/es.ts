@@ -12,8 +12,7 @@ export const es = {
   },
   home: {
     title: "Nuestros D-velopers",
-    subtitle:
-      "Conoce nuestro equipo de desarrolladores capacitados y experimentados.",
+    subtitle: "Mentes brillantes, listas para generar impacto",
     noProfiles: "Aún no hay perfiles públicos",
     beFirst: "¡Sé el primero!",
     login: "Iniciar Sesión",

@@ -12,7 +12,7 @@ export const en = {
   },
   home: {
     title: "Our D-velopers",
-    subtitle: "Meet our team of skilled and experienced developers.",
+    subtitle: "Smart minds, ready to make an impact",
     noProfiles: "No public profiles yet",
     beFirst: "Be the first!",
     login: "Login",

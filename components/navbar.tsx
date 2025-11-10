@@ -60,8 +60,8 @@ export function Navbar() {
           <Link href="/">
             <Image
               alt="D-VELOPERS"
-              className="h-10 w-auto"
-              height={50}
+              className="h-14 w-auto"
+              height={70}
               src={logoSrc}
               width={150}
             />
@@ -74,8 +74,8 @@ export function Navbar() {
           <Link href="/">
             <Image
               alt="D-VELOPERS"
-              className="h-10 w-auto"
-              height={50}
+              className="h-14 w-auto"
+              height={70}
               src={logoSrc}
               width={150}
             />
