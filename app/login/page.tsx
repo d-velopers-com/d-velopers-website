@@ -115,13 +115,13 @@ export default function LoginPage() {
                   <div>
                     <h3 className="font-semibold mb-2">2. User Account</h3>
                     <p className="text-sm text-default-600">
-                      You are responsible for maintaining the security of your account. You must not share your account credentials with others or use another user's account.
+                      You are responsible for maintaining the security of your account. You must not share your account credentials with others or use another user&apos;s account.
                     </p>
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2">3. User Conduct</h3>
                     <p className="text-sm text-default-600">
-                      You agree to use the platform in a lawful manner and not to engage in any activity that could harm, disable, or impair the service or interfere with other users' access.
+                      You agree to use the platform in a lawful manner and not to engage in any activity that could harm, disable, or impair the service or interfere with other users&apos; access.
                     </p>
                   </div>
                   <div>
