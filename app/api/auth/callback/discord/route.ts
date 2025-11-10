@@ -8,6 +8,22 @@ import {
 import { createSession } from "@/lib/session";
 import { upsertUser } from "@/lib/user";
 
+function getRedirectUri(request: NextRequest): string {
+  // Usar la variable de entorno si está definida (para desarrollo)
+  const envRedirectUri = process.env.DISCORD_REDIRECT_URI;
+
+  // Si estamos en producción o la variable no está definida, construir desde la request
+  if (!envRedirectUri || process.env.NODE_ENV === "production") {
+    const url = new URL(request.url);
+    const protocol = url.protocol;
+    const host = url.host;
+
+    return `${protocol}//${host}/api/auth/callback/discord`;
+  }
+
+  return envRedirectUri;
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get("code");
@@ -22,7 +38,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const tokenData = await exchangeCodeForToken(code);
+    const redirectUri = getRedirectUri(request);
+    const tokenData = await exchangeCodeForToken(code, redirectUri);
     const user = await getDiscordUser(tokenData.access_token);
 
     const guildId = process.env.DISCORD_GUILD_ID;

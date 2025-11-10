@@ -23,13 +23,14 @@ interface TokenResponse {
 
 export async function exchangeCodeForToken(
   code: string,
+  redirectUri: string,
 ): Promise<TokenResponse> {
   const params = new URLSearchParams({
     client_id: process.env.DISCORD_CLIENT_ID!,
     client_secret: process.env.DISCORD_CLIENT_SECRET!,
     grant_type: "authorization_code",
     code,
-    redirect_uri: process.env.DISCORD_REDIRECT_URI!,
+    redirect_uri: redirectUri,
   });
 
   const response = await fetch("https://discord.com/api/v10/oauth2/token", {
