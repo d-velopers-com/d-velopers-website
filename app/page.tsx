@@ -59,9 +59,9 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen px-4 py-12 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-default-50/30 dark:to-default-100/10">
+    <div className="min-h-screen px-4 pt-6 pb-12 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-default-50/30 dark:to-default-100/10">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16 mt-12">
+        <div className="text-center mb-12 mt-0">
           <h1 className="text-5xl sm:text-6xl font-black mb-4 text-foreground">
             {t.home.title}
           </h1>
