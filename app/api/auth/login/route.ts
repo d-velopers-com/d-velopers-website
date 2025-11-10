@@ -1,10 +1,26 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+function getRedirectUri(request: NextRequest): string {
+  // Usar la variable de entorno si está definida (para desarrollo)
+  const envRedirectUri = process.env.DISCORD_REDIRECT_URI;
+
+  // Si estamos en producción o la variable no está definida, construir desde la request
+  if (!envRedirectUri || process.env.NODE_ENV === "production") {
+    const url = new URL(request.url);
+    const protocol = url.protocol;
+    const host = url.host;
+
+    return `${protocol}//${host}/api/auth/callback/discord`;
+  }
+
+  return envRedirectUri;
+}
+
+export async function GET(request: NextRequest) {
   const clientId = process.env.DISCORD_CLIENT_ID;
-  const redirectUri = process.env.DISCORD_REDIRECT_URI;
+  const redirectUri = getRedirectUri(request);
 
-  if (!clientId || !redirectUri) {
+  if (!clientId) {
     return NextResponse.json(
       { error: "Missing Discord configuration" },
       { status: 500 },
