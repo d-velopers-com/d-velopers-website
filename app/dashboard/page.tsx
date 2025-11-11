@@ -262,8 +262,19 @@ export default function DashboardPage() {
     new Date(profile.profileActivatedAt).getTime() >
       Date.now() - 30 * 24 * 60 * 60 * 1000;
 
+  // Puede aplicar al período de prueba si no tiene rol permitido, hay roles requeridos,
+  // no ha activado el perfil aún, y es miembro del servidor
+  const canApplyTrialPeriod =
+    isServerMember &&
+    !hasAllowedRole &&
+    allowedRoles.length > 0 &&
+    !profile?.profileActivatedAt;
+
   const canMakePublic =
-    hasAllowedRole || allowedRoles.length === 0 || hasRecentActivation;
+    hasAllowedRole || 
+    allowedRoles.length === 0 || 
+    hasRecentActivation || 
+    canApplyTrialPeriod;
 
   const isInTrialPeriod =
     hasRecentActivation && !hasAllowedRole && allowedRoles.length > 0;
@@ -315,7 +326,41 @@ export default function DashboardPage() {
 
         <CardBody className="gap-6 px-8 py-6">
           <div className="flex flex-col gap-4">
-            {!canMakePublic && isServerMember && (
+            {canApplyTrialPeriod && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-info/10 border border-info/20">
+                <svg
+                  className="w-5 h-5 flex-shrink-0 mt-0.5 text-info"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold mb-1 text-info">
+                    {t.dashboard.canApplyTrialPeriod}
+                  </p>
+                  <p className="text-xs text-foreground/70 mb-3">
+                    {t.dashboard.canApplyTrialPeriodDesc}
+                  </p>
+                  <Button
+                    color="primary"
+                    size="sm"
+                    variant="flat"
+                    onPress={() => handleTogglePublic(true)}
+                  >
+                    {t.dashboard.activateTrialPeriod}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {!canMakePublic && isServerMember && !canApplyTrialPeriod && (
               <div
                 className={`flex items-start gap-2 p-3 rounded-lg ${
                   isInTrialPeriod
