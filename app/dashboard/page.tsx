@@ -262,14 +262,17 @@ export default function DashboardPage() {
     new Date(profile.profileActivatedAt).getTime() >
       Date.now() - 30 * 24 * 60 * 60 * 1000;
 
-  // Puede aplicar al período de prueba si no tiene rol permitido, hay roles requeridos,
-  // no ha activado el perfil aún, y es miembro del servidor
+  // Puede aplicar al período de prueba SOLO si es miembro del servidor, no tiene rol permitido,
+  // hay roles requeridos, y no ha activado el perfil aún
   const canApplyTrialPeriod =
     isServerMember &&
     !hasAllowedRole &&
     allowedRoles.length > 0 &&
     !profile?.profileActivatedAt;
 
+  // Solo puede hacer público si tiene rol permitido, no hay roles requeridos,
+  // está en período de prueba activo, o puede aplicar al período de prueba
+  // (canApplyTrialPeriod ya verifica que sea miembro del servidor)
   const canMakePublic =
     hasAllowedRole || 
     allowedRoles.length === 0 || 
