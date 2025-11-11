@@ -76,6 +76,10 @@ export const es = {
     roleRequired: "Rol requerido",
     roleRequiredDesc:
       "Necesitas tener uno de los roles permitidos en el servidor de Discord para hacer público tu perfil.",
+    canApplyTrialPeriod: "Puedes Activar el Período de Prueba",
+    canApplyTrialPeriodDesc:
+      "Aunque no tienes uno de los roles requeridos, puedes activar tu perfil público y tendrás un mes de período de prueba para usar todas las funcionalidades.",
+    activateTrialPeriod: "Activar Período de Prueba",
     trialPeriod: "Período de Prueba Activo",
     trialPeriodDesc:
       "Tu rol actual no cumple con los requisitos para activar, pero tienes un mes para probar todas las funcionalidades.",

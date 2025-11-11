@@ -75,6 +75,10 @@ export const en = {
     roleRequired: "Role Required",
     roleRequiredDesc:
       "You need to have one of the allowed roles in the Discord server to make your profile public.",
+    canApplyTrialPeriod: "You Can Activate Trial Period",
+    canApplyTrialPeriodDesc:
+      "Although you don't have one of the required roles, you can activate your public profile and you'll have one month trial period to use all features.",
+    activateTrialPeriod: "Activate Trial Period",
     trialPeriod: "Trial Period Active",
     trialPeriodDesc:
       "Your current role does not meet the requirements to activate, but you have one month to try all features.",
