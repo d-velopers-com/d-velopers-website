@@ -136,7 +136,10 @@ export default function DashboardPage() {
   }, []);
 
   const handleTogglePublic = async (isPublic: boolean) => {
-    await updatePublicStatus(isPublic);
+    const success = await updatePublicStatus(isPublic);
+    if (success) {
+      await refreshProfile();
+    }
   };
 
   const handleCopyUrl = () => {
@@ -329,6 +332,48 @@ export default function DashboardPage() {
 
         <CardBody className="gap-6 px-8 py-6">
           <div className="flex flex-col gap-4">
+            {isInTrialPeriod && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-success/10 border border-success/20">
+                <svg
+                  className="w-5 h-5 flex-shrink-0 mt-0.5 text-success"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold mb-1 text-success">
+                    {t.dashboard.trialPeriodActive}
+                  </p>
+                  <p className="text-xs text-foreground/70">
+                    {t.dashboard.trialPeriodActiveDesc}
+                  </p>
+                  {trialEndDate && (
+                    <div className="mt-2">
+                      <Chip
+                        className="text-xs"
+                        color="success"
+                        size="sm"
+                        variant="flat"
+                      >
+                        {t.dashboard.trialPeriodEnds}: {trialEndDate.toLocaleDateString(undefined, {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </Chip>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {canApplyTrialPeriod && (
               <div className="flex items-start gap-2 p-3 rounded-lg bg-info/10 border border-info/20">
                 <svg
@@ -363,72 +408,28 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {!canMakePublic && isServerMember && !canApplyTrialPeriod && (
-              <div
-                className={`flex items-start gap-2 p-3 rounded-lg ${
-                  isInTrialPeriod
-                    ? "bg-warning/10 border border-warning/20"
-                    : "bg-danger/10 border border-danger/20"
-                }`}
-              >
+            {!canMakePublic && isServerMember && !canApplyTrialPeriod && !isInTrialPeriod && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-danger/10 border border-danger/20">
                 <svg
-                  className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
-                    isInTrialPeriod ? "text-warning" : "text-danger"
-                  }`}
+                  className="w-5 h-5 flex-shrink-0 mt-0.5 text-danger"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  {isInTrialPeriod ? (
-                    <path
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                    />
-                  ) : (
-                    <path
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                    />
-                  )}
+                  <path
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                  />
                 </svg>
                 <div className="flex-1">
-                  <p
-                    className={`text-sm font-semibold mb-1 ${
-                      isInTrialPeriod ? "text-warning" : "text-danger"
-                    }`}
-                  >
-                    {isInTrialPeriod
-                      ? t.dashboard.trialPeriod
-                      : t.dashboard.roleRequired}
+                  <p className="text-sm font-semibold mb-1 text-danger">
+                    {t.dashboard.roleRequired}
                   </p>
                   <p className="text-xs text-foreground/70">
-                    {isInTrialPeriod
-                      ? t.dashboard.trialPeriodDesc
-                      : t.dashboard.roleRequiredDesc}
+                    {t.dashboard.roleRequiredDesc}
                   </p>
-                  {isInTrialPeriod && trialEndDate && (
-                    <div className="mt-3 pt-3 border-t border-warning/20">
-                      <p className="text-xs text-foreground/70 mb-2">
-                        {t.dashboard.trialPeriodNote}
-                      </p>
-                      <Chip
-                        className="text-xs"
-                        color="warning"
-                        size="sm"
-                        variant="flat"
-                      >
-                        {trialEndDate.toLocaleDateString(undefined, {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </Chip>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -463,30 +464,35 @@ export default function DashboardPage() {
                 </div>
               )}
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold">
-                {t.dashboard.name}
-              </span>
-              {!profileLoading && profile && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-default-400">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-semibold">
                     {t.dashboard.publicProfile}
                   </span>
-                  {profile.isPublic && canMakePublic && (
-                    <Chip color="success" size="sm" variant="dot">
-                      {t.dashboard.active}
-                    </Chip>
-                  )}
-                  <Switch
-                    color="success"
-                    isDisabled={!canMakePublic}
-                    isSelected={!!(profile.isPublic && canMakePublic)}
-                    size="sm"
-                    onValueChange={handleTogglePublic}
-                  />
+                  <span className="text-xs text-default-400">
+                    {t.dashboard.publicProfileDesc}
+                  </span>
                 </div>
-              )}
+                {!profileLoading && profile && (
+                  <div className="flex items-center gap-2">
+                    {profile.isPublic && canMakePublic && (
+                      <Chip color="success" size="sm" variant="dot">
+                        {t.dashboard.active}
+                      </Chip>
+                    )}
+                    <Switch
+                      color="success"
+                      isDisabled={!canMakePublic}
+                      isSelected={!!(profile.isPublic && canMakePublic)}
+                      size="sm"
+                      onValueChange={handleTogglePublic}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
+
           </div>
 
           <Divider className="my-2" />
@@ -615,6 +621,9 @@ export default function DashboardPage() {
 
           <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
+                <span className="text-sm font-semibold">
+                  {t.dashboard.name}
+                </span>
                 <Input
                   classNames={{
                     input: "bg-background",
@@ -627,14 +636,9 @@ export default function DashboardPage() {
                   variant="bordered"
                   onChange={(e) => setName(e.target.value)}
                 />
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-default-400">
-                    {name.length}/100 {t.dashboard.characters}
-                  </span>
-                  <span className="text-xs text-default-400">
-                    {t.dashboard.publicProfileDesc}
-                  </span>
-                </div>
+                <span className="text-xs text-default-400">
+                  {name.length}/100 {t.dashboard.characters}
+                </span>
               </div>
 
               <div className="flex flex-col gap-2">

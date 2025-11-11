@@ -109,8 +109,19 @@ export async function PATCH(request: Request) {
         new Date(user.profileActivatedAt).getTime() >
           Date.now() - 30 * 24 * 60 * 60 * 1000;
 
+      // Puede aplicar al período de prueba si no tiene rol permitido, hay roles requeridos,
+      // no ha activado el perfil aún, y es miembro del servidor
+      const canApplyTrialPeriod =
+        isServerMember &&
+        !hasAllowedRole &&
+        allowedRoles.length > 0 &&
+        !user.profileActivatedAt;
+
       const canMakePublic =
-        hasAllowedRole || allowedRoles.length === 0 || hasRecentActivation;
+        hasAllowedRole || 
+        allowedRoles.length === 0 || 
+        hasRecentActivation || 
+        canApplyTrialPeriod;
 
       if (!canMakePublic) {
         return NextResponse.json(

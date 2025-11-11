@@ -80,6 +80,10 @@ export const en = {
       "Although you don't have one of the required roles, you can activate your public profile and you'll have one month trial period to use all features.",
     activateTrialPeriod: "Activate Trial Period",
     trialPeriod: "Trial Period Active",
+    trialPeriodActive: "Trial Period Active",
+    trialPeriodActiveDesc:
+      "Your profile is active and you can use all features during the trial period.",
+    trialPeriodEnds: "Trial period ends on",
     trialPeriodDesc:
       "Your current role does not meet the requirements to activate, but you have one month to try all features.",
     trialPeriodNote:
