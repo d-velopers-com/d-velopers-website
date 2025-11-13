@@ -16,13 +16,19 @@ export async function GET() {
   try {
     const users = await getPublicUsers();
 
+    // Asegurar que contactLinks siempre sea un array
+    const normalizedUsers = users.map((user) => ({
+      ...user,
+      contactLinks: Array.isArray(user.contactLinks) ? user.contactLinks : [],
+    }));
+
     const allowedRolesEnv = process.env.ALLOWED_ROLES || "";
     const allowedRoles = allowedRolesEnv
       .split(",")
       .map((role) => role.trim())
       .filter((role) => role.length > 0);
 
-    const sortedUsers = users.sort((a, b) => {
+    const sortedUsers = normalizedUsers.sort((a, b) => {
       const aPriority = getRolePriority(a.roles, allowedRoles);
       const bPriority = getRolePriority(b.roles, allowedRoles);
 
@@ -44,9 +50,13 @@ export async function GET() {
     });
 
     return NextResponse.json({ users: sortedUsers });
-  } catch {
+  } catch (error) {
+    console.error("Error fetching public users:", error);
     return NextResponse.json(
-      { error: "Failed to fetch users" },
+      { 
+        error: "Failed to fetch users",
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 },
     );
   }

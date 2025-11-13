@@ -89,6 +89,9 @@ export const es = {
       "Tu rol actual no cumple con los requisitos para activar, pero tienes un mes para probar todas las funcionalidades.",
     trialPeriodNote:
       "El período de prueba se activa una vez que actives tu perfil por primera vez y dura un mes. El período termina:",
+    trialPeriodInstructions:
+      "Puedes leer las instrucciones siguiendo",
+    trialPeriodInstructionsLink: "este enlace",
     name: "Nombre",
     namePlaceholder: "Tu nombre para mostrar",
     title: "Título",

@@ -7,6 +7,7 @@ interface ProfileData {
   isPublic: boolean;
   description: string | null;
   link: string | null;
+  contactLinks: string[];
   contactEmail: string | null;
   country: string | null;
   name: string | null;
@@ -64,6 +65,7 @@ export function useProfile() {
     isPublic?: boolean;
     description?: string | null;
     link?: string | null;
+    contactLinks?: string[];
     contactEmail?: string | null;
     country?: string | null;
     name?: string | null;
