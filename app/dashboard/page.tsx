@@ -41,6 +41,7 @@ export default function DashboardPage() {
   const [copied, setCopied] = useState(false);
   const [description, setDescription] = useState("");
   const [link, setLink] = useState("");
+  const [contactLink, setContactLink] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [country, setCountry] = useState<string>("");
   const [name, setName] = useState("");
@@ -51,6 +52,7 @@ export default function DashboardPage() {
   const [countrySearchValue, setCountrySearchValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [linkError, setLinkError] = useState("");
+  const [contactLinkError, setContactLinkError] = useState("");
   const [tagsError, setTagsError] = useState("");
   const [allowedRoles, setAllowedRoles] = useState<string[]>([]);
   const [technologiesLoading, setTechnologiesLoading] = useState(true);
@@ -65,6 +67,11 @@ export default function DashboardPage() {
     onOpen: onConfirmOpen,
     onOpenChange: onConfirmOpenChange,
   } = useDisclosure();
+  const {
+    isOpen: isTrialModalOpen,
+    onOpen: onTrialModalOpen,
+    onOpenChange: onTrialModalOpenChange,
+  } = useDisclosure();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -76,6 +83,7 @@ export default function DashboardPage() {
     if (profile) {
       setDescription(profile.description || "");
       setLink(profile.link || "");
+      setContactLink(profile.contactLinks?.[0] || "");
       setContactEmail(profile.contactEmail || "");
       setCountry(profile.country || "");
       setCountrySearchValue("");
@@ -95,7 +103,6 @@ export default function DashboardPage() {
   }, [countrySearchValue]);
 
   const filteredTechnologies = useMemo(() => {
-    // Filtrar tecnologías que ya están en tags y valores inválidos
     const available = technologies.filter(
       (tech) => 
         tech && 
@@ -105,11 +112,9 @@ export default function DashboardPage() {
     );
     
     if (!searchValue) {
-      // Convertir strings a objetos para que Autocomplete funcione
       return available.map((tech) => ({ value: tech, label: tech }));
     }
     
-    // Filtrar y convertir a objetos
     return available
       .filter((tech) =>
         tech && tech.toLowerCase().includes(searchValue.toLowerCase())
@@ -136,7 +141,31 @@ export default function DashboardPage() {
   }, []);
 
   const handleTogglePublic = async (isPublic: boolean) => {
+    const isServerMember = session?.user?.roles && session.user.roles.length > 0;
+    const hasAllowedRole =
+      isServerMember &&
+      allowedRoles.length > 0 &&
+      session?.user?.roles?.some((roleId) => allowedRoles.includes(roleId));
+    const canApplyTrial =
+      isServerMember &&
+      !hasAllowedRole &&
+      allowedRoles.length > 0 &&
+      !profile?.profileActivatedAt;
+
+    if (isPublic && canApplyTrial) {
+      onTrialModalOpen();
+      return;
+    }
+    
     const success = await updatePublicStatus(isPublic);
+    if (success) {
+      await refreshProfile();
+    }
+  };
+
+  const handleActivateTrialPeriod = async () => {
+    onTrialModalOpenChange();
+    const success = await updatePublicStatus(true);
     if (success) {
       await refreshProfile();
     }
@@ -159,6 +188,7 @@ export default function DashboardPage() {
   const confirmSaveProfile = async () => {
     onConfirmOpenChange();
     setLinkError("");
+    setContactLinkError("");
     setTagsError("");
 
     if (link && link.trim() !== "") {
@@ -166,6 +196,16 @@ export default function DashboardPage() {
         new URL(link);
       } catch {
         setLinkError(t.dashboard.invalidUrl);
+
+        return;
+      }
+    }
+
+    if (contactLink && contactLink.trim() !== "") {
+      try {
+        new URL(contactLink);
+      } catch {
+        setContactLinkError(t.dashboard.invalidUrl);
 
         return;
       }
@@ -181,6 +221,7 @@ export default function DashboardPage() {
     const result = await updateProfile({
       description: description.trim() || null,
       link: link.trim() || null,
+      contactLinks: contactLink.trim() ? [contactLink.trim()] : [],
       contactEmail: contactEmail.trim() || null,
       country: country || null,
       name: name.trim() || null,
@@ -189,27 +230,22 @@ export default function DashboardPage() {
     });
 
     if (result.success) {
-      // Sync with Discord after saving
       try {
         const syncResponse = await fetch("/api/user/sync", {
           method: "POST",
         });
 
         if (syncResponse.ok) {
-          // Refresh profile data without reloading page
           await refreshProfile();
           setSaving(false);
         } else {
-          // If sync fails, still show success message for profile save
           setSaving(false);
         }
       } catch {
-        // If sync fails, still show success message for profile save
         setSaving(false);
       }
     } else {
       setSaving(false);
-      // Check if error is about tags
       if (
         result.error?.includes("Maximum 15 tags") ||
         result.error?.includes("tags")
@@ -265,17 +301,12 @@ export default function DashboardPage() {
     new Date(profile.profileActivatedAt).getTime() >
       Date.now() - 30 * 24 * 60 * 60 * 1000;
 
-  // Puede aplicar al período de prueba SOLO si es miembro del servidor, no tiene rol permitido,
-  // hay roles requeridos, y no ha activado el perfil aún
   const canApplyTrialPeriod =
     isServerMember &&
     !hasAllowedRole &&
     allowedRoles.length > 0 &&
     !profile?.profileActivatedAt;
 
-  // Solo puede hacer público si tiene rol permitido, no hay roles requeridos,
-  // está en período de prueba activo, o puede aplicar al período de prueba
-  // (canApplyTrialPeriod ya verifica que sea miembro del servidor)
   const canMakePublic =
     hasAllowedRole || 
     allowedRoles.length === 0 || 
@@ -354,6 +385,16 @@ export default function DashboardPage() {
                   <p className="text-xs text-foreground/70">
                     {t.dashboard.trialPeriodActiveDesc}
                   </p>
+                  <p className="text-xs text-foreground/70 mt-2">
+                    {t.dashboard.trialPeriodInstructions}{" "}
+                    <a
+                      href="/discord"
+                      className="text-info hover:underline font-medium"
+                    >
+                      {t.dashboard.trialPeriodInstructionsLink}
+                    </a>
+                    .
+                  </p>
                   {trialEndDate && (
                     <div className="mt-2">
                       <Chip
@@ -374,39 +415,6 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {canApplyTrialPeriod && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-info/10 border border-info/20">
-                <svg
-                  className="w-5 h-5 flex-shrink-0 mt-0.5 text-info"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                  />
-                </svg>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold mb-1 text-info">
-                    {t.dashboard.canApplyTrialPeriod}
-                  </p>
-                  <p className="text-xs text-foreground/70 mb-3">
-                    {t.dashboard.canApplyTrialPeriodDesc}
-                  </p>
-                  <Button
-                    color="primary"
-                    size="sm"
-                    variant="flat"
-                    onPress={() => handleTogglePublic(true)}
-                  >
-                    {t.dashboard.activateTrialPeriod}
-                  </Button>
-                </div>
-              </div>
-            )}
 
             {!canMakePublic && isServerMember && !canApplyTrialPeriod && !isInTrialPeriod && (
               <div className="flex items-start gap-2 p-3 rounded-lg bg-danger/10 border border-danger/20">
@@ -736,6 +744,41 @@ export default function DashboardPage() {
 
               <div className="flex flex-col gap-2">
                 <span className="text-sm font-semibold">
+                  Contact Link
+                </span>
+                <Input
+                  classNames={{
+                    input: "bg-background",
+                    inputWrapper:
+                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                  }}
+                  errorMessage={contactLinkError}
+                  isInvalid={!!contactLinkError}
+                  placeholder="https://example.com"
+                  startContent={
+                    <svg
+                      className="w-4 h-4 text-default-400 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    </svg>
+                  }
+                  type="url"
+                  value={contactLink}
+                  variant="bordered"
+                  onChange={(e) => setContactLink(e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-semibold">
                   {t.dashboard.contactEmail}
                 </span>
                 <Input
@@ -786,7 +829,6 @@ export default function DashboardPage() {
                     if (!value) {
                       setCountry("");
                     } else {
-                      // Si el usuario está escribiendo y el valor no coincide con el país seleccionado, limpiar la selección
                       if (country) {
                         const selectedCountry = countries.find((c) => c.code === country);
                         if (selectedCountry && !selectedCountry.name.toLowerCase().startsWith(value.toLowerCase())) {
@@ -915,6 +957,84 @@ export default function DashboardPage() {
             </div>
         </CardBody>
       </Card>
+
+      <Modal isOpen={isTrialModalOpen} onOpenChange={onTrialModalOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="w-6 h-6 text-info"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                  <span>{t.dashboard.canApplyTrialPeriod}</span>
+                </div>
+              </ModalHeader>
+              <ModalBody>
+                <div className="flex flex-col gap-3">
+                  <p className="text-sm text-foreground/70">
+                    {t.dashboard.canApplyTrialPeriodDesc}
+                  </p>
+                  <p className="text-sm text-foreground/70">
+                    {t.dashboard.trialPeriodInstructions}{" "}
+                    <a
+                      href="/discord"
+                      className="text-info hover:underline font-medium"
+                    >
+                      {t.dashboard.trialPeriodInstructionsLink}
+                    </a>
+                    .
+                  </p>
+                  <div className="flex items-start gap-2 p-3 rounded-lg bg-info/10 border border-info/20">
+                    <svg
+                      className="w-5 h-5 flex-shrink-0 mt-0.5 text-info"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    </svg>
+                    <div className="flex-1">
+                      <p className="text-xs text-foreground/80">
+                        {t.dashboard.trialPeriodNote}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="default" variant="light" onPress={onClose}>
+                  {t.dashboard.cancel}
+                </Button>
+                <Button
+                  color="primary"
+                  onPress={() => {
+                    onClose();
+                    handleActivateTrialPeriod();
+                  }}
+                >
+                  {t.dashboard.activateTrialPeriod}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
 
       <Modal isOpen={isConfirmOpen} onOpenChange={onConfirmOpenChange}>
         <ModalContent>

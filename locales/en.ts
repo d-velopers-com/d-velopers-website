@@ -88,6 +88,9 @@ export const en = {
       "Your current role does not meet the requirements to activate, but you have one month to try all features.",
     trialPeriodNote:
       "The trial period activates once you activate your profile for the first time and lasts one month. Trial ends:",
+    trialPeriodInstructions:
+      "You can read the instructions by following",
+    trialPeriodInstructionsLink: "this link",
     name: "Name",
     namePlaceholder: "Your display name",
     title: "Title",

@@ -37,6 +37,7 @@ export async function GET() {
     isPublic: user.isPublic,
     description: user.description,
     link: user.link,
+    contactLinks: Array.isArray(user.contactLinks) ? user.contactLinks : [],
     contactEmail: user.contactEmail,
     country: user.country,
     name: user.name,
@@ -59,6 +60,7 @@ export async function PATCH(request: Request) {
     isPublic,
     description,
     link,
+    contactLinks,
     contactEmail,
     country,
     name,
@@ -70,6 +72,7 @@ export async function PATCH(request: Request) {
     isPublic?: boolean;
     description?: string | null;
     link?: string | null;
+    contactLinks?: string[];
     contactEmail?: string | null;
     country?: string | null;
     name?: string | null;
@@ -173,6 +176,36 @@ export async function PATCH(request: Request) {
         { status: 400 },
       );
     }
+  }
+
+  if (contactLinks !== undefined) {
+    if (!Array.isArray(contactLinks)) {
+      return NextResponse.json(
+        { error: "ContactLinks must be an array" },
+        { status: 400 },
+      );
+    }
+    // Validar cada URL del array
+    for (const url of contactLinks) {
+      if (typeof url !== "string") {
+        return NextResponse.json(
+          { error: "All contact links must be strings" },
+          { status: 400 },
+        );
+      }
+      if (url.trim() !== "" && !isValidUrl(url)) {
+        return NextResponse.json(
+          { error: `Invalid URL format: ${url}` },
+          { status: 400 },
+        );
+      }
+    }
+    // Filtrar URLs vacías y limitar a 1 por ahora (preparado para futuro)
+    const validLinks = contactLinks
+      .filter((url) => typeof url === "string" && url.trim() !== "")
+      .map((url) => url.trim())
+      .slice(0, 1); // Limitar a 1 link por ahora
+    updateData.contactLinks = validLinks;
   }
 
   if (contactEmail !== undefined) {
@@ -287,6 +320,7 @@ export async function PATCH(request: Request) {
     isPublic: user.isPublic,
     description: user.description,
     link: user.link,
+    contactLinks: Array.isArray(user.contactLinks) ? user.contactLinks : [],
     contactEmail: user.contactEmail,
     country: user.country,
     name: user.name,

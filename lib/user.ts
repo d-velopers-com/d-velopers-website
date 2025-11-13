@@ -88,6 +88,7 @@ export async function getUserByDiscordId(discordId: string) {
       isPublic: true,
       description: true,
       link: true,
+      contactLinks: true,
       contactEmail: true,
       country: true,
       name: true,
@@ -116,6 +117,7 @@ export async function getUserByHandler(handler: string) {
       isPublic: true,
       description: true,
       link: true,
+      contactLinks: true,
       contactEmail: true,
       country: true,
       name: true,
@@ -160,6 +162,7 @@ export async function updateUserProfile(
     isPublic?: boolean;
     description?: string | null;
     link?: string | null;
+    contactLinks?: string[];
     contactEmail?: string | null;
     country?: string | null;
     name?: string | null;
@@ -203,6 +206,7 @@ export async function getPublicUsers() {
       discordId: true,
       description: true,
       link: true,
+      contactLinks: true,
       contactEmail: true,
       country: true,
       name: true,

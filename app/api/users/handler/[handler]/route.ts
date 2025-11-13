@@ -22,6 +22,7 @@ export async function GET(request: Request, { params }: Params) {
     discordId: user.discordId,
     description: user.description,
     link: user.link,
+    contactLinks: Array.isArray(user.contactLinks) ? user.contactLinks : [],
     contactEmail: user.contactEmail,
     country: user.country,
     name: user.name,
