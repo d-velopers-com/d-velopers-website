@@ -28,6 +28,7 @@ export async function GET(request: Request, { params }: Params) {
     name: user.name,
     title: user.title,
     tags: user.tags,
+    englishLevel: user.englishLevel,
     joinedServerAt: user.joinedServerAt,
     profileActivatedAt: user.profileActivatedAt,
   });

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/session";
-import { getGuildMember } from "@/lib/discord-oauth";
+import { getSession, createSession } from "@/lib/session";
+import { getDiscordUser, getGuildMember } from "@/lib/discord-oauth";
 import { upsertUser } from "@/lib/user";
 
 export async function POST() {
@@ -21,16 +21,31 @@ export async function POST() {
       );
     }
 
+    // Obtener datos actualizados de Discord
+    const discordUser = await getDiscordUser(session.accessToken);
     const memberData = await getGuildMember(session.accessToken, guildId);
 
+    // Actualizar la base de datos con los datos más recientes
     await upsertUser({
       discordId: session.discordId,
-      username: session.username,
-      discriminator: session.discriminator,
-      email: session.email,
-      avatar: session.avatar,
+      username: discordUser.username,
+      discriminator: discordUser.discriminator,
+      email: discordUser.email || null,
+      avatar: discordUser.avatar,
       roles: memberData.roles,
       joinedServerAt: memberData.joinedAt || null,
+    });
+
+    // Actualizar la sesión con los datos actualizados de Discord
+    await createSession({
+      discordId: session.discordId,
+      username: discordUser.username,
+      discriminator: discordUser.discriminator,
+      avatar: discordUser.avatar,
+      email: discordUser.email || null,
+      roles: memberData.roles,
+      accessToken: session.accessToken,
+      expiresAt: session.expiresAt,
     });
 
     return NextResponse.json({

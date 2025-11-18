@@ -25,6 +25,7 @@ model User {
   name            String?
   title           String?
   tags            String[]
+  englishLevel    String?
   
   roles           String[]
   joinedServerAt  DateTime?

@@ -46,6 +46,7 @@ export default function DashboardPage() {
   const [country, setCountry] = useState<string>("");
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
+  const [englishLevel, setEnglishLevel] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
   const [technologies, setTechnologies] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState("");
@@ -89,6 +90,7 @@ export default function DashboardPage() {
       setCountrySearchValue("");
       setName(profile.name || "");
       setTitle(profile.title || "");
+      setEnglishLevel(profile.englishLevel || "");
       setTags(profile.tags || []);
     }
   }, [profile]);
@@ -226,6 +228,7 @@ export default function DashboardPage() {
       country: country || null,
       name: name.trim() || null,
       title: title.trim() || null,
+      englishLevel: englishLevel || null,
       tags: tags,
     });
 
@@ -237,7 +240,8 @@ export default function DashboardPage() {
 
         if (syncResponse.ok) {
           await refreshProfile();
-          setSaving(false);
+          // Recargar la página para actualizar la sesión y mostrar la foto de perfil actualizada
+          window.location.reload();
         } else {
           setSaving(false);
         }
@@ -871,6 +875,28 @@ export default function DashboardPage() {
                     </AutocompleteItem>
                   )}
                 </Autocomplete>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-semibold">
+                  {t.dashboard.englishLevel}
+                </span>
+                <Select
+                  placeholder={t.dashboard.englishLevelPlaceholder}
+                  selectedKeys={englishLevel ? [englishLevel] : []}
+                  variant="bordered"
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0] as string;
+                    setEnglishLevel(selected || "");
+                  }}
+                >
+                  <SelectItem key="A1">A1</SelectItem>
+                  <SelectItem key="A2">A2</SelectItem>
+                  <SelectItem key="B1">B1</SelectItem>
+                  <SelectItem key="B2">B2</SelectItem>
+                  <SelectItem key="C1">C1</SelectItem>
+                  <SelectItem key="C2">C2</SelectItem>
+                </Select>
               </div>
 
               <div className="flex flex-col gap-2">
