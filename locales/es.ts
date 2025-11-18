@@ -105,5 +105,10 @@ export const es = {
     contactEmailPlaceholder: "tu.email@ejemplo.com",
     country: "País",
     countryPlaceholder: "Selecciona tu país",
+    englishLevel: "Nivel de Inglés",
+    englishLevelPlaceholder: "Selecciona tu nivel",
+  },
+  profile: {
+    english: "Inglés",
   },
 };

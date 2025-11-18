@@ -13,6 +13,7 @@ interface ProfileData {
   name: string | null;
   title: string | null;
   tags: string[];
+  englishLevel: string | null;
   joinedServerAt: string | null;
   profileActivatedAt: string | null;
 }
@@ -71,6 +72,7 @@ export function useProfile() {
     name?: string | null;
     title?: string | null;
     tags?: string[];
+    englishLevel?: string | null;
   }) => {
     try {
       const res = await fetch("/api/user/profile", {

@@ -43,6 +43,7 @@ export async function GET() {
     name: user.name,
     title: user.title,
     tags: user.tags,
+    englishLevel: user.englishLevel,
     joinedServerAt: user.joinedServerAt,
     profileActivatedAt: user.profileActivatedAt,
   });
@@ -66,6 +67,7 @@ export async function PATCH(request: Request) {
     name,
     title,
     tags,
+    englishLevel,
   } = body;
 
   const updateData: {
@@ -78,6 +80,7 @@ export async function PATCH(request: Request) {
     name?: string | null;
     title?: string | null;
     tags?: string[];
+    englishLevel?: string | null;
   } = {};
 
   if (isPublic !== undefined) {
@@ -313,6 +316,26 @@ export async function PATCH(request: Request) {
     updateData.tags = validTags;
   }
 
+  if (englishLevel !== undefined) {
+    const validLevels = ["A1", "A2", "B1", "B2", "C1", "C2"];
+    if (englishLevel === null || englishLevel === "") {
+      updateData.englishLevel = null;
+    } else if (typeof englishLevel === "string") {
+      if (!validLevels.includes(englishLevel)) {
+        return NextResponse.json(
+          { error: `English level must be one of: ${validLevels.join(", ")}` },
+          { status: 400 },
+        );
+      }
+      updateData.englishLevel = englishLevel;
+    } else {
+      return NextResponse.json(
+        { error: "Invalid englishLevel value" },
+        { status: 400 },
+      );
+    }
+  }
+
   const user = await updateUserProfile(session.discordId, updateData);
 
   return NextResponse.json({
@@ -326,6 +349,7 @@ export async function PATCH(request: Request) {
     name: user.name,
     title: user.title,
     tags: user.tags,
+    englishLevel: user.englishLevel,
     joinedServerAt: user.joinedServerAt,
     profileActivatedAt: user.profileActivatedAt,
   });

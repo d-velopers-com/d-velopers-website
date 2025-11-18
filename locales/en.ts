@@ -104,5 +104,10 @@ export const en = {
     contactEmailPlaceholder: "your.email@example.com",
     country: "Country",
     countryPlaceholder: "Select your country",
+    englishLevel: "English Level",
+    englishLevelPlaceholder: "Select your level",
+  },
+  profile: {
+    english: "English",
   },
 };
