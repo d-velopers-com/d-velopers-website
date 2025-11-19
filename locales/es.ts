@@ -9,6 +9,7 @@ export const es = {
     home: "Inicio",
     profile: "Editar Perfil",
     login: "Iniciar Sesión",
+    joinDiscord: "Discord",
   },
   home: {
     title: "D-velopers",
@@ -89,8 +90,7 @@ export const es = {
       "Tu rol actual no cumple con los requisitos para activar, pero tienes un mes para probar todas las funcionalidades.",
     trialPeriodNote:
       "El período de prueba se activa una vez que actives tu perfil por primera vez y dura un mes. El período termina:",
-    trialPeriodInstructions:
-      "Puedes leer las instrucciones siguiendo",
+    trialPeriodInstructions: "Puedes leer las instrucciones siguiendo",
     trialPeriodInstructionsLink: "este enlace",
     name: "Nombre",
     namePlaceholder: "Tu nombre para mostrar",
@@ -107,10 +107,18 @@ export const es = {
     countryPlaceholder: "Selecciona tu país",
     englishLevel: "Nivel de Inglés",
     englishLevelPlaceholder: "Selecciona tu nivel",
+    socialLink: "Enlace Social",
+    socialLinkPlaceholder: "https://linkedin.com/in/usuario",
+    socialLinkInfo: "Info de Enlace Social",
+    socialLinkInfoTitle: "Cómo Funcionan los Enlaces Sociales",
+    socialLinkInfoDescription:
+      "Cuando agregas un enlace de red social, se mostrará automáticamente con el nombre y el icono de la plataforma correspondiente. Las plataformas soportadas incluyen:",
+    socialLinkInfoExamples: "Ejemplos:",
   },
   profile: {
     english: "Inglés",
     contactLink: "Enlace de Contacto",
+    socialLink: "Enlace Social",
     myLinkedIn: "Mi LinkedIn",
     myGitHub: "Mi GitHub",
     myTwitter: "Mi Twitter",
@@ -118,5 +126,15 @@ export const es = {
     myYouTube: "Mi YouTube",
     myInstagram: "Mi Instagram",
     myDiscord: "Mi Discord",
+    myFacebook: "Mi Facebook",
+    myTikTok: "Mi TikTok",
+    myTwitch: "Mi Twitch",
+    myReddit: "Mi Reddit",
+    myTelegram: "Mi Telegram",
+    myWhatsApp: "Mi WhatsApp",
+    mySpotify: "Mi Spotify",
+    myMedium: "Mi Medium",
+    myBehance: "Mi Behance",
+    myDribbble: "Mi Dribbble",
   },
 };

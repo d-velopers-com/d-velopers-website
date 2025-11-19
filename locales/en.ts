@@ -9,6 +9,7 @@ export const en = {
     home: "Home",
     profile: "Edit Profile",
     login: "Login",
+    joinDiscord: "Join Discord",
   },
   home: {
     title: "D-velopers",
@@ -88,8 +89,7 @@ export const en = {
       "Your current role does not meet the requirements to activate, but you have one month to try all features.",
     trialPeriodNote:
       "The trial period activates once you activate your profile for the first time and lasts one month. Trial ends:",
-    trialPeriodInstructions:
-      "You can read the instructions by following",
+    trialPeriodInstructions: "You can read the instructions by following",
     trialPeriodInstructionsLink: "this link",
     name: "Name",
     namePlaceholder: "Your display name",
@@ -106,10 +106,18 @@ export const en = {
     countryPlaceholder: "Select your country",
     englishLevel: "English Level",
     englishLevelPlaceholder: "Select your level",
+    socialLink: "Social Link",
+    socialLinkPlaceholder: "https://linkedin.com/in/username",
+    socialLinkInfo: "Social Link Info",
+    socialLinkInfoTitle: "How Social Links Work",
+    socialLinkInfoDescription:
+      "When you add a social media link, it will automatically display with the appropriate platform name and icon. Supported platforms include:",
+    socialLinkInfoExamples: "Examples:",
   },
   profile: {
     english: "English",
     contactLink: "Contact Link",
+    socialLink: "Social Link",
     myLinkedIn: "My LinkedIn",
     myGitHub: "My GitHub",
     myTwitter: "My Twitter",
@@ -117,5 +125,15 @@ export const en = {
     myYouTube: "My YouTube",
     myInstagram: "My Instagram",
     myDiscord: "My Discord",
+    myFacebook: "My Facebook",
+    myTikTok: "My TikTok",
+    myTwitch: "My Twitch",
+    myReddit: "My Reddit",
+    myTelegram: "My Telegram",
+    myWhatsApp: "My WhatsApp",
+    mySpotify: "My Spotify",
+    myMedium: "My Medium",
+    myBehance: "My Behance",
+    myDribbble: "My Dribbble",
   },
 };

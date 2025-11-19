@@ -1,9 +1,8 @@
 {
-    "build": {
-      "env": {
-        "NODE_VERSION": "20",
-        "ENABLE_EXPERIMENTAL_COREPACK": "1"
-      }
+  "build": {
+    "env": {
+      "NODE_VERSION": "20",
+      "ENABLE_EXPERIMENTAL_COREPACK": "1"
     }
   }
-  
+}

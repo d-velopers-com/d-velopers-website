@@ -75,8 +75,8 @@ JWT_SECRET=your_random_secret_key_here
 ```bash
 pnpm exec prisma generate
 ```
-@
-5. **Run database migrations:**
+
+@ 5. **Run database migrations:**
 
 ```bash
 pnpm exec prisma migrate dev
@@ -119,6 +119,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ### 3. Set OAuth2 Scopes
 
 The application requires the following scopes:
+
 - `identify` - Get user's Discord profile
 - `email` - Get user's email (optional)
 - `guilds.members.read` - Check server membership and roles
@@ -167,15 +168,15 @@ d-velopers-website/
 
 ## 🔑 Environment Variables Explained
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DISCORD_CLIENT_ID` | Your Discord application's client ID | ✅ Yes |
-| `DISCORD_CLIENT_SECRET` | Your Discord application's client secret | ✅ Yes |
-| `DISCORD_REDIRECT_URI` | OAuth callback URL | ✅ Yes |
-| `DISCORD_GUILD_ID` | Your Discord server ID | ✅ Yes |
-| `ALLOWED_ROLES` | Comma-separated role IDs that can make profiles public | ❌ No |
-| `DATABASE_URL` | PostgreSQL connection string | ✅ Yes |
-| `JWT_SECRET` | Secret key for JWT token encryption | ✅ Yes |
+| Variable                | Description                                            | Required |
+| ----------------------- | ------------------------------------------------------ | -------- |
+| `DISCORD_CLIENT_ID`     | Your Discord application's client ID                   | ✅ Yes   |
+| `DISCORD_CLIENT_SECRET` | Your Discord application's client secret               | ✅ Yes   |
+| `DISCORD_REDIRECT_URI`  | OAuth callback URL                                     | ✅ Yes   |
+| `DISCORD_GUILD_ID`      | Your Discord server ID                                 | ✅ Yes   |
+| `ALLOWED_ROLES`         | Comma-separated role IDs that can make profiles public | ❌ No    |
+| `DATABASE_URL`          | PostgreSQL connection string                           | ✅ Yes   |
+| `JWT_SECRET`            | Secret key for JWT token encryption                    | ✅ Yes   |
 
 ## 📝 Available Scripts
 
@@ -221,6 +222,7 @@ pnpm lint:fix         # Fix ESLint errors
 ### Profile Customization
 
 Users can customize their public profiles with:
+
 - **Description** - Up to 500 characters
 - **Link** - Personal website or social media
 - **Public/Private Toggle** - Control profile visibility
@@ -238,6 +240,7 @@ Users can customize their public profiles with:
 ### Other Platforms
 
 Ensure you:
+
 - Set all environment variables
 - Run `pnpm exec prisma generate` in build step
 - Use Node.js 18+
