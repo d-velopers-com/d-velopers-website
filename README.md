@@ -75,7 +75,7 @@ JWT_SECRET=your_random_secret_key_here
 ```bash
 pnpm exec prisma generate
 ```
-
+@
 5. **Run database migrations:**
 
 ```bash
@@ -260,7 +260,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 💬 Support
 
-For support, join our [Discord Server](https://www.youtube.com/channel/UCFKZxStYsOVrzdN_FCZ0NGg/membership) or open an issue.
+For support, visit our [Discord page](https://www.d-velopers.com/discord) or open an issue.
 
 ---
 

@@ -10,7 +10,7 @@ export async function GET(request: Request, { params }: Params) {
   const { handler } = await params;
   const user = await getUserByHandler(handler);
 
-  if (!user || !user.isPublic) {
+  if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 

@@ -19,7 +19,7 @@ import {
 } from "@heroui/dropdown";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -29,9 +29,14 @@ import { useLanguage } from "@/contexts/language-context";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { data: session, status } = useSession();
   const { t } = useLanguage();
   const { theme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const avatarUrl = session?.user
     ? session.user.avatar
@@ -39,8 +44,12 @@ export function Navbar() {
       : `https://cdn.discordapp.com/embed/avatars/${parseInt(session.user.discriminator) % 5}.png`
     : undefined;
 
-  const logoSrc =
-    theme === "dark" || !theme ? "/png_logo_light.png" : "/png_logo_dark.png";
+  // Usar un logo por defecto durante SSR para evitar hydration mismatch
+  const logoSrc = mounted
+    ? theme === "dark" || !theme
+      ? "/png_logo_light.png"
+      : "/png_logo_dark.png"
+    : "/png_logo_light.png"; // Default durante SSR
 
   return (
     <HeroNavbar
@@ -64,6 +73,7 @@ export function Navbar() {
               height={70}
               src={logoSrc}
               width={150}
+              suppressHydrationWarning
             />
           </Link>
         </NavbarBrand>
@@ -78,6 +88,7 @@ export function Navbar() {
               height={70}
               src={logoSrc}
               width={150}
+              suppressHydrationWarning
             />
           </Link>
         </NavbarBrand>

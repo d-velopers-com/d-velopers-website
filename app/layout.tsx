@@ -6,6 +6,8 @@ import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "./providers";
 
 import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { Toaster } from "@/components/toaster";
 import { siteConfig } from "@/config/site";
 import { fontSans, fontMono } from "@/config/fonts";
 
@@ -15,9 +17,37 @@ export const metadata: Metadata = {
     template: `%s - ${siteConfig.name}`,
   },
   description: siteConfig.description,
+  keywords: ["developers", "community", "profiles", "discord", "programming"],
+  authors: [{ name: "D-velopers" }],
+  creator: "D-velopers",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    title: siteConfig.name,
+    description: siteConfig.description,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: siteConfig.name,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.description,
+    images: [siteConfig.ogImage],
+    creator: "@d_velopers",
+  },
   icons: {
     icon: "/favicon.ico",
+    apple: "/png_logo.png",
   },
+  metadataBase: new URL(siteConfig.url),
 };
 
 export const viewport: Viewport = {
@@ -43,8 +73,12 @@ export default function RootLayout({
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <Navbar />
-          <main>{children}</main>
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">{children}</main>
+            <Footer />
+          </div>
+          <Toaster />
         </Providers>
         <Analytics />
       </body>
