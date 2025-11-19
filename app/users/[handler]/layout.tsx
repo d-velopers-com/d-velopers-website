@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     `${displayName}${user.title ? ` - ${user.title}` : ""}${user.country ? ` from ${user.country}` : ""} on D-velopers. ${user.tags && user.tags.length > 0 ? `Technologies: ${user.tags.slice(0, 5).join(", ")}.` : ""}`;
 
   const avatarUrl = user.avatar
-    ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png?size=512`
-    : `https://cdn.discordapp.com/embed/avatars/0.png`;
+    ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png?size=1024`
+    : `https://cdn.discordapp.com/embed/avatars/0.png?size=1024`;
 
   return {
     title,
@@ -40,8 +40,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: [
         {
           url: avatarUrl,
-          width: 512,
-          height: 512,
+          width: 1024,
+          height: 1024,
           alt: `${displayName}'s profile picture`,
         },
       ],
@@ -49,10 +49,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     other: {
       "og:image:secure_url": avatarUrl,
       "theme-color": siteConfig.themeColor,
-      "og:theme-color": siteConfig.themeColor,
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title,
       description,
       images: [avatarUrl],

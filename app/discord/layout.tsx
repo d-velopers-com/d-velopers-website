@@ -29,7 +29,6 @@ export const metadata: Metadata = {
   },
   other: {
     "theme-color": siteConfig.themeColor,
-    "og:theme-color": siteConfig.themeColor,
   },
 };
 

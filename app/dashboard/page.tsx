@@ -80,6 +80,7 @@ export default function DashboardPage() {
     onOpen: onTrialModalOpen,
     onOpenChange: onTrialModalOpenChange,
   } = useDisclosure();
+  const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -973,19 +974,26 @@ export default function DashboardPage() {
                 {t.dashboard.availability}
               </span>
               <Select
+                isOpen={isAvailabilityOpen}
                 selectionMode="multiple"
                 placeholder={t.dashboard.availabilityPlaceholder}
                 selectedKeys={availability}
                 variant="bordered"
+                onOpenChange={setIsAvailabilityOpen}
                 onSelectionChange={(keys) => {
                   const selected = Array.from(keys) as string[];
                   // Si not_available está seleccionado, solo mantener not_available
                   if (selected.includes("not_available")) {
                     setAvailability(["not_available"]);
+                    setIsAvailabilityOpen(false);
                   } else {
                     // Si se está intentando seleccionar not_available junto con otros, ignorar
                     // Si se está deseleccionando not_available, permitir otros
                     setAvailability(selected);
+                    // Cerrar el select después de una selección para mejor UX
+                    setTimeout(() => {
+                      setIsAvailabilityOpen(false);
+                    }, 100);
                   }
                 }}
               >
