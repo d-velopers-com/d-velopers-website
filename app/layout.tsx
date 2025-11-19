@@ -29,18 +29,22 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     images: [
       {
-        url: siteConfig.ogImage,
+        url: `${siteConfig.url}${siteConfig.ogImage}`,
         width: 1200,
         height: 630,
         alt: siteConfig.name,
       },
     ],
   },
+  other: {
+    "theme-color": siteConfig.themeColor,
+    "og:theme-color": siteConfig.themeColor,
+  },
   twitter: {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
-    images: [siteConfig.ogImage],
+    images: [`${siteConfig.url}${siteConfig.ogImage}`],
     creator: "@d_velopers",
   },
   icons: {
@@ -52,8 +56,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
+    { media: "(prefers-color-scheme: light)", color: siteConfig.themeColor },
+    { media: "(prefers-color-scheme: dark)", color: siteConfig.themeColor },
   ],
 };
 

@@ -44,6 +44,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         },
       ],
     },
+    other: {
+      "og:image:secure_url": avatarUrl,
+      "theme-color": siteConfig.themeColor,
+      "og:theme-color": siteConfig.themeColor,
+    },
     twitter: {
       card: "summary",
       title,
