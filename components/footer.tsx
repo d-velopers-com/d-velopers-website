@@ -9,8 +9,10 @@ import {
   YouTubeIcon,
   InstagramIcon,
 } from "@/components/icons";
+import { useLanguage } from "@/contexts/language-context";
 
 export function Footer() {
+  const { t } = useLanguage();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -24,7 +26,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-default-400 hover:text-foreground transition-colors"
-              aria-label="Twitter"
+              aria-label={t.footer.twitter}
             >
               <TwitterIcon size={24} />
             </Link>
@@ -33,7 +35,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-default-400 hover:text-foreground transition-colors"
-              aria-label="LinkedIn"
+              aria-label={t.footer.linkedin}
             >
               <LinkedInIcon size={24} />
             </Link>
@@ -42,7 +44,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-default-400 hover:text-foreground transition-colors"
-              aria-label="YouTube"
+              aria-label={t.footer.youtube}
             >
               <YouTubeIcon size={24} />
             </Link>
@@ -51,7 +53,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-default-400 hover:text-foreground transition-colors"
-              aria-label="Instagram"
+              aria-label={t.footer.instagram}
             >
               <InstagramIcon size={24} />
             </Link>
@@ -60,7 +62,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-default-400 hover:text-foreground transition-colors"
-              aria-label="GitHub"
+              aria-label={t.footer.github}
             >
               <GithubIcon size={24} />
             </Link>
@@ -69,7 +71,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-default-400 hover:text-foreground transition-colors"
-              aria-label="Discord"
+              aria-label={t.footer.discord}
             >
               <DiscordIcon size={24} />
             </Link>
@@ -77,7 +79,7 @@ export function Footer() {
 
           {/* Copyright */}
           <p className="text-sm text-default-500 text-center">
-            © {currentYear} D-velopers. All rights reserved.
+            © {currentYear} D-velopers. {t.footer.allRightsReserved}
           </p>
         </div>
       </div>

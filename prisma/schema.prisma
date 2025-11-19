@@ -26,6 +26,7 @@ model User {
   title           String?
   tags            String[]
   englishLevel    String?
+  availability    String[]  @default([])
   
   roles           String[]
   joinedServerAt  DateTime?

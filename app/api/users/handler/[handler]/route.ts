@@ -29,6 +29,7 @@ export async function GET(request: Request, { params }: Params) {
     title: user.title,
     tags: user.tags,
     englishLevel: user.englishLevel,
+    availability: Array.isArray(user.availability) ? user.availability : [],
     joinedServerAt: user.joinedServerAt,
     profileActivatedAt: user.profileActivatedAt,
   });

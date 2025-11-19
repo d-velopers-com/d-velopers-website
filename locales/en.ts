@@ -10,6 +10,10 @@ export const en = {
     profile: "Edit Profile",
     login: "Login",
     joinDiscord: "Join Discord",
+    closeMenu: "Close menu",
+    openMenu: "Open menu",
+    profileActions: "Profile Actions",
+    theme: "Theme",
   },
   home: {
     title: "D-velopers",
@@ -28,6 +32,38 @@ export const en = {
     termsLink: "Terms of Service",
     and: "and",
     privacyLink: "Privacy Policy",
+    termsTitle: "Terms of Service",
+    termsSection1Title: "1. Acceptance of Terms",
+    termsSection1Content:
+      "By accessing and using this platform, you accept and agree to be bound by these Terms of Service. If you do not agree, please do not use our services.",
+    termsSection2Title: "2. User Account",
+    termsSection2Content:
+      "You are responsible for maintaining the security of your account. You must not share your account credentials with others or use another user's account.",
+    termsSection3Title: "3. User Conduct",
+    termsSection3Content:
+      "You agree to use the platform in a lawful manner and not to engage in any activity that could harm, disable, or impair the service or interfere with other users' access.",
+    termsSection4Title: "4. Content",
+    termsSection4Content:
+      "You retain ownership of any content you post. By posting content, you grant us a license to use, display, and distribute it on our platform.",
+    termsSection5Title: "5. Termination",
+    termsSection5Content:
+      "We reserve the right to suspend or terminate your account at any time if you violate these terms or engage in harmful behavior.",
+    privacyTitle: "Privacy Policy",
+    privacySection1Title: "1. Information We Collect",
+    privacySection1Content:
+      "We collect information you provide directly, such as your Discord username, email, and profile information. We also collect data about how you use our platform.",
+    privacySection2Title: "2. How We Use Your Information",
+    privacySection2Content:
+      "We use your information to provide and improve our services, authenticate your account, and communicate with you about your account and our services.",
+    privacySection3Title: "3. Information Sharing",
+    privacySection3Content:
+      "We do not sell your personal information. We may share your information only with your consent, to comply with legal obligations, or to protect our rights.",
+    privacySection4Title: "4. Data Security",
+    privacySection4Content:
+      "We implement appropriate security measures to protect your personal information. However, no method of transmission over the internet is 100% secure.",
+    privacySection5Title: "5. Your Rights",
+    privacySection5Content:
+      "You have the right to access, update, or delete your personal information. You can manage your account settings or contact us to exercise these rights.",
   },
   dashboard: {
     pageTitle: "User Profile",
@@ -113,8 +149,19 @@ export const en = {
     socialLinkInfoDescription:
       "When you add a social media link, it will automatically display with the appropriate platform name and icon. Supported platforms include:",
     socialLinkInfoExamples: "Examples:",
+    errorSaving: "Error saving",
+    availability: "Availability",
+    availabilityPlaceholder: "Select your availability",
+    availabilityFreelance: "Freelance",
+    availabilityPartTime: "Part Time",
+    availabilityFullTime: "Full Time",
+    availabilityConsulting: "Consulting",
+    availabilityNotAvailable: "Not Available",
+    availabilityNotAvailableDesc: "If selected, other options will be disabled",
   },
   profile: {
+    about: "About",
+    visitWebsite: "Visit Website",
     english: "English",
     contactLink: "Contact Link",
     socialLink: "Social Link",
@@ -135,5 +182,31 @@ export const en = {
     myMedium: "My Medium",
     myBehance: "My Behance",
     myDribbble: "My Dribbble",
+    availability: "Availability",
+    availabilityFreelance: "Freelance",
+    availabilityPartTime: "Part Time",
+    availabilityFullTime: "Full Time",
+    availabilityConsulting: "Consulting",
+    availabilityNotAvailable: "Not Available",
+  },
+  error: {
+    title: "Something went wrong!",
+    tryAgain: "Try again",
+  },
+  footer: {
+    allRightsReserved: "All rights reserved.",
+    twitter: "Twitter",
+    linkedin: "LinkedIn",
+    youtube: "YouTube",
+    instagram: "Instagram",
+    github: "GitHub",
+    discord: "Discord",
+  },
+  notFound: {
+    title: "User Not Found",
+    description: "The requested user profile could not be found.",
+  },
+  discord: {
+    pageTitle: "Discord landing",
   },
 };

@@ -61,7 +61,7 @@ export function Navbar() {
     >
       <NavbarContent className="sm:hidden" justify="start">
         <NavbarMenuToggle
-          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          aria-label={isMenuOpen ? t.nav.closeMenu : t.nav.openMenu}
         />
       </NavbarContent>
 
@@ -132,7 +132,7 @@ export function Navbar() {
                     src={avatarUrl}
                   />
                 </DropdownTrigger>
-                <DropdownMenu aria-label="Profile Actions" variant="flat">
+                <DropdownMenu aria-label={t.nav.profileActions} variant="flat">
                   <DropdownItem key="dashboard" href="/dashboard">
                     {t.nav.profile}
                   </DropdownItem>
@@ -202,7 +202,7 @@ export function Navbar() {
         <NavbarMenuItem>
           <div className="flex items-center justify-between w-full py-1">
             <span className="text-sm font-medium flex items-center h-6">
-              Theme
+              {t.nav.theme}
             </span>
             <div className="flex items-center justify-center h-6 min-w-[2.5rem]">
               <ThemeSwitch />
