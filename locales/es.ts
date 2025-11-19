@@ -110,5 +110,13 @@ export const es = {
   },
   profile: {
     english: "Inglés",
+    contactLink: "Enlace de Contacto",
+    myLinkedIn: "Mi LinkedIn",
+    myGitHub: "Mi GitHub",
+    myTwitter: "Mi Twitter",
+    myX: "Mi X",
+    myYouTube: "Mi YouTube",
+    myInstagram: "Mi Instagram",
+    myDiscord: "Mi Discord",
   },
 };

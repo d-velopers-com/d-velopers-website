@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
+import { toast } from "sonner";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
@@ -240,16 +241,34 @@ export default function DashboardPage() {
 
         if (syncResponse.ok) {
           await refreshProfile();
+          toast.success(t.dashboard.saved, {
+            description: t.dashboard.syncSuccess,
+            duration: 2000,
+          });
           // Recargar la página para actualizar la sesión y mostrar la foto de perfil actualizada
-          window.location.reload();
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
         } else {
           setSaving(false);
+          toast.error(t.dashboard.syncError, {
+            duration: 4000,
+          });
         }
-      } catch {
+      } catch (error) {
         setSaving(false);
+        toast.error(t.dashboard.syncError, {
+          duration: 4000,
+        });
       }
     } else {
       setSaving(false);
+      const errorMessage =
+        result.error?.includes("Maximum 15 tags") ||
+        result.error?.includes("tags")
+          ? t.dashboard.maxTagsError
+          : result.error || t.dashboard.invalidUrl;
+
       if (
         result.error?.includes("Maximum 15 tags") ||
         result.error?.includes("tags")
@@ -258,6 +277,10 @@ export default function DashboardPage() {
       } else {
         setLinkError(result.error || "Error saving");
       }
+
+      toast.error(errorMessage, {
+        duration: 4000,
+      });
     }
   };
 
@@ -392,8 +415,10 @@ export default function DashboardPage() {
                   <p className="text-xs text-foreground/70 mt-2">
                     {t.dashboard.trialPeriodInstructions}{" "}
                     <a
-                      href="/discord"
+                      href="https://www.d-velopers.com/discord"
                       className="text-info hover:underline font-medium"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       {t.dashboard.trialPeriodInstructionsLink}
                     </a>
@@ -1014,8 +1039,10 @@ export default function DashboardPage() {
                   <p className="text-sm text-foreground/70">
                     {t.dashboard.trialPeriodInstructions}{" "}
                     <a
-                      href="/discord"
+                      href="https://www.d-velopers.com/discord"
                       className="text-info hover:underline font-medium"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       {t.dashboard.trialPeriodInstructionsLink}
                     </a>

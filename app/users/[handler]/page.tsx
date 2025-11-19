@@ -10,6 +10,8 @@ import { Skeleton } from "@heroui/skeleton";
 
 import { useLanguage } from "@/contexts/language-context";
 import { getCountryName, getCountryFlagUrl } from "@/lib/countries";
+import { detectSocialPlatform } from "@/lib/url-detector";
+import { LinkedInIcon, GithubIcon, TwitterIcon, YouTubeIcon, InstagramIcon, DiscordIcon } from "@/components/icons";
 
 interface User {
   username: string;
@@ -125,9 +127,6 @@ export default function ProfilePage() {
                       {user.title}
                     </p>
                   )}
-                  <p className="text-sm text-default-500 font-medium">
-                    @{user.handler}
-                  </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4 text-sm text-default-500">
@@ -310,36 +309,79 @@ export default function ProfilePage() {
                 </Button>
               )}
 
-              {user.contactLinks && user.contactLinks.length > 0 && user.contactLinks[0] && (
-                <Button
-                  fullWidth
-                  as="a"
-                  className="font-medium"
-                  color="default"
-                  href={user.contactLinks[0]}
-                  rel="noopener noreferrer"
-                  size="md"
-                  startContent={
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                      />
-                    </svg>
+              {user.contactLinks && user.contactLinks.length > 0 && user.contactLinks[0] && (() => {
+                const contactLink = user.contactLinks[0];
+                const platform = detectSocialPlatform(contactLink);
+                
+                const getButtonText = () => {
+                  switch (platform) {
+                    case "linkedin":
+                      return t.profile.myLinkedIn;
+                    case "github":
+                      return t.profile.myGitHub;
+                    case "x":
+                      return t.profile.myX;
+                    case "youtube":
+                      return t.profile.myYouTube;
+                    case "instagram":
+                      return t.profile.myInstagram;
+                    case "discord":
+                      return t.profile.myDiscord;
+                    default:
+                      return t.profile.contactLink;
                   }
-                  target="_blank"
-                  variant="flat"
-                >
-                  Contact Link
-                </Button>
-              )}
+                };
+
+                const getIcon = () => {
+                  switch (platform) {
+                    case "linkedin":
+                      return <LinkedInIcon size={16} />;
+                    case "github":
+                      return <GithubIcon size={16} />;
+                    case "x":
+                      return <TwitterIcon size={16} />;
+                    case "youtube":
+                      return <YouTubeIcon size={16} />;
+                    case "instagram":
+                      return <InstagramIcon size={16} />;
+                    case "discord":
+                      return <DiscordIcon size={16} />;
+                    default:
+                      return (
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                          />
+                        </svg>
+                      );
+                  }
+                };
+
+                return (
+                  <Button
+                    fullWidth
+                    as="a"
+                    className="font-medium"
+                    color="default"
+                    href={contactLink}
+                    rel="noopener noreferrer"
+                    size="md"
+                    startContent={getIcon()}
+                    target="_blank"
+                    variant="flat"
+                  >
+                    {getButtonText()}
+                  </Button>
+                );
+              })()}
             </div>
           </div>
         </CardBody>
