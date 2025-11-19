@@ -102,51 +102,48 @@ export default function LoginPage() {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                {t.login.termsLink}
+                {t.login.termsTitle}
               </ModalHeader>
               <ModalBody>
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold mb-2">
-                      1. Acceptance of Terms
+                      {t.login.termsSection1Title}
                     </h3>
                     <p className="text-sm text-default-600">
-                      By accessing and using this platform, you accept and agree
-                      to be bound by these Terms of Service. If you do not
-                      agree, please do not use our services.
+                      {t.login.termsSection1Content}
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">2. User Account</h3>
+                    <h3 className="font-semibold mb-2">
+                      {t.login.termsSection2Title}
+                    </h3>
                     <p className="text-sm text-default-600">
-                      You are responsible for maintaining the security of your
-                      account. You must not share your account credentials with
-                      others or use another user&apos;s account.
+                      {t.login.termsSection2Content}
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">3. User Conduct</h3>
+                    <h3 className="font-semibold mb-2">
+                      {t.login.termsSection3Title}
+                    </h3>
                     <p className="text-sm text-default-600">
-                      You agree to use the platform in a lawful manner and not
-                      to engage in any activity that could harm, disable, or
-                      impair the service or interfere with other users&apos;
-                      access.
+                      {t.login.termsSection3Content}
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">4. Content</h3>
+                    <h3 className="font-semibold mb-2">
+                      {t.login.termsSection4Title}
+                    </h3>
                     <p className="text-sm text-default-600">
-                      You retain ownership of any content you post. By posting
-                      content, you grant us a license to use, display, and
-                      distribute it on our platform.
+                      {t.login.termsSection4Content}
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">5. Termination</h3>
+                    <h3 className="font-semibold mb-2">
+                      {t.login.termsSection5Title}
+                    </h3>
                     <p className="text-sm text-default-600">
-                      We reserve the right to suspend or terminate your account
-                      at any time if you violate these terms or engage in
-                      harmful behavior.
+                      {t.login.termsSection5Content}
                     </p>
                   </div>
                 </div>
@@ -166,54 +163,48 @@ export default function LoginPage() {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                {t.login.privacyLink}
+                {t.login.privacyTitle}
               </ModalHeader>
               <ModalBody>
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold mb-2">
-                      1. Information We Collect
+                      {t.login.privacySection1Title}
                     </h3>
                     <p className="text-sm text-default-600">
-                      We collect information you provide directly, such as your
-                      Discord username, email, and profile information. We also
-                      collect data about how you use our platform.
+                      {t.login.privacySection1Content}
                     </p>
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2">
-                      2. How We Use Your Information
+                      {t.login.privacySection2Title}
                     </h3>
                     <p className="text-sm text-default-600">
-                      We use your information to provide and improve our
-                      services, authenticate your account, and communicate with
-                      you about your account and our services.
+                      {t.login.privacySection2Content}
                     </p>
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2">
-                      3. Information Sharing
+                      {t.login.privacySection3Title}
                     </h3>
                     <p className="text-sm text-default-600">
-                      We do not sell your personal information. We may share
-                      your information only with your consent, to comply with
-                      legal obligations, or to protect our rights.
+                      {t.login.privacySection3Content}
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">4. Data Security</h3>
+                    <h3 className="font-semibold mb-2">
+                      {t.login.privacySection4Title}
+                    </h3>
                     <p className="text-sm text-default-600">
-                      We implement appropriate security measures to protect your
-                      personal information. However, no method of transmission
-                      over the internet is 100% secure.
+                      {t.login.privacySection4Content}
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">5. Your Rights</h3>
+                    <h3 className="font-semibold mb-2">
+                      {t.login.privacySection5Title}
+                    </h3>
                     <p className="text-sm text-default-600">
-                      You have the right to access, update, or delete your
-                      personal information. You can manage your account settings
-                      or contact us to exercise these rights.
+                      {t.login.privacySection5Content}
                     </p>
                   </div>
                 </div>

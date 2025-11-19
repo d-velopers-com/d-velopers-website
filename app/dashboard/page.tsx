@@ -48,6 +48,7 @@ export default function DashboardPage() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [englishLevel, setEnglishLevel] = useState<string>("");
+  const [availability, setAvailability] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [technologies, setTechnologies] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState("");
@@ -97,6 +98,9 @@ export default function DashboardPage() {
       setName(profile.name || "");
       setTitle(profile.title || "");
       setEnglishLevel(profile.englishLevel || "");
+      setAvailability(
+        Array.isArray(profile.availability) ? profile.availability : [],
+      );
       setTags(profile.tags || []);
     }
   }, [profile]);
@@ -237,6 +241,7 @@ export default function DashboardPage() {
       name: name.trim() || null,
       title: title.trim() || null,
       englishLevel: englishLevel || null,
+      availability: availability,
       tags: tags,
     });
 
@@ -282,7 +287,7 @@ export default function DashboardPage() {
       ) {
         setTagsError(t.dashboard.maxTagsError);
       } else {
-        setLinkError(result.error || "Error saving");
+        setLinkError(result.error || t.dashboard.errorSaving);
       }
 
       toast.error(errorMessage, {
@@ -961,6 +966,62 @@ export default function DashboardPage() {
                 <SelectItem key="C1">C1</SelectItem>
                 <SelectItem key="C2">C2</SelectItem>
               </Select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">
+                {t.dashboard.availability}
+              </span>
+              <Select
+                selectionMode="multiple"
+                placeholder={t.dashboard.availabilityPlaceholder}
+                selectedKeys={availability}
+                variant="bordered"
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys) as string[];
+                  // Si not_available está seleccionado, solo mantener not_available
+                  if (selected.includes("not_available")) {
+                    setAvailability(["not_available"]);
+                  } else {
+                    // Si se está intentando seleccionar not_available junto con otros, ignorar
+                    // Si se está deseleccionando not_available, permitir otros
+                    setAvailability(selected);
+                  }
+                }}
+              >
+                <SelectItem
+                  key="freelance"
+                  isDisabled={availability.includes("not_available")}
+                >
+                  {t.dashboard.availabilityFreelance}
+                </SelectItem>
+                <SelectItem
+                  key="part_time"
+                  isDisabled={availability.includes("not_available")}
+                >
+                  {t.dashboard.availabilityPartTime}
+                </SelectItem>
+                <SelectItem
+                  key="full_time"
+                  isDisabled={availability.includes("not_available")}
+                >
+                  {t.dashboard.availabilityFullTime}
+                </SelectItem>
+                <SelectItem
+                  key="consulting"
+                  isDisabled={availability.includes("not_available")}
+                >
+                  {t.dashboard.availabilityConsulting}
+                </SelectItem>
+                <SelectItem key="not_available">
+                  {t.dashboard.availabilityNotAvailable}
+                </SelectItem>
+              </Select>
+              {availability.includes("not_available") && (
+                <p className="text-xs text-default-500">
+                  {t.dashboard.availabilityNotAvailableDesc}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col gap-2">

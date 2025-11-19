@@ -44,6 +44,7 @@ export async function GET() {
     title: user.title,
     tags: user.tags,
     englishLevel: user.englishLevel,
+    availability: Array.isArray(user.availability) ? user.availability : [],
     joinedServerAt: user.joinedServerAt,
     profileActivatedAt: user.profileActivatedAt,
   });
@@ -68,6 +69,7 @@ export async function PATCH(request: Request) {
     title,
     tags,
     englishLevel,
+    availability,
   } = body;
 
   const updateData: {
@@ -81,6 +83,7 @@ export async function PATCH(request: Request) {
     title?: string | null;
     tags?: string[];
     englishLevel?: string | null;
+    availability?: string[];
   } = {};
 
   if (isPublic !== undefined) {
@@ -336,6 +339,53 @@ export async function PATCH(request: Request) {
     }
   }
 
+  if (availability !== undefined) {
+    if (!Array.isArray(availability)) {
+      return NextResponse.json(
+        { error: "Availability must be an array" },
+        { status: 400 },
+      );
+    }
+
+    const validOptions = [
+      "freelance",
+      "part_time",
+      "full_time",
+      "consulting",
+      "not_available",
+    ];
+
+    // Validar que todos los valores sean válidos
+    for (const option of availability) {
+      if (typeof option !== "string" || !validOptions.includes(option)) {
+        return NextResponse.json(
+          {
+            error: `Invalid availability option. Must be one of: ${validOptions.join(", ")}`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    // Si not_available está seleccionado, debe ser el único valor
+    if (availability.includes("not_available")) {
+      if (availability.length > 1) {
+        return NextResponse.json(
+          {
+            error:
+              "If 'not_available' is selected, no other options can be selected",
+          },
+          { status: 400 },
+        );
+      }
+      updateData.availability = ["not_available"];
+    } else {
+      // Eliminar duplicados y ordenar
+      const uniqueAvailability = Array.from(new Set(availability));
+      updateData.availability = uniqueAvailability;
+    }
+  }
+
   const user = await updateUserProfile(session.discordId, updateData);
 
   return NextResponse.json({
@@ -350,6 +400,7 @@ export async function PATCH(request: Request) {
     title: user.title,
     tags: user.tags,
     englishLevel: user.englishLevel,
+    availability: Array.isArray(user.availability) ? user.availability : [],
     joinedServerAt: user.joinedServerAt,
     profileActivatedAt: user.profileActivatedAt,
   });

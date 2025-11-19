@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { getUserByHandler } from "@/lib/user";
 import { siteConfig } from "@/config/site";
+import { en } from "@/locales/en";
 
 type Props = {
   params: Promise<{ handler: string }>;
@@ -12,8 +13,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!user) {
     return {
-      title: "User Not Found",
-      description: "The requested user profile could not be found.",
+      title: en.notFound.title,
+      description: en.notFound.description,
     };
   }
 

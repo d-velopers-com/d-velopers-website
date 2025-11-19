@@ -35,6 +35,7 @@ interface User {
   title: string | null;
   tags: string[];
   englishLevel: string | null;
+  availability: string[];
   joinedServerAt: string | null;
 }
 
@@ -167,6 +168,66 @@ export default function ProfilePage() {
                       </span>
                     </div>
                   )}
+                  {user.availability &&
+                    Array.isArray(user.availability) &&
+                    user.availability.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <svg
+                          className="w-5 h-5 text-default-400 flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                          />
+                        </svg>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm text-default-600">
+                            {t.profile.availability}:
+                          </span>
+                          {user.availability.map((avail) => {
+                            let label = "";
+                            switch (avail) {
+                              case "freelance":
+                                label = t.profile.availabilityFreelance;
+                                break;
+                              case "part_time":
+                                label = t.profile.availabilityPartTime;
+                                break;
+                              case "full_time":
+                                label = t.profile.availabilityFullTime;
+                                break;
+                              case "consulting":
+                                label = t.profile.availabilityConsulting;
+                                break;
+                              case "not_available":
+                                label = t.profile.availabilityNotAvailable;
+                                break;
+                              default:
+                                label = avail;
+                            }
+                            return (
+                              <Chip
+                                key={avail}
+                                classNames={{
+                                  base: "bg-default-100 dark:!bg-[#1a1a1a]",
+                                  content:
+                                    "text-default-700 dark:!text-default-300 text-xs font-medium",
+                                }}
+                                size="sm"
+                                variant="flat"
+                              >
+                                {label}
+                              </Chip>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                 </div>
               </div>
             </div>
@@ -188,7 +249,7 @@ export default function ProfilePage() {
                     />
                   </svg>
                   <span className="text-sm font-semibold text-default-700">
-                    About
+                    {t.profile.about}
                   </span>
                 </div>
                 <p className="text-sm text-default-600 leading-relaxed whitespace-pre-wrap">
@@ -315,7 +376,7 @@ export default function ProfilePage() {
                   target="_blank"
                   variant="flat"
                 >
-                  Visit Website
+                  {t.profile.visitWebsite}
                 </Button>
               )}
 

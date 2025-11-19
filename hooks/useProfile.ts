@@ -14,6 +14,7 @@ interface ProfileData {
   title: string | null;
   tags: string[];
   englishLevel: string | null;
+  availability: string[];
   joinedServerAt: string | null;
   profileActivatedAt: string | null;
 }
@@ -73,6 +74,7 @@ export function useProfile() {
     title?: string | null;
     tags?: string[];
     englishLevel?: string | null;
+    availability?: string[];
   }) => {
     try {
       const res = await fetch("/api/user/profile", {

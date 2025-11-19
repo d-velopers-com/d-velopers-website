@@ -10,6 +10,10 @@ export const es = {
     profile: "Editar Perfil",
     login: "Iniciar Sesión",
     joinDiscord: "Discord",
+    closeMenu: "Cerrar menú",
+    openMenu: "Abrir menú",
+    profileActions: "Acciones del Perfil",
+    theme: "Tema",
   },
   home: {
     title: "D-velopers",
@@ -28,6 +32,38 @@ export const es = {
     termsLink: "Términos de Servicio",
     and: "y",
     privacyLink: "Política de Privacidad",
+    termsTitle: "Términos de Servicio",
+    termsSection1Title: "1. Aceptación de los Términos",
+    termsSection1Content:
+      "Al acceder y usar esta plataforma, aceptas y te comprometes a cumplir con estos Términos de Servicio. Si no estás de acuerdo, por favor no uses nuestros servicios.",
+    termsSection2Title: "2. Cuenta de Usuario",
+    termsSection2Content:
+      "Eres responsable de mantener la seguridad de tu cuenta. No debes compartir tus credenciales con otros ni usar la cuenta de otro usuario.",
+    termsSection3Title: "3. Conducta del Usuario",
+    termsSection3Content:
+      "Te comprometes a usar la plataforma de manera legal y no participar en ninguna actividad que pueda dañar, deshabilitar o perjudicar el servicio o interferir con el acceso de otros usuarios.",
+    termsSection4Title: "4. Contenido",
+    termsSection4Content:
+      "Conservas la propiedad de cualquier contenido que publiques. Al publicar contenido, nos otorgas una licencia para usarlo, mostrarlo y distribuirlo en nuestra plataforma.",
+    termsSection5Title: "5. Terminación",
+    termsSection5Content:
+      "Nos reservamos el derecho de suspender o terminar tu cuenta en cualquier momento si violas estos términos o participas en comportamientos perjudiciales.",
+    privacyTitle: "Política de Privacidad",
+    privacySection1Title: "1. Información que Recopilamos",
+    privacySection1Content:
+      "Recopilamos información que proporcionas directamente, como tu nombre de usuario de Discord, correo electrónico e información de perfil. También recopilamos datos sobre cómo usas nuestra plataforma.",
+    privacySection2Title: "2. Cómo Usamos Tu Información",
+    privacySection2Content:
+      "Usamos tu información para proporcionar y mejorar nuestros servicios, autenticar tu cuenta y comunicarnos contigo sobre tu cuenta y nuestros servicios.",
+    privacySection3Title: "3. Compartir Información",
+    privacySection3Content:
+      "No vendemos tu información personal. Podemos compartir tu información solo con tu consentimiento, para cumplir con obligaciones legales o para proteger nuestros derechos.",
+    privacySection4Title: "4. Seguridad de Datos",
+    privacySection4Content:
+      "Implementamos medidas de seguridad apropiadas para proteger tu información personal. Sin embargo, ningún método de transmisión por internet es 100% seguro.",
+    privacySection5Title: "5. Tus Derechos",
+    privacySection5Content:
+      "Tienes derecho a acceder, actualizar o eliminar tu información personal. Puedes gestionar la configuración de tu cuenta o contactarnos para ejercer estos derechos.",
   },
   dashboard: {
     pageTitle: "Perfil de Usuario",
@@ -114,8 +150,19 @@ export const es = {
     socialLinkInfoDescription:
       "Cuando agregas un enlace de red social, se mostrará automáticamente con el nombre y el icono de la plataforma correspondiente. Las plataformas soportadas incluyen:",
     socialLinkInfoExamples: "Ejemplos:",
+    errorSaving: "Error al guardar",
+    availability: "Disponibilidad",
+    availabilityPlaceholder: "Selecciona tu disponibilidad",
+    availabilityFreelance: "Freelance",
+    availabilityPartTime: "Medio Tiempo",
+    availabilityFullTime: "Tiempo Completo",
+    availabilityConsulting: "Asesorías",
+    availabilityNotAvailable: "No Disponible",
+    availabilityNotAvailableDesc: "Si se selecciona, las otras opciones se deshabilitarán",
   },
   profile: {
+    about: "Acerca de",
+    visitWebsite: "Visitar Sitio Web",
     english: "Inglés",
     contactLink: "Enlace de Contacto",
     socialLink: "Enlace Social",
@@ -136,5 +183,31 @@ export const es = {
     myMedium: "Mi Medium",
     myBehance: "Mi Behance",
     myDribbble: "Mi Dribbble",
+    availability: "Disponibilidad",
+    availabilityFreelance: "Freelance",
+    availabilityPartTime: "Medio Tiempo",
+    availabilityFullTime: "Tiempo Completo",
+    availabilityConsulting: "Asesorías",
+    availabilityNotAvailable: "No Disponible",
+  },
+  error: {
+    title: "¡Algo salió mal!",
+    tryAgain: "Intentar de nuevo",
+  },
+  footer: {
+    allRightsReserved: "Todos los derechos reservados.",
+    twitter: "Twitter",
+    linkedin: "LinkedIn",
+    youtube: "YouTube",
+    instagram: "Instagram",
+    github: "GitHub",
+    discord: "Discord",
+  },
+  notFound: {
+    title: "Usuario No Encontrado",
+    description: "No se pudo encontrar el perfil de usuario solicitado.",
+  },
+  discord: {
+    pageTitle: "Aterrizaje de Discord",
   },
 };

@@ -95,6 +95,7 @@ export async function getUserByDiscordId(discordId: string) {
       title: true,
       tags: true,
       englishLevel: true,
+      availability: true,
       roles: true,
       joinedServerAt: true,
       profileActivatedAt: true,
@@ -125,6 +126,7 @@ export async function getUserByHandler(handler: string) {
       title: true,
       tags: true,
       englishLevel: true,
+      availability: true,
       roles: true,
       joinedServerAt: true,
       profileActivatedAt: true,
@@ -171,6 +173,7 @@ export async function updateUserProfile(
     title?: string | null;
     tags?: string[];
     englishLevel?: string | null;
+    availability?: string[];
   },
 ) {
   // Si se está activando el perfil, verificar si es la primera vez
@@ -216,6 +219,7 @@ export async function getPublicUsers() {
       title: true,
       tags: true,
       englishLevel: true,
+      availability: true,
       roles: true,
       joinedServerAt: true,
       profileActivatedAt: true,
