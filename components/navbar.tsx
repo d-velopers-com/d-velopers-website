@@ -100,7 +100,7 @@ export function Navbar() {
           <NavbarItem className="hidden sm:flex">
             <Button
               as={Link}
-              className="bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium"
+              className="bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium rounded-full"
               href="/discord"
               size="md"
               startContent={<DiscordIcon size={20} />}
@@ -155,7 +155,7 @@ export function Navbar() {
           <NavbarMenuItem>
             <Button
               as={Link}
-              className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium"
+              className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium rounded-full"
               href="/discord"
               size="md"
               startContent={<DiscordIcon size={20} />}
