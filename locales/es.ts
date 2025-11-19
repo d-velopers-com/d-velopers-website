@@ -94,6 +94,7 @@ export const es = {
     cancel: "Cancelar",
     joinedServer: "Miembro desde",
     syncProfile: "Sincronizar con Discord",
+    syncDiscord: "Sincronizar Discord",
     syncing: "Sincronizando...",
     syncSuccess: "¡Perfil sincronizado!",
     syncError: "Error al sincronizar perfil",
