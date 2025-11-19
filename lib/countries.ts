@@ -156,8 +156,11 @@ export function getCountryName(code: string): string {
   return country?.name || code;
 }
 
-export function getCountryFlagUrl(code: string, size: "16" | "24" | "32" | "48" | "64" = "24"): string {
+export function getCountryFlagUrl(
+  code: string,
+  size: "16" | "24" | "32" | "48" | "64" = "24",
+): string {
   if (!code || code.length !== 2) return "";
-  
+
   return `https://flagcdn.com/${size}x18/${code.toLowerCase()}.png`;
 }

@@ -35,7 +35,7 @@ export default function Home() {
 
   useEffect(() => {
     let isMounted = true;
-    
+
     fetch("/api/users/public")
       .then((res) => {
         if (!isMounted) return;
@@ -52,7 +52,7 @@ export default function Home() {
           setLoading(false);
         }
       });
-    
+
     return () => {
       isMounted = false;
     };
@@ -88,7 +88,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="p-4 overflow-hidden">
-                  <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3">
                   <div className="flex items-start gap-3">
                     <Skeleton className="rounded-full w-12 h-12 flex-shrink-0" />
                     <div className="flex-1 flex flex-col gap-1">
@@ -138,25 +138,29 @@ export default function Home() {
                   className="relative overflow-hidden transition-all duration-200 hover:bg-default-200 dark:hover:bg-default-100/30 hover:shadow-lg hover:scale-[1.02]"
                 >
                   <CardBody className="relative p-0 flex flex-col overflow-hidden">
-                    <Link href={`/users/${user.handler}`} className="p-4 flex flex-col">
+                    <Link
+                      href={`/users/${user.handler}`}
+                      className="p-4 flex flex-col"
+                    >
                       <div className="flex items-start gap-3">
                         <div className="relative w-12 h-12 flex-shrink-0">
                           <Avatar
                             className="w-12 h-12 ring-2 ring-cyan/20"
                             src={avatarUrl}
                           />
-                          {user.country && getCountryFlagUrl(user.country, "24") && (
-                            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-background bg-background flex items-center justify-center overflow-hidden shadow-sm">
-                              <img
-                                alt={getCountryName(user.country)}
-                                className="w-full h-full object-cover rounded-full"
-                                src={getCountryFlagUrl(user.country, "24")}
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                }}
-                              />
-                            </div>
-                          )}
+                          {user.country &&
+                            getCountryFlagUrl(user.country, "24") && (
+                              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-background bg-background flex items-center justify-center overflow-hidden shadow-sm">
+                                <img
+                                  alt={getCountryName(user.country)}
+                                  className="w-full h-full object-cover rounded-full"
+                                  src={getCountryFlagUrl(user.country, "24")}
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                  }}
+                                />
+                              </div>
+                            )}
                         </div>
                         <div className="flex-1 min-w-0 flex flex-col gap-1">
                           <h3 className="font-bold text-base leading-tight truncate">
@@ -177,7 +181,8 @@ export default function Home() {
                               className="text-xs"
                               classNames={{
                                 base: "bg-primary-100 dark:!bg-[#111111]",
-                                content: "text-primary-800 dark:!text-[#00C8FF] font-semibold",
+                                content:
+                                  "text-primary-800 dark:!text-[#00C8FF] font-semibold",
                               }}
                               color="primary"
                               size="sm"

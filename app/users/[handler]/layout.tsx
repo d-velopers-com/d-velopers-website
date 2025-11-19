@@ -19,9 +19,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const displayName = user.name || user.username;
   const title = `${displayName}${user.title ? ` - ${user.title}` : ""} | ${siteConfig.name}`;
-  const description = user.description || 
+  const description =
+    user.description ||
     `${displayName}${user.title ? ` - ${user.title}` : ""}${user.country ? ` from ${user.country}` : ""} on D-velopers. ${user.tags && user.tags.length > 0 ? `Technologies: ${user.tags.slice(0, 5).join(", ")}.` : ""}`;
-  
+
   const avatarUrl = user.avatar
     ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png?size=512`
     : `https://cdn.discordapp.com/embed/avatars/0.png`;
@@ -65,4 +66,3 @@ export default function HandlerLayout({
 }) {
   return <>{children}</>;
 }
-

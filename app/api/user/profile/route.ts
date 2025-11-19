@@ -124,9 +124,9 @@ export async function PATCH(request: Request) {
         !user.profileActivatedAt;
 
       const canMakePublic =
-        hasAllowedRole || 
-        allowedRoles.length === 0 || 
-        hasRecentActivation || 
+        hasAllowedRole ||
+        allowedRoles.length === 0 ||
+        hasRecentActivation ||
         canApplyTrialPeriod;
 
       if (!canMakePublic) {

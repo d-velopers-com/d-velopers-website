@@ -53,9 +53,9 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching public users:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to fetch users",
-        details: error instanceof Error ? error.message : String(error)
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 },
     );

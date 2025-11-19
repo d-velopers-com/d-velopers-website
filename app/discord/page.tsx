@@ -3,10 +3,12 @@ import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
   title: "Discord - D-velopers",
-  description: "Unlock your Discord access with a YouTube/Twitch subscription. Join the D-velopers community and connect with developers worldwide.",
+  description:
+    "Unlock your Discord access with a YouTube/Twitch subscription. Join the D-velopers community and connect with developers worldwide.",
   openGraph: {
     title: "Discord - D-velopers",
-    description: "Unlock your Discord access with a YouTube/Twitch subscription. Join the D-velopers community and connect with developers worldwide.",
+    description:
+      "Unlock your Discord access with a YouTube/Twitch subscription. Join the D-velopers community and connect with developers worldwide.",
     url: `${siteConfig.url}/discord`,
     type: "website",
     images: [
@@ -21,7 +23,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Discord - D-velopers",
-    description: "Unlock your Discord access with a YouTube/Twitch subscription. Join the D-velopers community.",
+    description:
+      "Unlock your Discord access with a YouTube/Twitch subscription. Join the D-velopers community.",
     images: [`${siteConfig.url}${siteConfig.ogImage}`],
   },
   other: {
@@ -32,7 +35,10 @@ export const metadata: Metadata = {
 
 export default function DiscordPage() {
   return (
-    <div className="w-full" style={{ height: "calc(100vh - 64px)", minHeight: "600px" }}>
+    <div
+      className="w-full"
+      style={{ height: "calc(100vh - 64px)", minHeight: "600px" }}
+    >
       <iframe
         src="/discord/index.html"
         className="w-full h-full"
@@ -42,4 +48,3 @@ export default function DiscordPage() {
     </div>
   );
 }
-

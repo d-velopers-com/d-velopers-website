@@ -29,7 +29,9 @@ export async function exchangeCodeForToken(
   const clientSecret = process.env.DISCORD_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    throw new Error("Missing Discord OAuth configuration. Check DISCORD_CLIENT_ID and DISCORD_CLIENT_SECRET environment variables.");
+    throw new Error(
+      "Missing Discord OAuth configuration. Check DISCORD_CLIENT_ID and DISCORD_CLIENT_SECRET environment variables.",
+    );
   }
 
   const params = new URLSearchParams({

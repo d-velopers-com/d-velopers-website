@@ -6,6 +6,16 @@ export type SocialPlatform =
   | "youtube"
   | "instagram"
   | "discord"
+  | "facebook"
+  | "tiktok"
+  | "twitch"
+  | "reddit"
+  | "telegram"
+  | "whatsapp"
+  | "spotify"
+  | "medium"
+  | "behance"
+  | "dribbble"
   | "other";
 
 export function detectSocialPlatform(url: string): SocialPlatform {
@@ -43,9 +53,61 @@ export function detectSocialPlatform(url: string): SocialPlatform {
       return "discord";
     }
 
+    // Facebook
+    if (hostname.includes("facebook.com") || hostname.includes("fb.com")) {
+      return "facebook";
+    }
+
+    // TikTok
+    if (hostname.includes("tiktok.com")) {
+      return "tiktok";
+    }
+
+    // Twitch
+    if (hostname.includes("twitch.tv")) {
+      return "twitch";
+    }
+
+    // Reddit
+    if (hostname.includes("reddit.com")) {
+      return "reddit";
+    }
+
+    // Telegram
+    if (hostname.includes("t.me") || hostname.includes("telegram.org")) {
+      return "telegram";
+    }
+
+    // WhatsApp
+    if (hostname.includes("wa.me") || hostname.includes("whatsapp.com")) {
+      return "whatsapp";
+    }
+
+    // Spotify
+    if (
+      hostname.includes("spotify.com") ||
+      hostname.includes("open.spotify.com")
+    ) {
+      return "spotify";
+    }
+
+    // Medium
+    if (hostname.includes("medium.com")) {
+      return "medium";
+    }
+
+    // Behance
+    if (hostname.includes("behance.net")) {
+      return "behance";
+    }
+
+    // Dribbble
+    if (hostname.includes("dribbble.com")) {
+      return "dribbble";
+    }
+
     return "other";
   } catch {
     return "other";
   }
 }
-

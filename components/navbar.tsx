@@ -26,6 +26,7 @@ import { ThemeSwitch } from "@/components/theme-switch";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useSession, signOut } from "@/hooks/useSession";
 import { useLanguage } from "@/contexts/language-context";
+import { DiscordIcon } from "@/components/icons";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -95,6 +96,19 @@ export function Navbar() {
       </NavbarContent>
 
       <NavbarContent justify="end">
+        {status === "unauthenticated" && (
+          <NavbarItem className="hidden sm:flex">
+            <Button
+              as={Link}
+              className="bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium"
+              href="/discord"
+              size="md"
+              startContent={<DiscordIcon size={20} />}
+            >
+              {t.nav.joinDiscord}
+            </Button>
+          </NavbarItem>
+        )}
         <NavbarItem className="hidden sm:flex">
           <ThemeSwitch />
         </NavbarItem>
@@ -137,6 +151,20 @@ export function Navbar() {
       </NavbarContent>
 
       <NavbarMenu>
+        {status === "unauthenticated" && (
+          <NavbarMenuItem>
+            <Button
+              as={Link}
+              className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium"
+              href="/discord"
+              size="md"
+              startContent={<DiscordIcon size={20} />}
+              onPress={() => setIsMenuOpen(false)}
+            >
+              {t.nav.joinDiscord}
+            </Button>
+          </NavbarMenuItem>
+        )}
         {status === "authenticated" && session?.user && (
           <>
             <NavbarMenuItem>

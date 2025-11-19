@@ -39,8 +39,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         setLocaleState(detectedLocale);
         localStorage.setItem("locale", detectedLocale);
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }, []);
 
   const setLocale = (newLocale: Locale) => {

@@ -70,6 +70,11 @@ export default function DashboardPage() {
     onOpenChange: onConfirmOpenChange,
   } = useDisclosure();
   const {
+    isOpen: isSocialLinkInfoOpen,
+    onOpen: onSocialLinkInfoOpen,
+    onOpenChange: onSocialLinkInfoOpenChange,
+  } = useDisclosure();
+  const {
     isOpen: isTrialModalOpen,
     onOpen: onTrialModalOpen,
     onOpenChange: onTrialModalOpenChange,
@@ -101,26 +106,27 @@ export default function DashboardPage() {
       return countries;
     }
     return countries.filter((c) =>
-      c.name.toLowerCase().includes(countrySearchValue.toLowerCase())
+      c.name.toLowerCase().includes(countrySearchValue.toLowerCase()),
     );
   }, [countrySearchValue]);
 
   const filteredTechnologies = useMemo(() => {
     const available = technologies.filter(
-      (tech) => 
-        tech && 
-        typeof tech === "string" && 
-        tech.trim().length > 0 && 
-        !tags.includes(tech)
+      (tech) =>
+        tech &&
+        typeof tech === "string" &&
+        tech.trim().length > 0 &&
+        !tags.includes(tech),
     );
-    
+
     if (!searchValue) {
       return available.map((tech) => ({ value: tech, label: tech }));
     }
-    
+
     return available
-      .filter((tech) =>
-        tech && tech.toLowerCase().includes(searchValue.toLowerCase())
+      .filter(
+        (tech) =>
+          tech && tech.toLowerCase().includes(searchValue.toLowerCase()),
       )
       .map((tech) => ({ value: tech, label: tech }));
   }, [technologies, tags, searchValue]);
@@ -144,7 +150,8 @@ export default function DashboardPage() {
   }, []);
 
   const handleTogglePublic = async (isPublic: boolean) => {
-    const isServerMember = session?.user?.roles && session.user.roles.length > 0;
+    const isServerMember =
+      session?.user?.roles && session.user.roles.length > 0;
     const hasAllowedRole =
       isServerMember &&
       allowedRoles.length > 0 &&
@@ -159,7 +166,7 @@ export default function DashboardPage() {
       onTrialModalOpen();
       return;
     }
-    
+
     const success = await updatePublicStatus(isPublic);
     if (success) {
       await refreshProfile();
@@ -335,9 +342,9 @@ export default function DashboardPage() {
     !profile?.profileActivatedAt;
 
   const canMakePublic =
-    hasAllowedRole || 
-    allowedRoles.length === 0 || 
-    hasRecentActivation || 
+    hasAllowedRole ||
+    allowedRoles.length === 0 ||
+    hasRecentActivation ||
     canApplyTrialPeriod;
 
   const isInTrialPeriod =
@@ -432,7 +439,8 @@ export default function DashboardPage() {
                         size="sm"
                         variant="flat"
                       >
-                        {t.dashboard.trialPeriodEnds}: {trialEndDate.toLocaleDateString(undefined, {
+                        {t.dashboard.trialPeriodEnds}:{" "}
+                        {trialEndDate.toLocaleDateString(undefined, {
                           year: "numeric",
                           month: "long",
                           day: "numeric",
@@ -444,32 +452,34 @@ export default function DashboardPage() {
               </div>
             )}
 
-
-            {!canMakePublic && isServerMember && !canApplyTrialPeriod && !isInTrialPeriod && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-danger/10 border border-danger/20">
-                <svg
-                  className="w-5 h-5 flex-shrink-0 mt-0.5 text-danger"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                  />
-                </svg>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold mb-1 text-danger">
-                    {t.dashboard.roleRequired}
-                  </p>
-                  <p className="text-xs text-foreground/70">
-                    {t.dashboard.roleRequiredDesc}
-                  </p>
+            {!canMakePublic &&
+              isServerMember &&
+              !canApplyTrialPeriod &&
+              !isInTrialPeriod && (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-danger/10 border border-danger/20">
+                  <svg
+                    className="w-5 h-5 flex-shrink-0 mt-0.5 text-danger"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold mb-1 text-danger">
+                      {t.dashboard.roleRequired}
+                    </p>
+                    <p className="text-xs text-foreground/70">
+                      {t.dashboard.roleRequiredDesc}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {!profileLoading &&
               profile &&
@@ -529,7 +539,6 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-
           </div>
 
           <Divider className="my-2" />
@@ -657,224 +666,253 @@ export default function DashboardPage() {
           )}
 
           <div className="flex flex-col gap-5">
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold">
-                  {t.dashboard.name}
-                </span>
-                <Input
-                  classNames={{
-                    input: "bg-background",
-                    inputWrapper:
-                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
-                  }}
-                  maxLength={100}
-                  placeholder={t.dashboard.namePlaceholder}
-                  value={name}
-                  variant="bordered"
-                  onChange={(e) => setName(e.target.value)}
-                />
-                <span className="text-xs text-default-400">
-                  {name.length}/100 {t.dashboard.characters}
-                </span>
-              </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">{t.dashboard.name}</span>
+              <Input
+                classNames={{
+                  input: "bg-background",
+                  inputWrapper:
+                    "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                }}
+                maxLength={100}
+                placeholder={t.dashboard.namePlaceholder}
+                value={name}
+                variant="bordered"
+                onChange={(e) => setName(e.target.value)}
+              />
+              <span className="text-xs text-default-400">
+                {name.length}/100 {t.dashboard.characters}
+              </span>
+            </div>
 
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold">
-                  {t.dashboard.title}
-                </span>
-                <Input
-                  classNames={{
-                    input: "bg-background",
-                    inputWrapper:
-                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
-                  }}
-                  maxLength={100}
-                  placeholder={t.dashboard.titlePlaceholder}
-                  value={title}
-                  variant="bordered"
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-                <span className="text-xs text-default-400 text-right">
-                  {title.length}/100 {t.dashboard.characters}
-                </span>
-              </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">{t.dashboard.title}</span>
+              <Input
+                classNames={{
+                  input: "bg-background",
+                  inputWrapper:
+                    "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                }}
+                maxLength={100}
+                placeholder={t.dashboard.titlePlaceholder}
+                value={title}
+                variant="bordered"
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <span className="text-xs text-default-400 text-right">
+                {title.length}/100 {t.dashboard.characters}
+              </span>
+            </div>
 
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold">
-                  {t.dashboard.description}
-                </span>
-                <Textarea
-                  classNames={{
-                    input: "bg-background",
-                    inputWrapper:
-                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
-                  }}
-                  maxLength={500}
-                  maxRows={6}
-                  placeholder={t.dashboard.descriptionPlaceholder}
-                  startContent={
-                    <svg
-                      className="w-4 h-4 text-default-400 flex-shrink-0 mt-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M4 6h16M4 12h16M4 18h7"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                      />
-                    </svg>
-                  }
-                  value={description}
-                  variant="bordered"
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-                <span className="text-xs text-default-400 text-right">
-                  {description.length}/500 {t.dashboard.characters}
-                </span>
-              </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">
+                {t.dashboard.description}
+              </span>
+              <Textarea
+                classNames={{
+                  input: "bg-background",
+                  inputWrapper:
+                    "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                }}
+                maxLength={500}
+                maxRows={6}
+                placeholder={t.dashboard.descriptionPlaceholder}
+                startContent={
+                  <svg
+                    className="w-4 h-4 text-default-400 flex-shrink-0 mt-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M4 6h16M4 12h16M4 18h7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                }
+                value={description}
+                variant="bordered"
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              <span className="text-xs text-default-400 text-right">
+                {description.length}/500 {t.dashboard.characters}
+              </span>
+            </div>
 
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold">
-                  {t.dashboard.link}
-                </span>
-                <Input
-                  classNames={{
-                    input: "bg-background",
-                    inputWrapper:
-                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
-                  }}
-                  errorMessage={linkError}
-                  isInvalid={!!linkError}
-                  placeholder={t.dashboard.linkPlaceholder}
-                  startContent={
-                    <svg
-                      className="w-4 h-4 text-default-400 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                      />
-                    </svg>
-                  }
-                  type="url"
-                  value={link}
-                  variant="bordered"
-                  onChange={(e) => setLink(e.target.value)}
-                />
-              </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">{t.dashboard.link}</span>
+              <Input
+                classNames={{
+                  input: "bg-background",
+                  inputWrapper:
+                    "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                }}
+                errorMessage={linkError}
+                isInvalid={!!linkError}
+                placeholder={t.dashboard.linkPlaceholder}
+                startContent={
+                  <svg
+                    className="w-4 h-4 text-default-400 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                }
+                type="url"
+                value={link}
+                variant="bordered"
+                onChange={(e) => setLink(e.target.value)}
+              />
+            </div>
 
-              <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold">
-                  Contact Link
+                  {t.dashboard.socialLink}
                 </span>
-                <Input
-                  classNames={{
-                    input: "bg-background",
-                    inputWrapper:
-                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
-                  }}
-                  errorMessage={contactLinkError}
-                  isInvalid={!!contactLinkError}
-                  placeholder="https://example.com"
-                  startContent={
-                    <svg
-                      className="w-4 h-4 text-default-400 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                      />
-                    </svg>
-                  }
-                  type="url"
-                  value={contactLink}
-                  variant="bordered"
-                  onChange={(e) => setContactLink(e.target.value)}
-                />
+                <Button
+                  isIconOnly
+                  className="min-w-0 w-5 h-5"
+                  size="sm"
+                  variant="light"
+                  onPress={onSocialLinkInfoOpen}
+                >
+                  <svg
+                    className="w-4 h-4 text-default-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                </Button>
               </div>
+              <Input
+                classNames={{
+                  input: "bg-background",
+                  inputWrapper:
+                    "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                }}
+                errorMessage={contactLinkError}
+                isInvalid={!!contactLinkError}
+                placeholder={t.dashboard.socialLinkPlaceholder}
+                startContent={
+                  <svg
+                    className="w-4 h-4 text-default-400 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                }
+                type="url"
+                value={contactLink}
+                variant="bordered"
+                onChange={(e) => setContactLink(e.target.value)}
+              />
+            </div>
 
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold">
-                  {t.dashboard.contactEmail}
-                </span>
-                <Input
-                  classNames={{
-                    input: "bg-background",
-                    inputWrapper:
-                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
-                  }}
-                  placeholder={t.dashboard.contactEmailPlaceholder}
-                  startContent={
-                    <svg
-                      className="w-4 h-4 text-default-400 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                      />
-                    </svg>
-                  }
-                  type="email"
-                  value={contactEmail}
-                  variant="bordered"
-                  onChange={(e) => setContactEmail(e.target.value)}
-                />
-              </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">
+                {t.dashboard.contactEmail}
+              </span>
+              <Input
+                classNames={{
+                  input: "bg-background",
+                  inputWrapper:
+                    "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                }}
+                placeholder={t.dashboard.contactEmailPlaceholder}
+                startContent={
+                  <svg
+                    className="w-4 h-4 text-default-400 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                }
+                type="email"
+                value={contactEmail}
+                variant="bordered"
+                onChange={(e) => setContactEmail(e.target.value)}
+              />
+            </div>
 
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold">
-                  {t.dashboard.country}
-                </span>
-                <Autocomplete
-                  classNames={{
-                    selectorButton:
-                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
-                  }}
-                  inputValue={countrySearchValue || (country ? countries.find((c) => c.code === country)?.name || "" : "")}
-                  items={filteredCountries}
-                  placeholder={t.dashboard.countryPlaceholder}
-                  selectedKey={country || undefined}
-                  variant="bordered"
-                  onInputChange={(value) => {
-                    setCountrySearchValue(value);
-                    if (!value) {
-                      setCountry("");
-                    } else {
-                      if (country) {
-                        const selectedCountry = countries.find((c) => c.code === country);
-                        if (selectedCountry && !selectedCountry.name.toLowerCase().startsWith(value.toLowerCase())) {
-                          setCountry("");
-                        }
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">
+                {t.dashboard.country}
+              </span>
+              <Autocomplete
+                classNames={{
+                  selectorButton:
+                    "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                }}
+                inputValue={
+                  countrySearchValue ||
+                  (country
+                    ? countries.find((c) => c.code === country)?.name || ""
+                    : "")
+                }
+                items={filteredCountries}
+                placeholder={t.dashboard.countryPlaceholder}
+                selectedKey={country || undefined}
+                variant="bordered"
+                onInputChange={(value) => {
+                  setCountrySearchValue(value);
+                  if (!value) {
+                    setCountry("");
+                  } else {
+                    if (country) {
+                      const selectedCountry = countries.find(
+                        (c) => c.code === country,
+                      );
+                      if (
+                        selectedCountry &&
+                        !selectedCountry.name
+                          .toLowerCase()
+                          .startsWith(value.toLowerCase())
+                      ) {
+                        setCountry("");
                       }
                     }
-                  }}
-                  onSelectionChange={(key) => {
-                    if (key) {
-                      setCountry(key as string);
-                      setCountrySearchValue("");
-                    } else {
-                      setCountry("");
-                      setCountrySearchValue("");
-                    }
-                  }}
+                  }
+                }}
+                onSelectionChange={(key) => {
+                  if (key) {
+                    setCountry(key as string);
+                    setCountrySearchValue("");
+                  } else {
+                    setCountry("");
+                    setCountrySearchValue("");
+                  }
+                }}
                 startContent={
                   country && !countrySearchValue ? (
                     <img
@@ -882,130 +920,134 @@ export default function DashboardPage() {
                       className="w-5 h-4 rounded object-cover"
                       src={getCountryFlagUrl(country, "24")}
                     />
-                  ) : null}
-                >
-                  {(country) => (
-                    <AutocompleteItem
-                      key={country.code}
-                      startContent={
-                        <img
-                          alt={country.name}
-                          className="w-5 h-4 rounded object-cover"
-                          src={getCountryFlagUrl(country.code, "24")}
-                        />
-                      }
-                      textValue={country.name}
-                    >
-                      {country.name}
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold">
-                  {t.dashboard.englishLevel}
-                </span>
-                <Select
-                  placeholder={t.dashboard.englishLevelPlaceholder}
-                  selectedKeys={englishLevel ? [englishLevel] : []}
-                  variant="bordered"
-                  onSelectionChange={(keys) => {
-                    const selected = Array.from(keys)[0] as string;
-                    setEnglishLevel(selected || "");
-                  }}
-                >
-                  <SelectItem key="A1">A1</SelectItem>
-                  <SelectItem key="A2">A2</SelectItem>
-                  <SelectItem key="B1">B1</SelectItem>
-                  <SelectItem key="B2">B2</SelectItem>
-                  <SelectItem key="C1">C1</SelectItem>
-                  <SelectItem key="C2">C2</SelectItem>
-                </Select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold">
-                  {t.dashboard.tags}
-                </span>
-                <Autocomplete
-                  classNames={{
-                    selectorButton:
-                      "bg-background hover:bg-background group-data-[focus=true]:bg-background",
-                  }}
-                  errorMessage={tagsError}
-                  inputValue={searchValue}
-                  isInvalid={!!tagsError}
-                  items={filteredTechnologies}
-                  placeholder={t.dashboard.tagsPlaceholder}
-                  variant="bordered"
-                  onInputChange={(value) => {
-                    setSearchValue(value);
-                    if (tagsError && value) {
-                      setTagsError("");
-                    }
-                  }}
-                  onSelectionChange={(key) => {
-                    if (key && typeof key === "string" && key.length > 0) {
-                      const selected = key;
-                      if (tags.length < 15) {
-                        setTagsError("");
-                        setTags([...tags, selected]);
-                        setSearchValue("");
-                      } else {
-                        setTagsError(t.dashboard.maxTagsError);
-                      }
-                    }
-                  }}
-                >
-                  {(tech) => {
-                    if (!tech || !tech.value || typeof tech.value !== "string" || tech.value.trim().length === 0) {
-                      return null;
-                    }
-                    return (
-                      <AutocompleteItem key={tech.value} textValue={tech.label}>
-                        {tech.label}
-                      </AutocompleteItem>
-                    );
-                  }}
-                </Autocomplete>
-                {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {tags.map((tag) => (
-                      <Chip
-                        key={tag}
-                        variant="flat"
-                        onClose={() => {
-                          setTags(tags.filter((t) => t !== tag));
-                          setTagsError("");
-                        }}
-                      >
-                        {tag}
-                      </Chip>
-                    ))}
-                  </div>
-                )}
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-default-400">
-                    {tags.length}/15 {t.dashboard.maxTags}
-                  </span>
-                  {tagsError && (
-                    <span className="text-xs text-danger">{tagsError}</span>
-                  )}
-                </div>
-              </div>
-
-              <Button
-                className="font-semibold"
-                color="primary"
-                isLoading={saving}
-                size="md"
-                variant="shadow"
-                onPress={handleSaveProfile}
+                  ) : null
+                }
               >
-                {t.dashboard.save}
-              </Button>
+                {(country) => (
+                  <AutocompleteItem
+                    key={country.code}
+                    startContent={
+                      <img
+                        alt={country.name}
+                        className="w-5 h-4 rounded object-cover"
+                        src={getCountryFlagUrl(country.code, "24")}
+                      />
+                    }
+                    textValue={country.name}
+                  >
+                    {country.name}
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
             </div>
+
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">
+                {t.dashboard.englishLevel}
+              </span>
+              <Select
+                placeholder={t.dashboard.englishLevelPlaceholder}
+                selectedKeys={englishLevel ? [englishLevel] : []}
+                variant="bordered"
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as string;
+                  setEnglishLevel(selected || "");
+                }}
+              >
+                <SelectItem key="A1">A1</SelectItem>
+                <SelectItem key="A2">A2</SelectItem>
+                <SelectItem key="B1">B1</SelectItem>
+                <SelectItem key="B2">B2</SelectItem>
+                <SelectItem key="C1">C1</SelectItem>
+                <SelectItem key="C2">C2</SelectItem>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">{t.dashboard.tags}</span>
+              <Autocomplete
+                classNames={{
+                  selectorButton:
+                    "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                }}
+                errorMessage={tagsError}
+                inputValue={searchValue}
+                isInvalid={!!tagsError}
+                items={filteredTechnologies}
+                placeholder={t.dashboard.tagsPlaceholder}
+                variant="bordered"
+                onInputChange={(value) => {
+                  setSearchValue(value);
+                  if (tagsError && value) {
+                    setTagsError("");
+                  }
+                }}
+                onSelectionChange={(key) => {
+                  if (key && typeof key === "string" && key.length > 0) {
+                    const selected = key;
+                    if (tags.length < 15) {
+                      setTagsError("");
+                      setTags([...tags, selected]);
+                      setSearchValue("");
+                    } else {
+                      setTagsError(t.dashboard.maxTagsError);
+                    }
+                  }
+                }}
+              >
+                {(tech) => {
+                  if (
+                    !tech ||
+                    !tech.value ||
+                    typeof tech.value !== "string" ||
+                    tech.value.trim().length === 0
+                  ) {
+                    return null;
+                  }
+                  return (
+                    <AutocompleteItem key={tech.value} textValue={tech.label}>
+                      {tech.label}
+                    </AutocompleteItem>
+                  );
+                }}
+              </Autocomplete>
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {tags.map((tag) => (
+                    <Chip
+                      key={tag}
+                      variant="flat"
+                      onClose={() => {
+                        setTags(tags.filter((t) => t !== tag));
+                        setTagsError("");
+                      }}
+                    >
+                      {tag}
+                    </Chip>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-default-400">
+                  {tags.length}/15 {t.dashboard.maxTags}
+                </span>
+                {tagsError && (
+                  <span className="text-xs text-danger">{tagsError}</span>
+                )}
+              </div>
+            </div>
+
+            <Button
+              className="font-semibold"
+              color="primary"
+              isLoading={saving}
+              size="md"
+              variant="shadow"
+              onPress={handleSaveProfile}
+            >
+              {t.dashboard.save}
+            </Button>
+          </div>
         </CardBody>
       </Card>
 
@@ -1111,6 +1153,92 @@ export default function DashboardPage() {
                   }}
                 >
                   {t.dashboard.confirm}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <Modal
+        isOpen={isSocialLinkInfoOpen}
+        onOpenChange={onSocialLinkInfoOpenChange}
+      >
+        <ModalContent>
+          {() => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                {t.dashboard.socialLinkInfoTitle}
+              </ModalHeader>
+              <ModalBody>
+                <p className="text-sm text-default-600 mb-4">
+                  {t.dashboard.socialLinkInfoDescription}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Chip size="sm" variant="flat">
+                    LinkedIn
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    GitHub
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    Twitter/X
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    YouTube
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    Instagram
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    Discord
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    Facebook
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    TikTok
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    Twitch
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    Reddit
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    Telegram
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    WhatsApp
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    Spotify
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    Medium
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    Behance
+                  </Chip>
+                  <Chip size="sm" variant="flat">
+                    Dribbble
+                  </Chip>
+                </div>
+                <div className="mt-2">
+                  <p className="text-sm font-semibold mb-2">
+                    {t.dashboard.socialLinkInfoExamples}
+                  </p>
+                  <ul className="text-xs text-default-500 space-y-1 list-disc list-inside">
+                    <li>https://linkedin.com/in/username → &quot;My LinkedIn&quot;</li>
+                    <li>https://github.com/username → &quot;My GitHub&quot;</li>
+                    <li>https://x.com/username → &quot;My X&quot;</li>
+                    <li>https://youtube.com/@username → &quot;My YouTube&quot;</li>
+                  </ul>
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="primary" onPress={onSocialLinkInfoOpenChange}>
+                  {t.common.close}
                 </Button>
               </ModalFooter>
             </>
