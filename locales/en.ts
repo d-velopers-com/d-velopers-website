@@ -94,6 +94,7 @@ export const en = {
     cancel: "Cancel",
     joinedServer: "Member Since",
     syncProfile: "Sync with Discord",
+    syncDiscord: "Sync Discord",
     syncing: "Syncing...",
     syncSuccess: "Profile synced successfully!",
     syncError: "Failed to sync profile",

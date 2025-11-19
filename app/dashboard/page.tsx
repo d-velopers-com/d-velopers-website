@@ -247,33 +247,13 @@ export default function DashboardPage() {
     });
 
     if (result.success) {
-      try {
-        const syncResponse = await fetch("/api/user/sync", {
-          method: "POST",
-        });
+      await refreshProfile();
+      setSaving(false);
+      toast.success(t.dashboard.saved, {
+        duration: 2000,
+      });
 
-        if (syncResponse.ok) {
-          await refreshProfile();
-          toast.success(t.dashboard.saved, {
-            description: t.dashboard.syncSuccess,
-            duration: 2000,
-          });
-          // Recargar la página para actualizar la sesión y mostrar la foto de perfil actualizada
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-        } else {
-          setSaving(false);
-          toast.error(t.dashboard.syncError, {
-            duration: 4000,
-          });
-        }
-      } catch (error) {
-        setSaving(false);
-        toast.error(t.dashboard.syncError, {
-          duration: 4000,
-        });
-      }
+      return;
     } else {
       setSaving(false);
       const errorMessage =
@@ -402,6 +382,65 @@ export default function DashboardPage() {
         <Divider />
 
         <CardBody className="gap-6 px-8 py-6">
+          <div className="flex flex-col gap-2 mb-4">
+            <div className="flex justify-end">
+              <Button
+                color="primary"
+                isLoading={syncing}
+                size="sm"
+                variant="flat"
+                onPress={handleSync}
+              >
+                {syncing ? t.dashboard.syncing : t.dashboard.syncDiscord}
+              </Button>
+            </div>
+            {syncMessage && (
+              <div
+                className={`flex items-center gap-2 p-2 rounded-md ${
+                  syncMessage.type === "success"
+                    ? "bg-success/10 border border-success/20"
+                    : "bg-danger/10 border border-danger/20"
+                }`}
+              >
+                <svg
+                  className={`w-4 h-4 ${
+                    syncMessage.type === "success"
+                      ? "text-success"
+                      : "text-danger"
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  {syncMessage.type === "success" ? (
+                    <path
+                      d="M5 13l4 4L19 7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  ) : (
+                    <path
+                      d="M6 18L18 6M6 6l12 12"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  )}
+                </svg>
+                <span
+                  className={`text-xs font-medium ${
+                    syncMessage.type === "success"
+                      ? "text-success"
+                      : "text-danger"
+                  }`}
+                >
+                  {syncMessage.text}
+                </span>
+              </div>
+            )}
+          </div>
+
           <div className="flex flex-col gap-4">
             {isInTrialPeriod && (
               <div className="flex items-start gap-2 p-3 rounded-lg bg-success/10 border border-success/20">
@@ -572,62 +611,8 @@ export default function DashboardPage() {
                   <p className="text-xs text-foreground/70 mb-3">
                     {t.dashboard.syncRequiredDesc}
                   </p>
-                  <Button
-                    color="primary"
-                    isLoading={syncing}
-                    size="sm"
-                    variant="flat"
-                    onPress={handleSync}
-                  >
-                    {syncing ? t.dashboard.syncing : t.dashboard.syncProfile}
-                  </Button>
                 </div>
               </div>
-              {syncMessage && (
-                <div
-                  className={`flex items-center gap-2 p-2 rounded-md ${
-                    syncMessage.type === "success"
-                      ? "bg-success/10 border border-success/20"
-                      : "bg-danger/10 border border-danger/20"
-                  }`}
-                >
-                  <svg
-                    className={`w-4 h-4 ${
-                      syncMessage.type === "success"
-                        ? "text-success"
-                        : "text-danger"
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    {syncMessage.type === "success" ? (
-                      <path
-                        d="M5 13l4 4L19 7"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                      />
-                    ) : (
-                      <path
-                        d="M6 18L18 6M6 6l12 12"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                      />
-                    )}
-                  </svg>
-                  <span
-                    className={`text-xs font-medium ${
-                      syncMessage.type === "success"
-                        ? "text-success"
-                        : "text-danger"
-                    }`}
-                  >
-                    {syncMessage.text}
-                  </span>
-                </div>
-              )}
             </div>
           )}
 

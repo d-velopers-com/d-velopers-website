@@ -137,41 +137,43 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4 text-sm text-default-500">
-                  {user.country && (
-                    <div className="flex items-center gap-2">
-                      <img
-                        alt={getCountryName(user.country)}
-                        className="w-5 h-4 rounded object-cover"
-                        src={getCountryFlagUrl(user.country, "24")}
-                      />
-                      <span>{getCountryName(user.country)}</span>
-                    </div>
-                  )}
-                  {user.englishLevel && (
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                <div className="flex flex-col gap-3 text-sm text-default-500">
+                  <div className="flex flex-wrap items-center gap-4">
+                    {user.country && (
+                      <div className="flex items-center gap-2">
+                        <img
+                          alt={getCountryName(user.country)}
+                          className="w-5 h-4 rounded object-cover"
+                          src={getCountryFlagUrl(user.country, "24")}
                         />
-                      </svg>
-                      <span>
-                        {t.profile.english}: {user.englishLevel}
-                      </span>
-                    </div>
-                  )}
+                        <span>{getCountryName(user.country)}</span>
+                      </div>
+                    )}
+                    {user.englishLevel && (
+                      <div className="flex items-center gap-2">
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                          />
+                        </svg>
+                        <span>
+                          {t.profile.english}: {user.englishLevel}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                   {user.availability &&
                     Array.isArray(user.availability) &&
                     user.availability.length > 0 && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2 text-default-600 font-medium">
                         <svg
                           className="w-5 h-5 text-default-400 flex-shrink-0"
                           fill="none"
@@ -185,47 +187,29 @@ export default function ProfilePage() {
                             strokeWidth={2}
                           />
                         </svg>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm text-default-600">
-                            {t.profile.availability}:
-                          </span>
-                          {user.availability.map((avail) => {
-                            let label = "";
-                            switch (avail) {
-                              case "freelance":
-                                label = t.profile.availabilityFreelance;
-                                break;
-                              case "part_time":
-                                label = t.profile.availabilityPartTime;
-                                break;
-                              case "full_time":
-                                label = t.profile.availabilityFullTime;
-                                break;
-                              case "consulting":
-                                label = t.profile.availabilityConsulting;
-                                break;
-                              case "not_available":
-                                label = t.profile.availabilityNotAvailable;
-                                break;
-                              default:
-                                label = avail;
-                            }
-                            return (
-                              <Chip
-                                key={avail}
-                                classNames={{
-                                  base: "bg-default-100 dark:!bg-[#1a1a1a]",
-                                  content:
-                                    "text-default-700 dark:!text-default-300 text-xs font-medium",
-                                }}
-                                size="sm"
-                                variant="flat"
-                              >
-                                {label}
-                              </Chip>
-                            );
-                          })}
-                        </div>
+                        <span className="text-sm">
+                          {t.profile.availability}:
+                        </span>
+                        <span className="text-sm text-default-500">
+                          {user.availability
+                            .map((avail) => {
+                              switch (avail) {
+                                case "freelance":
+                                  return t.profile.availabilityFreelance;
+                                case "part_time":
+                                  return t.profile.availabilityPartTime;
+                                case "full_time":
+                                  return t.profile.availabilityFullTime;
+                                case "consulting":
+                                  return t.profile.availabilityConsulting;
+                                case "not_available":
+                                  return t.profile.availabilityNotAvailable;
+                                default:
+                                  return avail;
+                              }
+                            })
+                            .join(", ")}
+                        </span>
                       </div>
                     )}
                 </div>
