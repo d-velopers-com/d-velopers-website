@@ -11,12 +11,15 @@ export const metadata: Metadata = {
       "Unlock your Discord access with a YouTube/Twitch subscription. Join the D-velopers community and connect with developers worldwide.",
     url: `${siteConfig.url}/discord`,
     type: "website",
+    locale: "en_US",
+    siteName: siteConfig.name,
     images: [
       {
         url: `${siteConfig.url}${siteConfig.ogImage}`,
         width: 1200,
         height: 630,
         alt: "D-velopers Discord",
+        type: "image/png",
       },
     ],
   },
@@ -29,6 +32,8 @@ export const metadata: Metadata = {
   },
   other: {
     "theme-color": siteConfig.themeColor,
+    "og:image:secure_url": `${siteConfig.url}${siteConfig.ogImage}`,
+    "og:image:type": "image/png",
   },
 };
 

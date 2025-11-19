@@ -24,16 +24,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     user.description ||
     `${displayName}${user.title ? ` - ${user.title}` : ""}${user.country ? ` from ${user.country}` : ""} on D-velopers. ${user.tags && user.tags.length > 0 ? `Technologies: ${user.tags.slice(0, 5).join(", ")}.` : ""}`;
 
+  // Usar imagen más grande para mejor calidad en redes sociales
   const avatarUrl = user.avatar
     ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png?size=1024`
     : `https://cdn.discordapp.com/embed/avatars/0.png?size=1024`;
+
+  const profileUrl = `${siteConfig.url}/users/${handler}`;
+
+  // Extraer nombre y apellido si está disponible
+  const nameParts = displayName.split(" ");
+  const firstName = nameParts[0] || displayName;
+  const lastName = nameParts.slice(1).join(" ") || "";
 
   return {
     title,
     description,
     openGraph: {
       type: "profile",
-      url: `${siteConfig.url}/users/${handler}`,
+      url: profileUrl,
+      locale: "en_US",
       siteName: siteConfig.name,
       title,
       description,
@@ -43,11 +52,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           width: 1024,
           height: 1024,
           alt: `${displayName}'s profile picture`,
+          type: "image/png",
         },
       ],
     },
     other: {
+      // Open Graph básicos
       "og:image:secure_url": avatarUrl,
+      "og:image:type": "image/png",
+      "og:image:width": "1024",
+      "og:image:height": "1024",
+      // Open Graph para perfiles
+      "profile:username": handler,
+      "profile:first_name": firstName,
+      ...(lastName && { "profile:last_name": lastName }),
+      // LinkedIn específico
+      "og:image:url": avatarUrl,
+      // Discord específico
       "theme-color": siteConfig.themeColor,
     },
     twitter: {
@@ -55,6 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       images: [avatarUrl],
+      creator: "@d_velopers",
     },
   };
 }
