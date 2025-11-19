@@ -33,11 +33,14 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: siteConfig.name,
+        type: "image/png",
       },
     ],
   },
   other: {
     "theme-color": siteConfig.themeColor,
+    "og:image:secure_url": `${siteConfig.url}${siteConfig.ogImage}`,
+    "og:image:type": "image/png",
   },
   twitter: {
     card: "summary_large_image",
