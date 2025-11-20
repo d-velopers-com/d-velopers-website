@@ -31,7 +31,7 @@
                 className:
                   "aspect-w-16 aspect-h-9 w-full max-w-4xl mx-auto rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,224,255,0.15)] border-2 border-[#00E0FF]/30",
                 children: (0, r.jsx)(a.A, {
-                  videoId: "BL-GMosTfvE",
+                  videoId: "QOYRF1Jv3mg",
                   opts: {
                     width: "100%",
                     playerVars: { autoplay: 0, rel: 0, modestbranding: 1 },
@@ -967,7 +967,7 @@
                       }),
                       (0, r.jsxs)(i.T, {
                         as: "a",
-                        href: "https://www.youtube.com/channel/UCFKZxStYsOVrzdN_FCZ0NGg/join",
+                        href: "https://www.youtube.com/embed/QOYRF1Jv3mg?si=S2gI2cNn38wVJUgp",
                         target: "_blank",
                         rel: "noopener noreferrer",
                         className: "relative overflow-hidden group",
