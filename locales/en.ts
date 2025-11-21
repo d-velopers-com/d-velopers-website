@@ -160,12 +160,12 @@ export const en = {
     availabilityNotAvailable: "Not Available",
     availabilityNotAvailableDesc: "If selected, other options will be disabled",
     englishLevels: [
-      {key: 'A1', text: 'A1 (Elementary)'},
-      {key: 'A2', text: 'A2 (Pre-Intermediate)'},
-      {key: 'B1', text: 'B1 (Intermediate)'},
-      {key: 'B2', text: 'B2 (Upper-Intermediate)'},
-      {key: 'C1', text: 'C1 (Advanced)'},
-      {key: 'C2', text: 'C2 (Proficient)'},
+      {key: "A1", text: "A1 (Elementary)"},
+      {key: "A2", text: "A2 (Pre-Intermediate)"},
+      {key: "B1", text: "B1 (Intermediate)"},
+      {key: "B2", text: "B2 (Upper-Intermediate)"},
+      {key: "C1", text: "C1 (Advanced)"},
+      {key: "C2", text: "C2 (Proficient)"},
     ],
   },
   profile: {

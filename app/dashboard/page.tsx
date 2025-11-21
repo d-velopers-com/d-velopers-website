@@ -944,8 +944,8 @@ export default function DashboardPage() {
                   const selected = Array.from(keys)[0] as string;
                   setEnglishLevel(selected || "");
                 }}>
-                  {t.dashboard.englishLevels.map((englishLevel) => (
-                    <SelectItem key={englishLevel.key}>{englishLevel.text}</SelectItem>
+                  {t.dashboard.englishLevels.map((level) => (
+                    <SelectItem key={level.key}>{level.text}</SelectItem>
                   ))}
               </Select>
             </div>
