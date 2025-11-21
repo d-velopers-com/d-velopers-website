@@ -944,10 +944,11 @@ export default function DashboardPage() {
                 onSelectionChange={(keys) => {
                   const selected = Array.from(keys)[0] as string;
                   setEnglishLevel(selected || "");
-                }}>
-                  {t.dashboard.englishLevels.map((level) => (
-                    <SelectItem key={level.key}>{level.text}</SelectItem>
-                  ))}
+                }}
+              >
+                {t.dashboard.englishLevels.map((level) => (
+                  <SelectItem key={level.key}>{level.text}</SelectItem>
+                ))}
               </Select>
             </div>
 
@@ -956,13 +957,14 @@ export default function DashboardPage() {
                 {t.dashboard.availability}
               </span>
               <div className="flex flex-wrap gap-2">
-                <div
+                <button
+                  type="button"
                   onClick={() => {
                     setAvailability(
                       availability === "freelance" ? null : "freelance",
                     );
                   }}
-                  className="cursor-pointer"
+                  className="cursor-pointer border-none bg-transparent p-0"
                 >
                   <Chip
                     color={availability === "freelance" ? "primary" : "default"}
@@ -970,14 +972,15 @@ export default function DashboardPage() {
                   >
                     {t.dashboard.availabilityFreelance}
                   </Chip>
-                </div>
-                <div
+                </button>
+                <button
+                  type="button"
                   onClick={() => {
                     setAvailability(
                       availability === "part_time" ? null : "part_time",
                     );
                   }}
-                  className="cursor-pointer"
+                  className="cursor-pointer border-none bg-transparent p-0"
                 >
                   <Chip
                     color={availability === "part_time" ? "primary" : "default"}
@@ -985,14 +988,15 @@ export default function DashboardPage() {
                   >
                     {t.dashboard.availabilityPartTime}
                   </Chip>
-                </div>
-                <div
+                </button>
+                <button
+                  type="button"
                   onClick={() => {
                     setAvailability(
                       availability === "full_time" ? null : "full_time",
                     );
                   }}
-                  className="cursor-pointer"
+                  className="cursor-pointer border-none bg-transparent p-0"
                 >
                   <Chip
                     color={availability === "full_time" ? "primary" : "default"}
@@ -1000,31 +1004,33 @@ export default function DashboardPage() {
                   >
                     {t.dashboard.availabilityFullTime}
                   </Chip>
-                </div>
-                <div
+                </button>
+                <button
+                  type="button"
                   onClick={() => {
                     setAvailability(
                       availability === "consulting" ? null : "consulting",
                     );
                   }}
-                  className="cursor-pointer"
+                  className="cursor-pointer border-none bg-transparent p-0"
                 >
                   <Chip
-                    color={availability === "consulting" ? "primary" : "default"}
+                    color={
+                      availability === "consulting" ? "primary" : "default"
+                    }
                     variant={availability === "consulting" ? "solid" : "flat"}
                   >
                     {t.dashboard.availabilityConsulting}
                   </Chip>
-                </div>
-                <div
+                </button>
+                <button
+                  type="button"
                   onClick={() => {
                     setAvailability(
-                      availability === "not_available"
-                        ? null
-                        : "not_available",
+                      availability === "not_available" ? null : "not_available",
                     );
                   }}
-                  className="cursor-pointer"
+                  className="cursor-pointer border-none bg-transparent p-0"
                 >
                   <Chip
                     color={
@@ -1036,7 +1042,7 @@ export default function DashboardPage() {
                   >
                     {t.dashboard.availabilityNotAvailable}
                   </Chip>
-                </div>
+                </button>
               </div>
             </div>
 
@@ -1306,10 +1312,14 @@ export default function DashboardPage() {
                     {t.dashboard.socialLinkInfoExamples}
                   </p>
                   <ul className="text-xs text-default-500 space-y-1 list-disc list-inside">
-                    <li>https://linkedin.com/in/username → &quot;My LinkedIn&quot;</li>
+                    <li>
+                      https://linkedin.com/in/username → &quot;My LinkedIn&quot;
+                    </li>
                     <li>https://github.com/username → &quot;My GitHub&quot;</li>
                     <li>https://x.com/username → &quot;My X&quot;</li>
-                    <li>https://youtube.com/@username → &quot;My YouTube&quot;</li>
+                    <li>
+                      https://youtube.com/@username → &quot;My YouTube&quot;
+                    </li>
                   </ul>
                 </div>
               </ModalBody>
