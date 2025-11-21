@@ -48,7 +48,7 @@ export default function DashboardPage() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [englishLevel, setEnglishLevel] = useState<string>("");
-  const [availability, setAvailability] = useState<string[]>([]);
+  const [availability, setAvailability] = useState<string | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [technologies, setTechnologies] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState("");
@@ -80,7 +80,6 @@ export default function DashboardPage() {
     onOpen: onTrialModalOpen,
     onOpenChange: onTrialModalOpenChange,
   } = useDisclosure();
-  const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -100,7 +99,9 @@ export default function DashboardPage() {
       setTitle(profile.title || "");
       setEnglishLevel(profile.englishLevel || "");
       setAvailability(
-        Array.isArray(profile.availability) ? profile.availability : [],
+        Array.isArray(profile.availability) && profile.availability.length > 0
+          ? profile.availability[0]
+          : null,
       );
       setTags(profile.tags || []);
     }
@@ -242,7 +243,7 @@ export default function DashboardPage() {
       name: name.trim() || null,
       title: title.trim() || null,
       englishLevel: englishLevel || null,
-      availability: availability,
+      availability: availability ? [availability] : [],
       tags: tags,
     });
 
@@ -954,63 +955,89 @@ export default function DashboardPage() {
               <span className="text-sm font-semibold">
                 {t.dashboard.availability}
               </span>
-              <Select
-                isOpen={isAvailabilityOpen}
-                selectionMode="multiple"
-                placeholder={t.dashboard.availabilityPlaceholder}
-                selectedKeys={availability}
-                variant="bordered"
-                onOpenChange={setIsAvailabilityOpen}
-                onSelectionChange={(keys) => {
-                  const selected = Array.from(keys) as string[];
-                  // Si not_available está seleccionado, solo mantener not_available
-                  if (selected.includes("not_available")) {
-                    setAvailability(["not_available"]);
-                    setIsAvailabilityOpen(false);
-                  } else {
-                    // Si se está intentando seleccionar not_available junto con otros, ignorar
-                    // Si se está deseleccionando not_available, permitir otros
-                    setAvailability(selected);
-                    // Cerrar el select después de una selección para mejor UX
-                    setTimeout(() => {
-                      setIsAvailabilityOpen(false);
-                    }, 100);
-                  }
-                }}
-              >
-                <SelectItem
-                  key="freelance"
-                  isDisabled={availability.includes("not_available")}
+              <div className="flex flex-wrap gap-2">
+                <div
+                  onClick={() => {
+                    setAvailability(
+                      availability === "freelance" ? null : "freelance",
+                    );
+                  }}
+                  className="cursor-pointer"
                 >
-                  {t.dashboard.availabilityFreelance}
-                </SelectItem>
-                <SelectItem
-                  key="part_time"
-                  isDisabled={availability.includes("not_available")}
+                  <Chip
+                    color={availability === "freelance" ? "primary" : "default"}
+                    variant={availability === "freelance" ? "solid" : "flat"}
+                  >
+                    {t.dashboard.availabilityFreelance}
+                  </Chip>
+                </div>
+                <div
+                  onClick={() => {
+                    setAvailability(
+                      availability === "part_time" ? null : "part_time",
+                    );
+                  }}
+                  className="cursor-pointer"
                 >
-                  {t.dashboard.availabilityPartTime}
-                </SelectItem>
-                <SelectItem
-                  key="full_time"
-                  isDisabled={availability.includes("not_available")}
+                  <Chip
+                    color={availability === "part_time" ? "primary" : "default"}
+                    variant={availability === "part_time" ? "solid" : "flat"}
+                  >
+                    {t.dashboard.availabilityPartTime}
+                  </Chip>
+                </div>
+                <div
+                  onClick={() => {
+                    setAvailability(
+                      availability === "full_time" ? null : "full_time",
+                    );
+                  }}
+                  className="cursor-pointer"
                 >
-                  {t.dashboard.availabilityFullTime}
-                </SelectItem>
-                <SelectItem
-                  key="consulting"
-                  isDisabled={availability.includes("not_available")}
+                  <Chip
+                    color={availability === "full_time" ? "primary" : "default"}
+                    variant={availability === "full_time" ? "solid" : "flat"}
+                  >
+                    {t.dashboard.availabilityFullTime}
+                  </Chip>
+                </div>
+                <div
+                  onClick={() => {
+                    setAvailability(
+                      availability === "consulting" ? null : "consulting",
+                    );
+                  }}
+                  className="cursor-pointer"
                 >
-                  {t.dashboard.availabilityConsulting}
-                </SelectItem>
-                <SelectItem key="not_available">
-                  {t.dashboard.availabilityNotAvailable}
-                </SelectItem>
-              </Select>
-              {availability.includes("not_available") && (
-                <p className="text-xs text-default-500">
-                  {t.dashboard.availabilityNotAvailableDesc}
-                </p>
-              )}
+                  <Chip
+                    color={availability === "consulting" ? "primary" : "default"}
+                    variant={availability === "consulting" ? "solid" : "flat"}
+                  >
+                    {t.dashboard.availabilityConsulting}
+                  </Chip>
+                </div>
+                <div
+                  onClick={() => {
+                    setAvailability(
+                      availability === "not_available"
+                        ? null
+                        : "not_available",
+                    );
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Chip
+                    color={
+                      availability === "not_available" ? "primary" : "default"
+                    }
+                    variant={
+                      availability === "not_available" ? "solid" : "flat"
+                    }
+                  >
+                    {t.dashboard.availabilityNotAvailable}
+                  </Chip>
+                </div>
+              </div>
             </div>
 
             <div className="flex flex-col gap-2">
