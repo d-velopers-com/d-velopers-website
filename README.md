@@ -254,13 +254,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Links
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [HeroUI Documentation](https://heroui.dev/)
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [Discord Developer Portal](https://discord.com/developers/applications)
-
 ## 💬 Support
 
 For support, visit our [Discord page](https://www.d-velopers.com/discord) or open an issue.
