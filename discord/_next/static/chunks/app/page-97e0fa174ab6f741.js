@@ -967,7 +967,7 @@
                       }),
                       (0, r.jsxs)(i.T, {
                         as: "a",
-                        href: "https://www.youtube.com/embed/QOYRF1Jv3mg?si=S2gI2cNn38wVJUgp",
+                        href: "https://www.youtube.com/channel/UCFKZxStYsOVrzdN_FCZ0NGg/join",
                         target: "_blank",
                         rel: "noopener noreferrer",
                         className: "relative overflow-hidden group",
