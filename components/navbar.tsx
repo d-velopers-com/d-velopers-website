@@ -187,8 +187,8 @@ export function Navbar() {
           </>
         )}
         <NavbarMenuItem>
-          <button
-            className="flex items-center justify-between w-full py-1 cursor-pointer hover:bg-default-100 dark:hover:bg-default-50 rounded-lg px-2 -mx-2 transition-colors border-none bg-transparent text-left"
+          <div
+            className="flex items-center justify-between w-full py-1 cursor-pointer hover:bg-default-100 dark:hover:bg-default-50 rounded-lg px-2 -mx-2 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               const button = e.currentTarget.querySelector(
@@ -198,7 +198,19 @@ export function Navbar() {
                 button.click();
               }
             }}
-            type="button"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                const button = e.currentTarget.querySelector(
+                  "button",
+                ) as HTMLElement;
+                if (button) {
+                  button.click();
+                }
+              }
+            }}
+            role="button"
+            tabIndex={0}
           >
             <span className={`${typography.label} flex items-center h-6`}>
               {t.common.language}
@@ -206,11 +218,11 @@ export function Navbar() {
             <span className="flex items-center justify-center h-6 min-w-[2.5rem]">
               <LanguageSwitcher />
             </span>
-          </button>
+          </div>
         </NavbarMenuItem>
         <NavbarMenuItem>
-          <button
-            className="flex items-center justify-between w-full py-1 cursor-pointer hover:bg-default-100 dark:hover:bg-default-50 rounded-lg px-2 -mx-2 transition-colors border-none bg-transparent text-left"
+          <div
+            className="flex items-center justify-between w-full py-1 cursor-pointer hover:bg-default-100 dark:hover:bg-default-50 rounded-lg px-2 -mx-2 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               const input = e.currentTarget.querySelector(
@@ -220,7 +232,19 @@ export function Navbar() {
                 input.click();
               }
             }}
-            type="button"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                const input = e.currentTarget.querySelector(
+                  'input[type="checkbox"]',
+                ) as HTMLElement;
+                if (input) {
+                  input.click();
+                }
+              }
+            }}
+            role="button"
+            tabIndex={0}
           >
             <span className="text-sm font-medium flex items-center h-6">
               {t.nav.theme}
@@ -228,7 +252,7 @@ export function Navbar() {
             <span className="flex items-center justify-center h-6 min-w-[2.5rem]">
               <ThemeSwitch />
             </span>
-          </button>
+          </div>
         </NavbarMenuItem>
         {status === "authenticated" && (
           <>
