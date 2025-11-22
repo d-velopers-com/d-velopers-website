@@ -138,10 +138,11 @@ export default function Home() {
     >
       <div className="max-w-7xl mx-auto">
         <motion.div
-          className="text-center mb-12 mt-0 min-h-[120px]"
+          className="text-center mb-12 mt-0"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
+          style={{ overflow: "visible" }}
         >
           <motion.h1
             className={`${typography.h1} mb-4 text-foreground min-h-[2.5rem]`}
@@ -159,25 +160,18 @@ export default function Home() {
           >
             {t.home.subtitle}
           </motion.p>
-          {status === "unauthenticated" && (
-            <motion.div
-              className="mt-8 flex justify-center"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
+          <div className="mt-8 flex justify-center min-h-[3.5rem]">
+            <Button
+              as={Link}
+              className={`${focusStates.button} rounded-full`}
+              color="primary"
+              href="/login"
+              size="lg"
+              variant="shadow"
             >
-              <Button
-                as={Link}
-                className={`${typography.buttonLg} px-8 py-6 ${focusStates.button}`}
-                color="primary"
-                href="/login"
-                size="lg"
-                variant="shadow"
-              >
-                {t.home.joinCommunity}
-              </Button>
-            </motion.div>
-          )}
+              {t.home.joinCommunity}
+            </Button>
+          </div>
         </motion.div>
 
         {loading ? (

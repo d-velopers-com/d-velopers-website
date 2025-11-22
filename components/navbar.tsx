@@ -187,24 +187,48 @@ export function Navbar() {
           </>
         )}
         <NavbarMenuItem>
-          <div className="flex items-center justify-between w-full py-1">
+          <button
+            className="flex items-center justify-between w-full py-1 cursor-pointer hover:bg-default-100 dark:hover:bg-default-50 rounded-lg px-2 -mx-2 transition-colors border-none bg-transparent text-left"
+            onClick={(e) => {
+              e.stopPropagation();
+              const button = e.currentTarget.querySelector(
+                "button",
+              ) as HTMLElement;
+              if (button) {
+                button.click();
+              }
+            }}
+            type="button"
+          >
             <span className={`${typography.label} flex items-center h-6`}>
               {t.common.language}
             </span>
-            <div className="flex items-center justify-center h-6 min-w-[2.5rem]">
+            <span className="flex items-center justify-center h-6 min-w-[2.5rem]">
               <LanguageSwitcher />
-            </div>
-          </div>
+            </span>
+          </button>
         </NavbarMenuItem>
         <NavbarMenuItem>
-          <div className="flex items-center justify-between w-full py-1">
+          <button
+            className="flex items-center justify-between w-full py-1 cursor-pointer hover:bg-default-100 dark:hover:bg-default-50 rounded-lg px-2 -mx-2 transition-colors border-none bg-transparent text-left"
+            onClick={(e) => {
+              e.stopPropagation();
+              const input = e.currentTarget.querySelector(
+                'input[type="checkbox"]',
+              ) as HTMLElement;
+              if (input) {
+                input.click();
+              }
+            }}
+            type="button"
+          >
             <span className="text-sm font-medium flex items-center h-6">
               {t.nav.theme}
             </span>
-            <div className="flex items-center justify-center h-6 min-w-[2.5rem]">
+            <span className="flex items-center justify-center h-6 min-w-[2.5rem]">
               <ThemeSwitch />
-            </div>
-          </div>
+            </span>
+          </button>
         </NavbarMenuItem>
         {status === "authenticated" && (
           <>
