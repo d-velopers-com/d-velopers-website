@@ -129,14 +129,16 @@ export default function ProfilePage() {
         <CardBody className="p-0">
           <div className={`relative ${gradients.primary} h-40 rounded-t-lg`} />
 
-          <div className="relative px-8 pb-8">
-            <div className={`flex items-start ${spacing.lg} -mt-16 mb-6`}>
+          <div className="relative px-4 sm:px-8 pb-6 sm:pb-8">
+            <div
+              className={`flex flex-col sm:flex-row items-center sm:items-start ${spacing.lg} -mt-16 mb-6`}
+            >
               <Avatar
-                className={`w-28 h-28 border-4 border-background shadow-xl ${avatarStyles.ringLarge} flex-shrink-0`}
+                className={`w-24 h-24 sm:w-28 sm:h-28 border-4 border-background shadow-xl ${avatarStyles.ringLarge} flex-shrink-0`}
                 src={avatarUrl}
               />
 
-              <div className="flex-1 pt-20">
+              <div className="flex-1 w-full sm:pt-20 pt-4 text-center sm:text-left">
                 <div className={`flex flex-col ${spacing.sm} mb-4`}>
                   <h1 className={`${typography.h1} text-foreground`}>
                     {user.name || user.username}
@@ -153,7 +155,9 @@ export default function ProfilePage() {
                 <div
                   className={`flex flex-col ${spacing.md} ${typography.body} text-default-500`}
                 >
-                  <div className={`flex flex-wrap items-center ${spacing.md}`}>
+                  <div
+                    className={`flex flex-wrap items-center justify-center sm:justify-start ${spacing.md}`}
+                  >
                     {user.country && (
                       <div className={`flex items-center ${spacing.sm}`}>
                         <img
@@ -189,7 +193,7 @@ export default function ProfilePage() {
                     Array.isArray(user.availability) &&
                     user.availability.length > 0 && (
                       <div
-                        className={`flex flex-wrap items-center ${spacing.sm} text-default-600 font-medium`}
+                        className={`flex flex-wrap items-center justify-center sm:justify-start ${spacing.sm} text-default-600 font-medium`}
                       >
                         <svg
                           className={`${iconSizes.md} text-default-400 flex-shrink-0`}

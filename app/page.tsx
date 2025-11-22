@@ -225,14 +225,14 @@ export default function Home() {
                   whileHover={{ y: -4, transition: { duration: 0.2 } }}
                 >
                   <Card
-                    className={`relative overflow-hidden ${cardStyles.base} ${cardStyles.hover} h-full flex flex-col`}
+                    className={`relative overflow-hidden ${cardStyles.base} ${cardStyles.hover} h-full flex flex-col min-h-[200px]`}
                   >
                     <CardBody className="relative p-0 flex flex-col overflow-hidden h-full">
                       <Link
                         href={`/users/${user.handler}`}
                         className="p-4 flex flex-col h-full"
                       >
-                        <div className="flex items-start gap-3 flex-shrink-0">
+                        <div className="flex items-start gap-3 flex-shrink-0 mb-3">
                           <div className="relative w-12 h-12 flex-shrink-0">
                             <Avatar
                               className={`w-12 h-12 ${avatarStyles.ring}`}
@@ -258,46 +258,48 @@ export default function Home() {
                             className={`flex-1 min-w-0 flex flex-col ${spacing.sm} overflow-hidden`}
                           >
                             <h3
-                              className={`${typography.h3} leading-tight truncate flex-shrink-0`}
+                              className={`${typography.h3} leading-tight truncate flex-shrink-0 min-h-[1.5rem]`}
                             >
                               {user.name || user.username}
                             </h3>
-                            {user.title && (
-                              <p
-                                className={`${typography.caption} line-clamp-2 overflow-hidden text-ellipsis leading-relaxed min-h-[2.5rem]`}
-                                title={user.title}
-                              >
-                                {user.title}
-                              </p>
-                            )}
+                            <p
+                              className={`${typography.caption} line-clamp-2 overflow-hidden text-ellipsis leading-relaxed min-h-[2.5rem]`}
+                              title={user.title || ""}
+                            >
+                              {user.title || "\u00A0"}
+                            </p>
                           </div>
                         </div>
-                        {displayTags.length > 0 && (
-                          <div className={`flex flex-wrap ${spacing.sm} mt-3`}>
-                            {displayTags.map((tag) => (
-                              <Chip
-                                key={tag}
-                                className={chipStyles.base}
-                                classNames={chipStyles.classNames}
-                                color="primary"
-                                size="sm"
-                                variant="flat"
-                              >
-                                {tag}
-                              </Chip>
-                            ))}
-                            {remainingTags > 0 && (
-                              <Chip
-                                className={chipStyles.base}
-                                color="default"
-                                size="sm"
-                                variant="flat"
-                              >
-                                +{remainingTags}
-                              </Chip>
-                            )}
-                          </div>
-                        )}
+                        <div className={`flex flex-wrap ${spacing.sm} mt-auto`}>
+                          {displayTags.length > 0 ? (
+                            <>
+                              {displayTags.map((tag) => (
+                                <Chip
+                                  key={tag}
+                                  className={chipStyles.base}
+                                  classNames={chipStyles.classNames}
+                                  color="primary"
+                                  size="sm"
+                                  variant="flat"
+                                >
+                                  {tag}
+                                </Chip>
+                              ))}
+                              {remainingTags > 0 && (
+                                <Chip
+                                  className={chipStyles.base}
+                                  color="default"
+                                  size="sm"
+                                  variant="flat"
+                                >
+                                  +{remainingTags}
+                                </Chip>
+                              )}
+                            </>
+                          ) : (
+                            <div className="min-h-[1.5rem]" />
+                          )}
+                        </div>
                       </Link>
                     </CardBody>
                   </Card>
