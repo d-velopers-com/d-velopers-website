@@ -27,6 +27,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { useSession, signOut } from "@/hooks/useSession";
 import { useLanguage } from "@/contexts/language-context";
 import { DiscordIcon } from "@/components/icons";
+import { typography, focusStates } from "@/lib/ui-constants";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -167,11 +168,11 @@ export function Navbar() {
               <div className="flex items-center gap-3 w-full py-2">
                 <Avatar size="sm" src={avatarUrl} />
                 <div className="flex flex-col flex-1 min-w-0">
-                  <span className="text-sm font-semibold truncate">
+                  <span className={`${typography.label} truncate`}>
                     {session.user.username}
                   </span>
                   <Link
-                    className="text-xs text-default-500 hover:text-default-700"
+                    className={`${typography.caption} hover:text-default-700`}
                     href="/dashboard"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -187,7 +188,7 @@ export function Navbar() {
         )}
         <NavbarMenuItem>
           <div className="flex items-center justify-between w-full py-1">
-            <span className="text-sm font-medium flex items-center h-6">
+            <span className={`${typography.label} flex items-center h-6`}>
               {t.common.language}
             </span>
             <div className="flex items-center justify-center h-6 min-w-[2.5rem]">
@@ -212,7 +213,7 @@ export function Navbar() {
             </NavbarMenuItem>
             <NavbarMenuItem>
               <Button
-                className="w-full justify-start"
+                className={`w-full justify-start ${focusStates.button}`}
                 variant="light"
                 onPress={() => {
                   setIsMenuOpen(false);

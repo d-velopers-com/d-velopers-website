@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useParams, notFound } from "next/navigation";
 import { Card, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
@@ -19,6 +20,16 @@ import {
   InstagramIcon,
   DiscordIcon,
 } from "@/components/icons";
+import {
+  cardStyles,
+  typography,
+  iconSizes,
+  chipStyles,
+  avatarStyles,
+  gradients,
+  spacing,
+  borderRadius,
+} from "@/lib/ui-constants";
 
 interface User {
   username: string;
@@ -75,15 +86,15 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen px-4 py-8">
-        <Card className="max-w-2xl w-full shadow-lg border-1 border-default-200">
-          <CardBody className="p-0">
-            <Skeleton className="h-32 w-full rounded-t-lg" />
-            <div className="relative px-6 pb-6">
+      <div className="flex items-center justify-center min-h-screen px-4 py-8 overflow-hidden">
+        <Card className="max-w-2xl w-full shadow-lg border-1 border-default-200 overflow-hidden">
+          <CardBody className="p-0 overflow-hidden">
+            <Skeleton className="h-32 w-full rounded-t-lg shimmer" />
+            <div className="relative px-6 pb-6 overflow-hidden">
               <div className="flex flex-col items-center -mt-12 mb-4">
-                <Skeleton className="w-24 h-24 rounded-full" />
-                <Skeleton className="w-32 h-6 mt-4 rounded-lg" />
-                <Skeleton className="w-24 h-4 mt-2 rounded-lg" />
+                <Skeleton className="w-24 h-24 rounded-full shimmer" />
+                <Skeleton className="w-32 h-6 mt-4 rounded-lg shimmer" />
+                <Skeleton className="w-24 h-4 mt-2 rounded-lg shimmer" />
               </div>
             </div>
           </CardBody>
@@ -114,33 +125,37 @@ export default function ProfilePage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-8">
-      <Card className="max-w-3xl w-full shadow-lg border-1 border-default-200">
+      <Card className={`max-w-3xl w-full ${cardStyles.base}`}>
         <CardBody className="p-0">
-          <div className="relative bg-gradient-to-r from-primary-500 to-info-500 h-40 rounded-t-lg" />
+          <div className={`relative ${gradients.primary} h-40 rounded-t-lg`} />
 
           <div className="relative px-8 pb-8">
-            <div className="flex items-start gap-6 -mt-16 mb-6">
+            <div className={`flex items-start ${spacing.lg} -mt-16 mb-6`}>
               <Avatar
-                className="w-28 h-28 border-4 border-background shadow-xl ring-4 ring-primary/20 flex-shrink-0"
+                className={`w-28 h-28 border-4 border-background shadow-xl ${avatarStyles.ringLarge} flex-shrink-0`}
                 src={avatarUrl}
               />
 
               <div className="flex-1 pt-20">
-                <div className="flex flex-col gap-2 mb-4">
-                  <h1 className="text-3xl font-bold text-foreground">
+                <div className={`flex flex-col ${spacing.sm} mb-4`}>
+                  <h1 className={`${typography.h1} text-foreground`}>
                     {user.name || user.username}
                   </h1>
                   {user.title && (
-                    <p className="text-lg text-default-600 font-medium">
+                    <p
+                      className={`${typography.bodyLarge} text-default-600 font-medium`}
+                    >
                       {user.title}
                     </p>
                   )}
                 </div>
 
-                <div className="flex flex-col gap-3 text-sm text-default-500">
-                  <div className="flex flex-wrap items-center gap-4">
+                <div
+                  className={`flex flex-col ${spacing.md} ${typography.body} text-default-500`}
+                >
+                  <div className={`flex flex-wrap items-center ${spacing.md}`}>
                     {user.country && (
-                      <div className="flex items-center gap-2">
+                      <div className={`flex items-center ${spacing.sm}`}>
                         <img
                           alt={getCountryName(user.country)}
                           className="w-5 h-4 rounded object-cover"
@@ -150,9 +165,9 @@ export default function ProfilePage() {
                       </div>
                     )}
                     {user.englishLevel && (
-                      <div className="flex items-center gap-2">
+                      <div className={`flex items-center ${spacing.sm}`}>
                         <svg
-                          className="w-5 h-5"
+                          className={iconSizes.md}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -173,9 +188,11 @@ export default function ProfilePage() {
                   {user.availability &&
                     Array.isArray(user.availability) &&
                     user.availability.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-2 text-default-600 font-medium">
+                      <div
+                        className={`flex flex-wrap items-center ${spacing.sm} text-default-600 font-medium`}
+                      >
                         <svg
-                          className="w-5 h-5 text-default-400 flex-shrink-0"
+                          className={`${iconSizes.md} text-default-400 flex-shrink-0`}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -187,10 +204,10 @@ export default function ProfilePage() {
                             strokeWidth={2}
                           />
                         </svg>
-                        <span className="text-sm">
+                        <span className={typography.body}>
                           {t.profile.availability}:
                         </span>
-                        <span className="text-sm text-default-500">
+                        <span className={`${typography.body} text-default-500`}>
                           {user.availability
                             .map((avail) => {
                               switch (avail) {
@@ -217,7 +234,9 @@ export default function ProfilePage() {
             </div>
 
             {user.description && (
-              <div className="mb-6 bg-default-50/50 dark:bg-default-100/10 rounded-lg p-5 border border-default-200/50">
+              <div
+                className={`mb-6 bg-default-50/50 dark:bg-default-100/10 ${borderRadius.outer.lg} p-5 border border-default-200/50`}
+              >
                 <div className="flex items-center gap-2 mb-3">
                   <svg
                     className="w-5 h-5 text-primary"
@@ -232,11 +251,15 @@ export default function ProfilePage() {
                       strokeWidth={2}
                     />
                   </svg>
-                  <span className="text-sm font-semibold text-default-700">
+                  <span
+                    className={`${typography.body} font-semibold text-default-700`}
+                  >
                     {t.profile.about}
                   </span>
                 </div>
-                <p className="text-sm text-default-600 leading-relaxed whitespace-pre-wrap">
+                <p
+                  className={`${typography.body} text-default-600 leading-relaxed whitespace-pre-wrap`}
+                >
                   {user.description}
                 </p>
               </div>
@@ -244,15 +267,12 @@ export default function ProfilePage() {
 
             {user.tags && user.tags.length > 0 && (
               <div className="mb-6">
-                <div className="flex flex-wrap gap-2">
+                <div className={`flex flex-wrap ${spacing.sm}`}>
                   {user.tags.map((tag) => (
                     <Chip
                       key={tag}
-                      classNames={{
-                        base: "bg-primary-100 dark:!bg-[#111111]",
-                        content:
-                          "text-primary-800 dark:!text-[#00C8FF] font-semibold",
-                      }}
+                      className={chipStyles.base}
+                      classNames={chipStyles.classNames}
                       color="primary"
                       size="md"
                       variant="flat"
@@ -291,45 +311,70 @@ export default function ProfilePage() {
                       strokeWidth={2}
                     />
                   </svg>
-                  <span className="flex-1 text-sm text-default-600 font-medium">
+                  <span className={`flex-1 ${typography.body} font-medium`}>
                     {user.contactEmail}
                   </span>
-                  <Button
-                    className={`min-w-fit pointer-events-none transition-transform duration-150 ${emailButtonPressed ? "scale-95" : ""}`}
-                    color={emailCopied ? "success" : "default"}
-                    size="sm"
-                    variant="flat"
-                  >
+                  <AnimatePresence mode="wait">
                     {emailCopied ? (
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                      <motion.div
+                        key="check"
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        exit={{ scale: 0, rotate: 180 }}
+                        transition={{ duration: 0.3, type: "spring" }}
                       >
-                        <path
-                          d="M5 13l4 4L19 7"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                        />
-                      </svg>
+                        <Button
+                          className="min-w-fit pointer-events-none"
+                          color="success"
+                          size="sm"
+                          variant="flat"
+                        >
+                          <svg
+                            className="w-4 h-4 checkmark-animated"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M5 13l4 4L19 7"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                            />
+                          </svg>
+                        </Button>
+                      </motion.div>
                     ) : (
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                      <motion.div
+                        key="copy"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        transition={{ duration: 0.2 }}
                       >
-                        <path
-                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                        />
-                      </svg>
+                        <Button
+                          className={`min-w-fit pointer-events-none transition-transform duration-150 ${emailButtonPressed ? "scale-95" : ""}`}
+                          color="default"
+                          size="sm"
+                          variant="flat"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                            />
+                          </svg>
+                        </Button>
+                      </motion.div>
                     )}
-                  </Button>
+                  </AnimatePresence>
                 </div>
               )}
 
