@@ -1,4 +1,6 @@
 import { prisma } from "./prisma";
+import { Prisma } from "@prisma/client";
+import { SearchFilters } from "@/types";
 
 interface CreateUserData {
   discordId: string;
@@ -201,29 +203,57 @@ export async function updateUserProfile(
   });
 }
 
-export async function getPublicUsers() {
-  return await prisma.user.findMany({
-    where: { isPublic: true },
-    select: {
-      handler: true,
-      username: true,
-      discriminator: true,
-      avatar: true,
-      discordId: true,
-      description: true,
-      link: true,
-      contactLinks: true,
-      contactEmail: true,
-      country: true,
-      name: true,
-      title: true,
-      tags: true,
-      englishLevel: true,
-      availability: true,
-      roles: true,
-      joinedServerAt: true,
-      profileActivatedAt: true,
-      createdAt: true,
-    },
-  });
+export async function getPublicUsers(filters?: SearchFilters) {
+  const conditions: Prisma.Sql[] = [Prisma.sql`"isPublic" = true`];
+
+  if (filters?.searchQuery) {
+    const query = `%${filters.searchQuery.trim()}%`;
+    conditions.push(Prisma.sql`(
+      LOWER(title) LIKE LOWER(${query}) OR
+      LOWER(description) LIKE LOWER(${query}) OR
+      LOWER(name) LIKE LOWER(${query}) OR
+      EXISTS (
+        SELECT 1 FROM unnest(tags) AS tag
+        WHERE LOWER(tag) LIKE LOWER(${query})
+      )
+    )`);
+  }
+
+  if (filters?.english) {
+    conditions.push(Prisma.sql`"englishLevel" = ${filters.english}`);
+  }
+
+  if (filters?.availability) {
+    conditions.push(Prisma.sql`${filters.availability} = ANY(availability)`);
+  }
+
+  if (filters?.country) {
+    conditions.push(Prisma.sql`country = ${filters.country}`);
+  }
+  const whereClause = Prisma.join(conditions, " AND ");
+  return await prisma.$queryRaw<any[]>`
+    SELECT
+      handler,
+      username,
+      discriminator,
+      avatar,
+      "discordId",
+      description,
+      link,
+      "contactLinks",
+      "contactEmail",
+      country,
+      name,
+      title,
+      tags,
+      "englishLevel",
+      availability,
+      roles,
+      "joinedServerAt",
+      "profileActivatedAt",
+      "createdAt"
+    FROM "User"
+    WHERE ${whereClause}
+    ORDER BY "createdAt" DESC
+  `;
 }

@@ -1,6 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { getPublicUsers } from "@/lib/user";
+import {SearchFilters} from "@/types";
+import {Availability} from "@/lib/constants";
 
 function getRolePriority(userRoles: string[], allowedRoles: string[]): number {
   for (let i = 0; i < allowedRoles.length; i++) {
@@ -12,9 +14,16 @@ function getRolePriority(userRoles: string[], allowedRoles: string[]): number {
   return allowedRoles.length;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const users = await getPublicUsers();
+    const searchParams = request.nextUrl.searchParams;
+    const filters: SearchFilters = {
+      searchQuery: searchParams.get("searchQuery") || undefined,
+      english: searchParams.get("english") || undefined,
+      availability: searchParams.get("availability") as Availability || undefined,
+      country: searchParams.get("country") || undefined,
+    };
+    const users = await getPublicUsers(filters);
 
     // Asegurar que contactLinks siempre sea un array
     const normalizedUsers = users.map((user) => ({
