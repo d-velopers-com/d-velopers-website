@@ -17,6 +17,7 @@ import {
 import { useLanguage } from "@/contexts/language-context";
 import { DiscordIconLarge } from "@/components/discord-icon";
 import { useSession } from "@/hooks/useSession";
+import { typography, focusStates } from "@/lib/ui-constants";
 
 export default function LoginPage() {
   const { status } = useSession();
@@ -53,13 +54,15 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen px-4">
       <Card className="max-w-md w-full">
         <CardHeader className="flex flex-col gap-1 items-center justify-center pt-8 pb-4">
-          <h1 className="text-3xl font-bold">{t.login.title}</h1>
-          <p className="text-default-500 text-center">{t.login.subtitle}</p>
+          <h1 className={typography.h1}>{t.login.title}</h1>
+          <p className={`${typography.body} text-default-500 text-center`}>
+            {t.login.subtitle}
+          </p>
         </CardHeader>
 
         <CardBody className="px-8 py-6">
           <Button
-            className="bg-[#5865F2] hover:bg-[#4752C4] w-full"
+            className={`bg-[#5865F2] hover:bg-[#4752C4] w-full ${focusStates.button}`}
             color="primary"
             size="lg"
             startContent={<DiscordIconLarge size={24} />}
@@ -72,11 +75,11 @@ export default function LoginPage() {
         <Divider />
 
         <CardFooter className="px-8 py-6">
-          <p className="text-xs text-default-400 text-center w-full">
+          <p className={`${typography.captionMuted} text-center w-full`}>
             {t.login.terms}{" "}
             <Button
               as="span"
-              className="text-xs h-auto p-0 min-w-0 bg-transparent data-[hover=true]:bg-transparent"
+              className={`${typography.caption} h-auto p-0 min-w-0 bg-transparent data-[hover=true]:bg-transparent`}
               color="primary"
               variant="light"
               onPress={onTermsOpen}
@@ -86,7 +89,7 @@ export default function LoginPage() {
             {t.login.and}{" "}
             <Button
               as="span"
-              className="text-xs h-auto p-0 min-w-0 bg-transparent data-[hover=true]:bg-transparent"
+              className={`${typography.caption} h-auto p-0 min-w-0 bg-transparent data-[hover=true]:bg-transparent`}
               color="primary"
               variant="light"
               onPress={onPrivacyOpen}
@@ -107,10 +110,10 @@ export default function LoginPage() {
               <ModalBody>
                 <div className="space-y-4">
                   <div>
-                    <h3 className="font-semibold mb-2">
+                    <h3 className={`${typography.h4} mb-2`}>
                       {t.login.termsSection1Title}
                     </h3>
-                    <p className="text-sm text-default-600">
+                    <p className={typography.body}>
                       {t.login.termsSection1Content}
                     </p>
                   </div>
@@ -149,7 +152,11 @@ export default function LoginPage() {
                 </div>
               </ModalBody>
               <ModalFooter>
-                <Button color="primary" onPress={onClose}>
+                <Button
+                  className={focusStates.button}
+                  color="primary"
+                  onPress={onClose}
+                >
                   {t.common.close}
                 </Button>
               </ModalFooter>
@@ -210,7 +217,11 @@ export default function LoginPage() {
                 </div>
               </ModalBody>
               <ModalFooter>
-                <Button color="primary" onPress={onClose}>
+                <Button
+                  className={focusStates.button}
+                  color="primary"
+                  onPress={onClose}
+                >
                   {t.common.close}
                 </Button>
               </ModalFooter>
