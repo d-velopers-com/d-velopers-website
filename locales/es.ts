@@ -103,6 +103,8 @@ export const es = {
     joinedServer: "Miembro desde",
     syncProfile: "Sincronizar con Discord",
     syncDiscord: "Sincronizar Discord",
+    syncDiscordTooltip:
+      "Sincroniza los datos de tu perfil desde Discord (avatar, nombre de usuario, etc.)",
     syncing: "Sincronizando...",
     syncSuccess: "¡Perfil sincronizado!",
     syncError: "Error al sincronizar perfil",
@@ -160,6 +162,7 @@ export const es = {
       "Cuando agregas un enlace de red social, se mostrará automáticamente con el nombre y el icono de la plataforma correspondiente. Las plataformas soportadas incluyen:",
     socialLinkInfoExamples: "Ejemplos:",
     errorSaving: "Error al guardar",
+    titleMaxLengthError: "El título debe tener 80 caracteres o menos",
     availability: "Disponibilidad",
     availabilityPlaceholder: "Selecciona tu disponibilidad",
     availabilityFreelance: "Freelance",
@@ -167,7 +170,8 @@ export const es = {
     availabilityFullTime: "Tiempo Completo",
     availabilityConsulting: "Asesorías",
     availabilityNotAvailable: "No Disponible",
-    availabilityNotAvailableDesc: "Si se selecciona, las otras opciones se deshabilitarán",
+    availabilityNotAvailableDesc:
+      "Si se selecciona, las otras opciones se deshabilitarán",
     englishLevels: [
       {key: "A1", text: "A1 (Elemental)"},
       {key: "A2", text: "A2 (Preintermedio)"},
