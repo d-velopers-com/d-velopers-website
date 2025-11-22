@@ -10,6 +10,7 @@ import {
   InstagramIcon,
 } from "@/components/icons";
 import { useLanguage } from "@/contexts/language-context";
+import { typography } from "@/lib/ui-constants";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -78,7 +79,7 @@ export function Footer() {
           </div>
 
           {/* Copyright */}
-          <p className="text-sm text-default-500 text-center">
+          <p className={`${typography.body} text-default-500 text-center`}>
             © {currentYear} D-velopers. {t.footer.allRightsReserved}
           </p>
         </div>

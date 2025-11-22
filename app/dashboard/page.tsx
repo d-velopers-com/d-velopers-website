@@ -22,11 +22,25 @@ import {
   ModalFooter,
   useDisclosure,
 } from "@heroui/modal";
+import { Tooltip } from "@heroui/tooltip";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { useLanguage } from "@/contexts/language-context";
 import { useSession } from "@/hooks/useSession";
 import { useProfile } from "@/hooks/useProfile";
 import { countries, getCountryFlagUrl, getCountryName } from "@/lib/countries";
+import {
+  cardStyles,
+  typography,
+  iconSizes,
+  stateColors,
+  avatarStyles,
+  focusStates,
+  spacing,
+  chipStyles,
+  colors,
+  colorOpacity,
+} from "@/lib/ui-constants";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -58,6 +72,7 @@ export default function DashboardPage() {
   const [linkError, setLinkError] = useState("");
   const [contactLinkError, setContactLinkError] = useState("");
   const [tagsError, setTagsError] = useState("");
+  const [titleError, setTitleError] = useState("");
   const [allowedRoles, setAllowedRoles] = useState<string[]>([]);
   const [technologiesLoading, setTechnologiesLoading] = useState(true);
   const [allowedRolesLoading, setAllowedRolesLoading] = useState(true);
@@ -212,6 +227,20 @@ export default function DashboardPage() {
     setLinkError("");
     setContactLinkError("");
     setTagsError("");
+    setTitleError("");
+
+    if (title.trim().length > 80) {
+      setTitleError(
+        t.dashboard.titleMaxLengthError ||
+          "Title must be 80 characters or less",
+      );
+      toast.error(
+        t.dashboard.titleMaxLengthError ||
+          "Title must be 80 characters or less",
+      );
+
+      return;
+    }
 
     if (link && link.trim() !== "") {
       try {
@@ -296,10 +325,10 @@ export default function DashboardPage() {
         <Card className="max-w-md w-full">
           <CardBody className="gap-4 p-8">
             <div className="flex flex-col items-center gap-4">
-              <Skeleton className="rounded-full w-24 h-24" />
-              <Skeleton className="rounded-lg w-48 h-6" />
-              <Skeleton className="rounded-lg w-64 h-4" />
-              <Skeleton className="rounded-lg w-full h-20" />
+              <Skeleton className="rounded-full w-24 h-24 shimmer" />
+              <Skeleton className="rounded-lg w-48 h-6 shimmer" />
+              <Skeleton className="rounded-lg w-64 h-4 shimmer" />
+              <Skeleton className="rounded-lg w-full h-20 shimmer" />
             </div>
           </CardBody>
         </Card>
@@ -374,46 +403,58 @@ export default function DashboardPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-8">
-      <Card className="max-w-2xl w-full">
-        <CardHeader className="flex flex-col gap-1 items-center justify-center pt-8 pb-4">
+      <Card className={`max-w-2xl w-full ${cardStyles.base}`}>
+        <CardHeader
+          className={`flex flex-col ${spacing.sm} items-center justify-center pt-8 pb-4`}
+        >
           <Avatar
-            className="w-24 h-24 ring-4 ring-primary/10"
+            className={`w-24 h-24 ${avatarStyles.ringLarge}`}
             src={avatarUrl}
           />
-          <h1 className="text-2xl font-bold mt-4">{user.username}</h1>
+          <h1 className={`${typography.h2} mt-4`}>{user.username}</h1>
           {user.email && (
-            <p className="text-default-500 text-sm">{user.email}</p>
+            <p className={`${typography.body} text-default-500`}>
+              {user.email}
+            </p>
           )}
         </CardHeader>
 
         <Divider />
 
-        <CardBody className="gap-6 px-8 py-6">
-          <div className="flex flex-col gap-2 mb-4">
+        <CardBody className={`${spacing.lg} px-8 py-6`}>
+          <div className={`flex flex-col ${spacing.sm} mb-4`}>
             <div className="flex justify-end">
-              <Button
-                color="primary"
-                isLoading={syncing}
-                size="sm"
-                variant="flat"
-                onPress={handleSync}
+              <Tooltip
+                content={
+                  t.dashboard.syncDiscordTooltip ||
+                  "Sync your profile data from Discord"
+                }
               >
-                {syncing ? t.dashboard.syncing : t.dashboard.syncDiscord}
-              </Button>
+                <Button
+                  className={focusStates.button}
+                  color="primary"
+                  isLoading={syncing}
+                  size="sm"
+                  variant="flat"
+                  onPress={handleSync}
+                >
+                  {syncing ? t.dashboard.syncing : t.dashboard.syncDiscord}
+                </Button>
+              </Tooltip>
             </div>
             {syncMessage && (
               <div
-                className={`flex items-center gap-2 p-2 rounded-md ${
+                className={`flex items-center ${spacing.sm} p-2 rounded-md ${
                   syncMessage.type === "success"
-                    ? "bg-success/10 border border-success/20"
-                    : "bg-danger/10 border border-danger/20"
+                    ? stateColors.success.full
+                    : stateColors.danger.full
                 }`}
               >
                 <svg
-                  className={`w-4 h-4 ${
+                  className={`${iconSizes.sm} ${
                     syncMessage.type === "success"
-                      ? "text-success"
-                      : "text-danger"
+                      ? stateColors.success.text
+                      : stateColors.danger.text
                   }`}
                   fill="none"
                   stroke="currentColor"
@@ -436,10 +477,10 @@ export default function DashboardPage() {
                   )}
                 </svg>
                 <span
-                  className={`text-xs font-medium ${
+                  className={`${typography.caption} font-medium ${
                     syncMessage.type === "success"
-                      ? "text-success"
-                      : "text-danger"
+                      ? stateColors.success.text
+                      : stateColors.danger.text
                   }`}
                 >
                   {syncMessage.text}
@@ -450,9 +491,11 @@ export default function DashboardPage() {
 
           <div className="flex flex-col gap-4">
             {isInTrialPeriod && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-success/10 border border-success/20">
+              <div
+                className={`flex items-start ${spacing.sm} p-3 rounded-lg ${stateColors.success.full}`}
+              >
                 <svg
-                  className="w-5 h-5 flex-shrink-0 mt-0.5 text-success"
+                  className={`${iconSizes.md} flex-shrink-0 mt-0.5 ${stateColors.success.text}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -465,13 +508,17 @@ export default function DashboardPage() {
                   />
                 </svg>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold mb-1 text-success">
+                  <p
+                    className={`${typography.body} font-semibold mb-1 ${stateColors.success.text}`}
+                  >
                     {t.dashboard.trialPeriodActive}
                   </p>
-                  <p className="text-xs text-foreground/70">
+                  <p className={`${typography.caption} text-foreground/70`}>
                     {t.dashboard.trialPeriodActiveDesc}
                   </p>
-                  <p className="text-xs text-foreground/70 mt-2">
+                  <p
+                    className={`${typography.caption} text-foreground/70 mt-2`}
+                  >
                     {t.dashboard.trialPeriodInstructions}{" "}
                     <a
                       href="https://www.d-velopers.com/discord"
@@ -486,7 +533,7 @@ export default function DashboardPage() {
                   {trialEndDate && (
                     <div className="mt-2">
                       <Chip
-                        className="text-xs"
+                        className={chipStyles.base}
                         color="success"
                         size="sm"
                         variant="flat"
@@ -508,9 +555,11 @@ export default function DashboardPage() {
               isServerMember &&
               !canApplyTrialPeriod &&
               !isInTrialPeriod && (
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-danger/10 border border-danger/20">
+                <div
+                  className={`flex items-start ${spacing.sm} p-3 rounded-lg ${stateColors.danger.full}`}
+                >
                   <svg
-                    className="w-5 h-5 flex-shrink-0 mt-0.5 text-danger"
+                    className={`${iconSizes.md} flex-shrink-0 mt-0.5 ${stateColors.danger.text}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -523,10 +572,12 @@ export default function DashboardPage() {
                     />
                   </svg>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold mb-1 text-danger">
+                    <p
+                      className={`${typography.body} font-semibold mb-1 ${stateColors.danger.text}`}
+                    >
                       {t.dashboard.roleRequired}
                     </p>
-                    <p className="text-xs text-foreground/70">
+                    <p className={`${typography.caption} text-foreground/70`}>
                       {t.dashboard.roleRequiredDesc}
                     </p>
                   </div>
@@ -537,8 +588,12 @@ export default function DashboardPage() {
               profile &&
               profile.isPublic &&
               canMakePublic && (
-                <div className="flex flex-col gap-2 p-4 bg-success/10 rounded-lg border border-success/20">
-                  <span className="text-xs font-semibold text-success">
+                <div
+                  className={`flex flex-col ${spacing.sm} p-4 ${stateColors.success.full} rounded-lg`}
+                >
+                  <span
+                    className={`${typography.caption} font-semibold ${stateColors.success.text}`}
+                  >
                     {t.dashboard.profileUrl}
                   </span>
                   <div className="flex gap-2">
@@ -551,14 +606,56 @@ export default function DashboardPage() {
                       value={`${typeof window !== "undefined" ? window.location.origin : ""}/users/${profile.handler}`}
                       variant="flat"
                     />
-                    <Button
-                      color="success"
-                      size="sm"
-                      variant="flat"
-                      onPress={handleCopyUrl}
-                    >
-                      {copied ? "✓" : t.dashboard.copyUrl}
-                    </Button>
+                    <AnimatePresence mode="wait">
+                      {copied ? (
+                        <motion.div
+                          key="check"
+                          initial={{ scale: 0, rotate: -180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          exit={{ scale: 0, rotate: 180 }}
+                          transition={{ duration: 0.3, type: "spring" }}
+                        >
+                          <Button
+                            className={focusStates.button}
+                            color="success"
+                            size="sm"
+                            variant="flat"
+                          >
+                            <svg
+                              className="w-4 h-4 checkmark-animated"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M5 13l4 4L19 7"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                              />
+                            </svg>
+                          </Button>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="copy"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          exit={{ scale: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Button
+                            className={focusStates.button}
+                            color="success"
+                            size="sm"
+                            variant="flat"
+                            onPress={handleCopyUrl}
+                          >
+                            {t.dashboard.copyUrl}
+                          </Button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               )}
@@ -566,10 +663,10 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-1">
-                  <span className="text-sm font-semibold">
+                  <span className={typography.label}>
                     {t.dashboard.publicProfile}
                   </span>
-                  <span className="text-xs text-default-400">
+                  <span className={typography.captionMuted}>
                     {t.dashboard.publicProfileDesc}
                   </span>
                 </div>
@@ -596,10 +693,12 @@ export default function DashboardPage() {
           <Divider className="my-2" />
 
           {!profile?.joinedServerAt && isServerMember && (
-            <div className="flex flex-col gap-3 p-4 bg-info/10 border-2 border-info/30 rounded-lg">
-              <div className="flex items-start gap-3">
+            <div
+              className={`flex flex-col ${spacing.md} p-4 ${stateColors.info.full} rounded-lg`}
+            >
+              <div className={`flex items-start ${spacing.md}`}>
                 <svg
-                  className="w-5 h-5 text-info flex-shrink-0 mt-0.5"
+                  className={`${iconSizes.md} ${stateColors.info.text} flex-shrink-0 mt-0.5`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -612,10 +711,14 @@ export default function DashboardPage() {
                   />
                 </svg>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-info mb-1">
+                  <p
+                    className={`${typography.body} font-semibold ${stateColors.info.text} mb-1`}
+                  >
                     {t.dashboard.syncRequired}
                   </p>
-                  <p className="text-xs text-foreground/70 mb-3">
+                  <p
+                    className={`${typography.caption} text-foreground/70 mb-3`}
+                  >
                     {t.dashboard.syncRequiredDesc}
                   </p>
                 </div>
@@ -624,10 +727,12 @@ export default function DashboardPage() {
           )}
 
           {!isServerMember && (
-            <div className="flex flex-col gap-4 p-6 bg-warning/10 border-2 border-warning/30 rounded-lg">
-              <div className="flex items-start gap-3">
+            <div
+              className={`flex flex-col ${spacing.md} p-6 ${stateColors.warning.full} rounded-lg`}
+            >
+              <div className={`flex items-start ${spacing.md}`}>
                 <svg
-                  className="w-6 h-6 text-warning flex-shrink-0 mt-0.5"
+                  className={`${iconSizes.lg} ${stateColors.warning.text} flex-shrink-0 mt-0.5`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -640,15 +745,17 @@ export default function DashboardPage() {
                   />
                 </svg>
                 <div className="flex-1">
-                  <h3 className="font-bold text-warning mb-2">
+                  <h3
+                    className={`${typography.h3} ${stateColors.warning.text} mb-2`}
+                  >
                     {t.dashboard.notServerMember}
                   </h3>
-                  <p className="text-sm text-foreground/80 mb-4">
+                  <p className={`${typography.body} text-foreground/80 mb-4`}>
                     {t.dashboard.notServerMemberDesc}
                   </p>
                   <Button
                     as="a"
-                    className="font-semibold"
+                    className={`font-semibold ${focusStates.button}`}
                     color="warning"
                     href="https://www.youtube.com/channel/UCFKZxStYsOVrzdN_FCZ0NGg/membership"
                     rel="noopener noreferrer"
@@ -665,10 +772,10 @@ export default function DashboardPage() {
 
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">{t.dashboard.name}</span>
+              <span className={typography.label}>{t.dashboard.name}</span>
               <Input
                 classNames={{
-                  input: "bg-background",
+                  input: `bg-background ${typography.input}`,
                   inputWrapper:
                     "bg-background hover:bg-background group-data-[focus=true]:bg-background",
                 }}
@@ -678,37 +785,54 @@ export default function DashboardPage() {
                 variant="bordered"
                 onChange={(e) => setName(e.target.value)}
               />
-              <span className="text-xs text-default-400">
+              <span className={typography.captionMuted}>
                 {name.length}/100 {t.dashboard.characters}
               </span>
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">{t.dashboard.title}</span>
+              <span className={typography.label}>{t.dashboard.title}</span>
               <Input
                 classNames={{
-                  input: "bg-background",
+                  input: `bg-background ${typography.input}`,
                   inputWrapper:
                     "bg-background hover:bg-background group-data-[focus=true]:bg-background",
                 }}
-                maxLength={100}
+                errorMessage={titleError}
+                isInvalid={!!titleError || title.length > 80}
+                maxLength={80}
                 placeholder={t.dashboard.titlePlaceholder}
                 value={title}
                 variant="bordered"
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (titleError) setTitleError("");
+                }}
               />
-              <span className="text-xs text-default-400 text-right">
-                {title.length}/100 {t.dashboard.characters}
-              </span>
+              <div className="flex items-center justify-between">
+                <span
+                  className={`${typography.captionMuted} ${title.length > 80 ? "text-danger" : ""}`}
+                >
+                  {title.length > 80
+                    ? t.dashboard.titleMaxLengthError ||
+                      "Title must be 80 characters or less"
+                    : ""}
+                </span>
+                <span
+                  className={`${typography.captionMuted} ${title.length > 80 ? "text-danger" : ""}`}
+                >
+                  {title.length}/80 {t.dashboard.characters}
+                </span>
+              </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">
+              <span className={typography.label}>
                 {t.dashboard.description}
               </span>
               <Textarea
                 classNames={{
-                  input: "bg-background",
+                  input: `bg-background ${typography.input}`,
                   inputWrapper:
                     "bg-background hover:bg-background group-data-[focus=true]:bg-background",
                 }}
@@ -717,7 +841,7 @@ export default function DashboardPage() {
                 placeholder={t.dashboard.descriptionPlaceholder}
                 startContent={
                   <svg
-                    className="w-4 h-4 text-default-400 flex-shrink-0 mt-1"
+                    className={`${iconSizes.sm} ${colors.text.muted} flex-shrink-0 mt-1`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -734,13 +858,13 @@ export default function DashboardPage() {
                 variant="bordered"
                 onChange={(e) => setDescription(e.target.value)}
               />
-              <span className="text-xs text-default-400 text-right">
+              <span className={`${typography.captionMuted} text-right`}>
                 {description.length}/500 {t.dashboard.characters}
               </span>
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">{t.dashboard.link}</span>
+              <span className={typography.label}>{t.dashboard.link}</span>
               <Input
                 classNames={{
                   input: "bg-background",
@@ -774,7 +898,7 @@ export default function DashboardPage() {
 
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold">
+                <span className={typography.label}>
                   {t.dashboard.socialLink}
                 </span>
                 <Button
@@ -831,7 +955,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">
+              <span className={typography.label}>
                 {t.dashboard.contactEmail}
               </span>
               <Input
@@ -864,9 +988,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">
-                {t.dashboard.country}
-              </span>
+              <span className={typography.label}>{t.dashboard.country}</span>
               <Autocomplete
                 classNames={{
                   selectorButton:
@@ -940,7 +1062,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">
+              <span className={typography.label}>
                 {t.dashboard.englishLevel}
               </span>
               <Select
@@ -959,10 +1081,10 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">
+              <span className={typography.label}>
                 {t.dashboard.availability}
               </span>
-              <div className="flex items-center gap-3 p-2 bg-default-50 dark:bg-default-100/10 rounded-lg border border-default-200/50 w-fit">
+              <div className="flex items-center gap-3 p-2 bg-default-50 dark:bg-default-100/10 rounded-lg w-fit">
                 <Switch
                   isSelected={isNotAvailable}
                   onValueChange={(value) => {
@@ -977,10 +1099,10 @@ export default function DashboardPage() {
                   size="sm"
                 />
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-semibold">
+                  <span className={typography.labelSmall}>
                     {t.dashboard.availabilityNotAvailable}
                   </span>
-                  <span className="text-xs text-default-500">
+                  <span className={typography.caption}>
                     {t.dashboard.availabilityNotAvailableDesc}
                   </span>
                 </div>
@@ -1104,7 +1226,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">{t.dashboard.tags}</span>
+              <span className={typography.label}>{t.dashboard.tags}</span>
               <Autocomplete
                 classNames={{
                   selectorButton:
@@ -1168,17 +1290,21 @@ export default function DashboardPage() {
                 </div>
               )}
               <div className="flex items-center justify-between">
-                <span className="text-xs text-default-400">
+                <span className={typography.captionMuted}>
                   {tags.length}/15 {t.dashboard.maxTags}
                 </span>
                 {tagsError && (
-                  <span className="text-xs text-danger">{tagsError}</span>
+                  <span
+                    className={`${typography.caption} ${stateColors.danger.text}`}
+                  >
+                    {tagsError}
+                  </span>
                 )}
               </div>
             </div>
 
             <Button
-              className="font-semibold"
+              className={`font-semibold ${focusStates.button}`}
               color="primary"
               isLoading={saving}
               size="md"
@@ -1215,10 +1341,10 @@ export default function DashboardPage() {
               </ModalHeader>
               <ModalBody>
                 <div className="flex flex-col gap-3">
-                  <p className="text-sm text-foreground/70">
+                  <p className={`${typography.body} text-foreground/70`}>
                     {t.dashboard.canApplyTrialPeriodDesc}
                   </p>
-                  <p className="text-sm text-foreground/70">
+                  <p className={`${typography.body} text-foreground/70`}>
                     {t.dashboard.trialPeriodInstructions}{" "}
                     <a
                       href="https://www.d-velopers.com/discord"
@@ -1230,9 +1356,11 @@ export default function DashboardPage() {
                     </a>
                     .
                   </p>
-                  <div className="flex items-start gap-2 p-3 rounded-lg bg-info/10 border border-info/20">
+                  <div
+                    className={`flex items-start ${spacing.sm} p-3 rounded-lg ${stateColors.info.full}`}
+                  >
                     <svg
-                      className="w-5 h-5 flex-shrink-0 mt-0.5 text-info"
+                      className={`${iconSizes.md} flex-shrink-0 mt-0.5 ${stateColors.info.text}`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -1245,7 +1373,9 @@ export default function DashboardPage() {
                       />
                     </svg>
                     <div className="flex-1">
-                      <p className="text-xs text-foreground/80">
+                      <p
+                        className={`${typography.caption} ${colorOpacity.fg80}`}
+                      >
                         {t.dashboard.trialPeriodNote}
                       </p>
                     </div>
@@ -1311,7 +1441,7 @@ export default function DashboardPage() {
                 {t.dashboard.socialLinkInfoTitle}
               </ModalHeader>
               <ModalBody>
-                <p className="text-sm text-default-600 mb-4">
+                <p className={`${typography.body} mb-4`}>
                   {t.dashboard.socialLinkInfoDescription}
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
@@ -1365,10 +1495,12 @@ export default function DashboardPage() {
                   </Chip>
                 </div>
                 <div className="mt-2">
-                  <p className="text-sm font-semibold mb-2">
+                  <p className={`${typography.label} mb-2`}>
                     {t.dashboard.socialLinkInfoExamples}
                   </p>
-                  <ul className="text-xs text-default-500 space-y-1 list-disc list-inside">
+                  <ul
+                    className={`${typography.caption} space-y-1 list-disc list-inside`}
+                  >
                     <li>
                       https://linkedin.com/in/username → &quot;My LinkedIn&quot;
                     </li>
