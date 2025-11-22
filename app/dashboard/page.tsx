@@ -968,6 +968,29 @@ export default function DashboardPage() {
               <span className="text-sm font-semibold">
                 {t.dashboard.availability}
               </span>
+              <div className="flex items-center gap-3 p-2 bg-default-50 dark:bg-default-100/10 rounded-lg border border-default-200/50 w-fit">
+                <Switch
+                  isSelected={isNotAvailable}
+                  onValueChange={(value) => {
+                    setIsNotAvailable(value);
+                    if (value) {
+                      setAvailability(null);
+                    } else if (!availability) {
+                      setAvailability("freelance");
+                    }
+                  }}
+                  color="primary"
+                  size="sm"
+                />
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-semibold">
+                    {t.dashboard.availabilityNotAvailable}
+                  </span>
+                  <span className="text-xs text-default-500">
+                    {t.dashboard.availabilityNotAvailableDesc}
+                  </span>
+                </div>
+              </div>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -1059,28 +1082,6 @@ export default function DashboardPage() {
                     {t.dashboard.availabilityConsulting}
                   </Chip>
                 </button>
-              </div>
-              <div className="flex items-center justify-between mt-2 p-3 bg-default-50 dark:bg-default-100/10 rounded-lg border border-default-200/50">
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-semibold">
-                    {t.dashboard.availabilityNotAvailable}
-                  </span>
-                  <span className="text-xs text-default-500">
-                    {t.dashboard.availabilityNotAvailableDesc}
-                  </span>
-                </div>
-                <Switch
-                  isSelected={isNotAvailable}
-                  onValueChange={(value) => {
-                    setIsNotAvailable(value);
-                    if (value) {
-                      setAvailability(null);
-                    } else if (!availability) {
-                      setAvailability("freelance");
-                    }
-                  }}
-                  color="primary"
-                />
               </div>
             </div>
 
