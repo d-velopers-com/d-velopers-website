@@ -48,7 +48,7 @@ export default function DashboardPage() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [englishLevel, setEnglishLevel] = useState<string>("");
-  const [availability, setAvailability] = useState<string | null>(null);
+  const [availability, setAvailability] = useState<string[]>([]);
   const [isNotAvailable, setIsNotAvailable] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [technologies, setTechnologies] = useState<string[]>([]);
@@ -105,11 +105,9 @@ export default function DashboardPage() {
       const hasNotAvailable = profileAvailability.includes("not_available");
       setIsNotAvailable(hasNotAvailable);
       if (hasNotAvailable) {
-        setAvailability(null);
+        setAvailability([]);
       } else {
-        setAvailability(
-          profileAvailability.length > 0 ? profileAvailability[0] : null,
-        );
+        setAvailability(profileAvailability);
       }
       setTags(profile.tags || []);
     }
@@ -251,11 +249,7 @@ export default function DashboardPage() {
       name: name.trim() || null,
       title: title.trim() || null,
       englishLevel: englishLevel || null,
-      availability: isNotAvailable
-        ? ["not_available"]
-        : availability
-          ? [availability]
-          : [],
+      availability: isNotAvailable ? ["not_available"] : availability,
       tags: tags,
     });
 
@@ -974,9 +968,9 @@ export default function DashboardPage() {
                   onValueChange={(value) => {
                     setIsNotAvailable(value);
                     if (value) {
-                      setAvailability(null);
-                    } else if (!availability) {
-                      setAvailability("freelance");
+                      setAvailability([]);
+                    } else if (availability.length === 0) {
+                      setAvailability(["freelance"]);
                     }
                   }}
                   color="primary"
@@ -996,74 +990,10 @@ export default function DashboardPage() {
                   type="button"
                   onClick={() => {
                     if (!isNotAvailable) {
-                      setAvailability(
-                        availability === "freelance" ? null : "freelance",
-                      );
-                    }
-                  }}
-                  disabled={isNotAvailable}
-                  className={`cursor-pointer border-none bg-transparent p-0 ${
-                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  aria-disabled={isNotAvailable}
-                >
-                  <Chip
-                    color={availability === "freelance" ? "primary" : "default"}
-                    variant={availability === "freelance" ? "solid" : "flat"}
-                  >
-                    {t.dashboard.availabilityFreelance}
-                  </Chip>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!isNotAvailable) {
-                      setAvailability(
-                        availability === "part_time" ? null : "part_time",
-                      );
-                    }
-                  }}
-                  disabled={isNotAvailable}
-                  className={`cursor-pointer border-none bg-transparent p-0 ${
-                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  aria-disabled={isNotAvailable}
-                >
-                  <Chip
-                    color={availability === "part_time" ? "primary" : "default"}
-                    variant={availability === "part_time" ? "solid" : "flat"}
-                  >
-                    {t.dashboard.availabilityPartTime}
-                  </Chip>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!isNotAvailable) {
-                      setAvailability(
-                        availability === "full_time" ? null : "full_time",
-                      );
-                    }
-                  }}
-                  disabled={isNotAvailable}
-                  className={`cursor-pointer border-none bg-transparent p-0 ${
-                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  aria-disabled={isNotAvailable}
-                >
-                  <Chip
-                    color={availability === "full_time" ? "primary" : "default"}
-                    variant={availability === "full_time" ? "solid" : "flat"}
-                  >
-                    {t.dashboard.availabilityFullTime}
-                  </Chip>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!isNotAvailable) {
-                      setAvailability(
-                        availability === "consulting" ? null : "consulting",
+                      setAvailability((prev) =>
+                        prev.includes("freelance")
+                          ? prev.filter((item) => item !== "freelance")
+                          : [...prev, "freelance"],
                       );
                     }
                   }}
@@ -1075,9 +1005,97 @@ export default function DashboardPage() {
                 >
                   <Chip
                     color={
-                      availability === "consulting" ? "primary" : "default"
+                      availability.includes("freelance") ? "primary" : "default"
                     }
-                    variant={availability === "consulting" ? "solid" : "flat"}
+                    variant={
+                      availability.includes("freelance") ? "solid" : "flat"
+                    }
+                  >
+                    {t.dashboard.availabilityFreelance}
+                  </Chip>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isNotAvailable) {
+                      setAvailability((prev) =>
+                        prev.includes("part_time")
+                          ? prev.filter((item) => item !== "part_time")
+                          : [...prev, "part_time"],
+                      );
+                    }
+                  }}
+                  disabled={isNotAvailable}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${
+                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  aria-disabled={isNotAvailable}
+                >
+                  <Chip
+                    color={
+                      availability.includes("part_time") ? "primary" : "default"
+                    }
+                    variant={
+                      availability.includes("part_time") ? "solid" : "flat"
+                    }
+                  >
+                    {t.dashboard.availabilityPartTime}
+                  </Chip>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isNotAvailable) {
+                      setAvailability((prev) =>
+                        prev.includes("full_time")
+                          ? prev.filter((item) => item !== "full_time")
+                          : [...prev, "full_time"],
+                      );
+                    }
+                  }}
+                  disabled={isNotAvailable}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${
+                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  aria-disabled={isNotAvailable}
+                >
+                  <Chip
+                    color={
+                      availability.includes("full_time") ? "primary" : "default"
+                    }
+                    variant={
+                      availability.includes("full_time") ? "solid" : "flat"
+                    }
+                  >
+                    {t.dashboard.availabilityFullTime}
+                  </Chip>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isNotAvailable) {
+                      setAvailability((prev) =>
+                        prev.includes("consulting")
+                          ? prev.filter((item) => item !== "consulting")
+                          : [...prev, "consulting"],
+                      );
+                    }
+                  }}
+                  disabled={isNotAvailable}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${
+                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  aria-disabled={isNotAvailable}
+                >
+                  <Chip
+                    color={
+                      availability.includes("consulting")
+                        ? "primary"
+                        : "default"
+                    }
+                    variant={
+                      availability.includes("consulting") ? "solid" : "flat"
+                    }
                   >
                     {t.dashboard.availabilityConsulting}
                   </Chip>
