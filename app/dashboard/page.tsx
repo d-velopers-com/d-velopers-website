@@ -27,6 +27,7 @@ import { useLanguage } from "@/contexts/language-context";
 import { useSession } from "@/hooks/useSession";
 import { useProfile } from "@/hooks/useProfile";
 import { countries, getCountryFlagUrl, getCountryName } from "@/lib/countries";
+import { CountrySelect } from "@/components/country-select";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -52,7 +53,6 @@ export default function DashboardPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [technologies, setTechnologies] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState("");
-  const [countrySearchValue, setCountrySearchValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [linkError, setLinkError] = useState("");
   const [contactLinkError, setContactLinkError] = useState("");
@@ -94,7 +94,6 @@ export default function DashboardPage() {
       setContactLink(profile.contactLinks?.[0] || "");
       setContactEmail(profile.contactEmail || "");
       setCountry(profile.country || "");
-      setCountrySearchValue("");
       setName(profile.name || "");
       setTitle(profile.title || "");
       setEnglishLevel(profile.englishLevel || "");
@@ -106,15 +105,6 @@ export default function DashboardPage() {
       setTags(profile.tags || []);
     }
   }, [profile]);
-
-  const filteredCountries = useMemo(() => {
-    if (!countrySearchValue) {
-      return countries;
-    }
-    return countries.filter((c) =>
-      c.name.toLowerCase().includes(countrySearchValue.toLowerCase()),
-    );
-  }, [countrySearchValue]);
 
   const filteredTechnologies = useMemo(() => {
     const available = technologies.filter(
@@ -861,76 +851,17 @@ export default function DashboardPage() {
               <span className="text-sm font-semibold">
                 {t.dashboard.country}
               </span>
-              <Autocomplete
+              <CountrySelect
+                value={country}
+                onChange={setCountry}
+                placeholder={t.dashboard.countryPlaceholder}
+                variant="bordered"
+                label=""
                 classNames={{
                   selectorButton:
                     "bg-background hover:bg-background group-data-[focus=true]:bg-background",
                 }}
-                inputValue={
-                  countrySearchValue ||
-                  (country
-                    ? countries.find((c) => c.code === country)?.name || ""
-                    : "")
-                }
-                items={filteredCountries}
-                placeholder={t.dashboard.countryPlaceholder}
-                selectedKey={country || undefined}
-                variant="bordered"
-                onInputChange={(value) => {
-                  setCountrySearchValue(value);
-                  if (!value) {
-                    setCountry("");
-                  } else {
-                    if (country) {
-                      const selectedCountry = countries.find(
-                        (c) => c.code === country,
-                      );
-                      if (
-                        selectedCountry &&
-                        !selectedCountry.name
-                          .toLowerCase()
-                          .startsWith(value.toLowerCase())
-                      ) {
-                        setCountry("");
-                      }
-                    }
-                  }
-                }}
-                onSelectionChange={(key) => {
-                  if (key) {
-                    setCountry(key as string);
-                    setCountrySearchValue("");
-                  } else {
-                    setCountry("");
-                    setCountrySearchValue("");
-                  }
-                }}
-                startContent={
-                  country && !countrySearchValue ? (
-                    <img
-                      alt={getCountryName(country)}
-                      className="w-5 h-4 rounded object-cover"
-                      src={getCountryFlagUrl(country, "24")}
-                    />
-                  ) : null
-                }
-              >
-                {(country) => (
-                  <AutocompleteItem
-                    key={country.code}
-                    startContent={
-                      <img
-                        alt={country.name}
-                        className="w-5 h-4 rounded object-cover"
-                        src={getCountryFlagUrl(country.code, "24")}
-                      />
-                    }
-                    textValue={country.name}
-                  >
-                    {country.name}
-                  </AutocompleteItem>
-                )}
-              </Autocomplete>
+              />
             </div>
 
             <div className="flex flex-col gap-2">
@@ -938,6 +869,7 @@ export default function DashboardPage() {
                 {t.dashboard.englishLevel}
               </span>
               <Select
+                aria-label="English level"
                 placeholder={t.dashboard.englishLevelPlaceholder}
                 selectedKeys={englishLevel ? [englishLevel] : []}
                 variant="bordered"
@@ -1049,6 +981,7 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-2">
               <span className="text-sm font-semibold">{t.dashboard.tags}</span>
               <Autocomplete
+                aria-label="Technologies"
                 classNames={{
                   selectorButton:
                     "bg-background hover:bg-background group-data-[focus=true]:bg-background",
