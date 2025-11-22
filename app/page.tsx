@@ -138,13 +138,13 @@ export default function Home() {
     >
       <div className="max-w-7xl mx-auto">
         <motion.div
-          className="text-center mb-12 mt-0"
+          className="text-center mb-12 mt-0 min-h-[120px]"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
           <motion.h1
-            className={`${typography.h1} mb-4 text-foreground`}
+            className={`${typography.h1} mb-4 text-foreground min-h-[2.5rem]`}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
@@ -152,7 +152,7 @@ export default function Home() {
             {t.home.title}
           </motion.h1>
           <motion.p
-            className={`${typography.bodyLarge} max-w-2xl mx-auto mb-8`}
+            className={`${typography.bodyLarge} max-w-2xl mx-auto mb-8 min-h-[1.5rem]`}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
