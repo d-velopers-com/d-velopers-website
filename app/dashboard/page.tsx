@@ -49,6 +49,7 @@ export default function DashboardPage() {
   const [title, setTitle] = useState("");
   const [englishLevel, setEnglishLevel] = useState<string>("");
   const [availability, setAvailability] = useState<string | null>(null);
+  const [isNotAvailable, setIsNotAvailable] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [technologies, setTechnologies] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState("");
@@ -98,11 +99,18 @@ export default function DashboardPage() {
       setName(profile.name || "");
       setTitle(profile.title || "");
       setEnglishLevel(profile.englishLevel || "");
-      setAvailability(
-        Array.isArray(profile.availability) && profile.availability.length > 0
-          ? profile.availability[0]
-          : null,
-      );
+      const profileAvailability = Array.isArray(profile.availability)
+        ? profile.availability
+        : [];
+      const hasNotAvailable = profileAvailability.includes("not_available");
+      setIsNotAvailable(hasNotAvailable);
+      if (hasNotAvailable) {
+        setAvailability(null);
+      } else {
+        setAvailability(
+          profileAvailability.length > 0 ? profileAvailability[0] : null,
+        );
+      }
       setTags(profile.tags || []);
     }
   }, [profile]);
@@ -243,7 +251,11 @@ export default function DashboardPage() {
       name: name.trim() || null,
       title: title.trim() || null,
       englishLevel: englishLevel || null,
-      availability: availability ? [availability] : [],
+      availability: isNotAvailable
+        ? ["not_available"]
+        : availability
+          ? [availability]
+          : [],
       tags: tags,
     });
 
@@ -960,11 +972,17 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setAvailability(
-                      availability === "freelance" ? null : "freelance",
-                    );
+                    if (!isNotAvailable) {
+                      setAvailability(
+                        availability === "freelance" ? null : "freelance",
+                      );
+                    }
                   }}
-                  className="cursor-pointer border-none bg-transparent p-0"
+                  disabled={isNotAvailable}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${
+                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  aria-disabled={isNotAvailable}
                 >
                   <Chip
                     color={availability === "freelance" ? "primary" : "default"}
@@ -976,11 +994,17 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setAvailability(
-                      availability === "part_time" ? null : "part_time",
-                    );
+                    if (!isNotAvailable) {
+                      setAvailability(
+                        availability === "part_time" ? null : "part_time",
+                      );
+                    }
                   }}
-                  className="cursor-pointer border-none bg-transparent p-0"
+                  disabled={isNotAvailable}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${
+                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  aria-disabled={isNotAvailable}
                 >
                   <Chip
                     color={availability === "part_time" ? "primary" : "default"}
@@ -992,11 +1016,17 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setAvailability(
-                      availability === "full_time" ? null : "full_time",
-                    );
+                    if (!isNotAvailable) {
+                      setAvailability(
+                        availability === "full_time" ? null : "full_time",
+                      );
+                    }
                   }}
-                  className="cursor-pointer border-none bg-transparent p-0"
+                  disabled={isNotAvailable}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${
+                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  aria-disabled={isNotAvailable}
                 >
                   <Chip
                     color={availability === "full_time" ? "primary" : "default"}
@@ -1008,11 +1038,17 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setAvailability(
-                      availability === "consulting" ? null : "consulting",
-                    );
+                    if (!isNotAvailable) {
+                      setAvailability(
+                        availability === "consulting" ? null : "consulting",
+                      );
+                    }
                   }}
-                  className="cursor-pointer border-none bg-transparent p-0"
+                  disabled={isNotAvailable}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${
+                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  aria-disabled={isNotAvailable}
                 >
                   <Chip
                     color={
@@ -1023,26 +1059,28 @@ export default function DashboardPage() {
                     {t.dashboard.availabilityConsulting}
                   </Chip>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAvailability(
-                      availability === "not_available" ? null : "not_available",
-                    );
-                  }}
-                  className="cursor-pointer border-none bg-transparent p-0"
-                >
-                  <Chip
-                    color={
-                      availability === "not_available" ? "primary" : "default"
-                    }
-                    variant={
-                      availability === "not_available" ? "solid" : "flat"
-                    }
-                  >
+              </div>
+              <div className="flex items-center justify-between mt-2 p-3 bg-default-50 dark:bg-default-100/10 rounded-lg border border-default-200/50">
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-semibold">
                     {t.dashboard.availabilityNotAvailable}
-                  </Chip>
-                </button>
+                  </span>
+                  <span className="text-xs text-default-500">
+                    {t.dashboard.availabilityNotAvailableDesc}
+                  </span>
+                </div>
+                <Switch
+                  isSelected={isNotAvailable}
+                  onValueChange={(value) => {
+                    setIsNotAvailable(value);
+                    if (value) {
+                      setAvailability(null);
+                    } else if (!availability) {
+                      setAvailability("freelance");
+                    }
+                  }}
+                  color="primary"
+                />
               </div>
             </div>
 
