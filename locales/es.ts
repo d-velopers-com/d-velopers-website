@@ -23,6 +23,14 @@ export const es = {
     login: "Iniciar Sesión",
     dashboard: "Panel",
     joinCommunity: "Únete a esta comunidad",
+    searcher: {
+      placeholder: "Buscar desarrolladores",
+      filters: {
+        english: "Inglés",
+        country: "País",
+        availability: "Disponibilidad",
+      },
+    },
   },
   login: {
     title: "Bienvenido de Nuevo",
@@ -166,7 +174,7 @@ export const es = {
       {key: "B1", text: "B1 (Intermedio)"},
       {key: "B2", text: "B2 (Intermedio Alto)"},
       {key: "C1", text: "C1 (Avanzado)"},
-      {key: "C2", text: "C2 (Competente / Dominio del idioma)"},
+      {key: "C2", text: "C2 (Dominio del idioma)"},
     ],
   },
   profile: {
