@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Card, CardBody } from "@heroui/card";
@@ -41,6 +41,10 @@ interface PublicUser {
 export default function Home() {
   const [users, setUsers] = useState<PublicUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visibleTagsCount, setVisibleTagsCount] = useState<
+    Record<string, number>
+  >({});
+  const tagsContainerRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const { t } = useLanguage();
   const { status } = useSession();
 
@@ -68,6 +72,65 @@ export default function Home() {
       isMounted = false;
     };
   }, []);
+
+  // Calcular cuántos chips caben en cada card
+  useEffect(() => {
+    const calculateVisibleTags = () => {
+      const newVisibleTagsCount: Record<string, number> = {};
+
+      Object.entries(tagsContainerRefs.current).forEach(
+        ([handler, container]) => {
+          if (!container) return;
+
+          const user = users.find((u) => u.handler === handler);
+          if (!user || !user.tags || user.tags.length === 0) return;
+
+          const containerWidth = container.offsetWidth;
+          // Ancho aproximado: chip pequeño (~60-80px) + gap (6px) + chip "+N" (~50px)
+          const chipWidth = 70; // Ancho aproximado de un chip
+          const plusChipWidth = 50; // Ancho del chip "+N"
+          const gap = 6; // gap-1.5 = 6px
+
+          // Calcular cuántos chips caben
+          let availableWidth = containerWidth;
+          let visibleCount = 0;
+
+          // Siempre reservar espacio para el chip "+N" si hay más de 1 tag
+          if (user.tags.length > 1) {
+            availableWidth -= plusChipWidth + gap;
+          }
+
+          // Contar cuántos chips caben
+          for (let i = 0; i < user.tags.length; i++) {
+            if (availableWidth >= chipWidth) {
+              availableWidth -= chipWidth + gap;
+              visibleCount++;
+            } else {
+              break;
+            }
+          }
+
+          // Si no cabe ninguno, mostrar al menos 1 y el "+N"
+          if (visibleCount === 0 && user.tags.length > 0) {
+            visibleCount = 1;
+          }
+
+          newVisibleTagsCount[handler] = visibleCount;
+        },
+      );
+
+      setVisibleTagsCount(newVisibleTagsCount);
+    };
+
+    calculateVisibleTags();
+
+    const handleResize = () => {
+      calculateVisibleTags();
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [users]);
 
   return (
     <div
@@ -204,8 +267,14 @@ export default function Home() {
                 ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`
                 : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator) % 5}.png`;
 
-              const displayTags = user.tags?.slice(0, 4) || [];
-              const remainingTags = (user.tags?.length || 0) - 4;
+              const allTags = user.tags || [];
+              const visibleCount =
+                visibleTagsCount[user.handler] ?? allTags.length;
+              const displayTags = allTags.slice(0, visibleCount);
+              const remainingTags =
+                allTags.length > visibleCount
+                  ? allTags.length - visibleCount
+                  : 0;
 
               return (
                 <motion.div
@@ -225,14 +294,14 @@ export default function Home() {
                   whileHover={{ y: -4, transition: { duration: 0.2 } }}
                 >
                   <Card
-                    className={`relative overflow-hidden ${cardStyles.base} ${cardStyles.hover} h-full flex flex-col min-h-[200px]`}
+                    className={`relative overflow-hidden ${cardStyles.base} ${cardStyles.hover} h-full flex flex-col h-[140px]`}
                   >
                     <CardBody className="relative p-0 flex flex-col overflow-hidden h-full">
                       <Link
                         href={`/users/${user.handler}`}
                         className="p-4 flex flex-col h-full"
                       >
-                        <div className="flex items-start gap-3 flex-shrink-0 mb-3">
+                        <div className="flex items-start gap-3 flex-shrink-0 mb-2">
                           <div className="relative w-12 h-12 flex-shrink-0">
                             <Avatar
                               className={`w-12 h-12 ${avatarStyles.ring}`}
@@ -255,49 +324,48 @@ export default function Home() {
                               )}
                           </div>
                           <div
-                            className={`flex-1 min-w-0 flex flex-col ${spacing.sm} overflow-hidden`}
+                            className={`flex-1 min-w-0 flex flex-col gap-1 overflow-hidden`}
                           >
                             <h3
-                              className={`${typography.h3} leading-tight truncate flex-shrink-0 min-h-[1.5rem]`}
+                              className={`${typography.h3} leading-tight truncate flex-shrink-0`}
                             >
                               {user.name || user.username}
                             </h3>
                             <p
-                              className={`${typography.caption} line-clamp-2 overflow-hidden text-ellipsis leading-relaxed min-h-[2.5rem]`}
+                              className={`${typography.caption} truncate overflow-hidden text-ellipsis leading-tight`}
                               title={user.title || ""}
                             >
                               {user.title || "\u00A0"}
                             </p>
                           </div>
                         </div>
-                        <div className={`flex flex-wrap ${spacing.sm} mt-auto`}>
-                          {displayTags.length > 0 ? (
-                            <>
-                              {displayTags.map((tag) => (
-                                <Chip
-                                  key={tag}
-                                  className={chipStyles.base}
-                                  classNames={chipStyles.classNames}
-                                  color="primary"
-                                  size="sm"
-                                  variant="flat"
-                                >
-                                  {tag}
-                                </Chip>
-                              ))}
-                              {remainingTags > 0 && (
-                                <Chip
-                                  className={chipStyles.base}
-                                  color="default"
-                                  size="sm"
-                                  variant="flat"
-                                >
-                                  +{remainingTags}
-                                </Chip>
-                              )}
-                            </>
-                          ) : (
-                            <div className="min-h-[1.5rem]" />
+                        <div
+                          ref={(el) => {
+                            tagsContainerRefs.current[user.handler] = el;
+                          }}
+                          className={`flex flex-nowrap gap-1.5 overflow-hidden mt-auto`}
+                        >
+                          {displayTags.map((tag) => (
+                            <Chip
+                              key={tag}
+                              className={`${chipStyles.base} flex-shrink-0`}
+                              classNames={chipStyles.classNames}
+                              color="primary"
+                              size="sm"
+                              variant="flat"
+                            >
+                              {tag}
+                            </Chip>
+                          ))}
+                          {remainingTags > 0 && (
+                            <Chip
+                              className={`${chipStyles.base} flex-shrink-0`}
+                              color="default"
+                              size="sm"
+                              variant="flat"
+                            >
+                              +{remainingTags}
+                            </Chip>
                           )}
                         </div>
                       </Link>
