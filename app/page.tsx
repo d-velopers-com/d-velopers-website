@@ -1,16 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Card, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
 import { Skeleton } from "@heroui/skeleton";
+import { Input } from "@heroui/input";
 
 import { useLanguage } from "@/contexts/language-context";
 import { useSession } from "@/hooks/useSession";
 import { getCountryFlagUrl, getCountryName } from "@/lib/countries";
+import { SearchIcon } from "@/components/icons";
+import { Select, SelectItem } from "@heroui/select";
+import { Availability } from "@/lib/constants";
+import { CountrySelect } from "@/components/country-select";
+import {debounce, filtersToSearchParams} from "@/lib/search-utils";
+import { SearchFilters } from "@/types";
 
 interface PublicUser {
   handler: string;
@@ -30,32 +37,59 @@ interface PublicUser {
 export default function Home() {
   const [users, setUsers] = useState<PublicUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<SearchFilters>({
+    searchQuery: "",
+    availability: null,
+    english: "",
+    country: "",
+  });
   const { t } = useLanguage();
   const { status } = useSession();
 
-  useEffect(() => {
-    let isMounted = true;
+  const fetchUsers = useCallback(async (currentFilters: SearchFilters) => {
+    setLoading(true);
+    try {
+      const queryString = filtersToSearchParams(currentFilters).toString();
+      const url = `/api/users/public${queryString ? `?${queryString}` : ""}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setUsers(data.users || []);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    fetch("/api/users/public")
-      .then((res) => {
-        if (!isMounted) return;
-        return res.json();
-      })
-      .then((data) => {
-        if (!isMounted) return;
-        const usersData = data.users || [];
-        setUsers(usersData);
-        setLoading(false);
-      })
-      .catch(() => {
-        if (isMounted) {
-          setLoading(false);
-        }
-      });
+  const debouncedFetch = useMemo(
+    () => debounce((filters: SearchFilters) => fetchUsers(filters), 500),
+    [fetchUsers],
+  );
 
-    return () => {
-      isMounted = false;
+  const updateFilter = <K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) => {
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+    if (key === "searchQuery") {
+      debouncedFetch(newFilters);
+    } else {
+      fetchUsers(newFilters);
+    }
+  };
+
+  const clearFilters = () => {
+    const emptyFilters: SearchFilters = {
+      searchQuery: "",
+      availability: null,
+      english: "",
+      country: "",
     };
+    setFilters(emptyFilters);
+    fetchUsers(emptyFilters);
+  };
+
+  useEffect(() => {
+    fetchUsers(filters);
   }, []);
 
   return (
@@ -68,6 +102,92 @@ export default function Home() {
           <p className="text-xl text-default-600 max-w-2xl mx-auto mb-8">
             {t.home.subtitle}
           </p>
+
+          {/* Search and Filter Section */}
+          <div className="max-w-4xl mx-auto mb-8 space-y-4">
+            {/* Search Input */}
+            <div className="relative">
+              <Input
+                classNames={{
+                  base: "w-full",
+                  inputWrapper: "bg-default-100 dark:bg-default-100/50 border-none h-14 rounded-2xl",
+                  input: "text-base placeholder:text-default-500",
+                }}
+                placeholder={t.home.searcher.placeholder}
+                startContent={
+                  <SearchIcon className="text-default-400" size={20} />
+                }
+                type="text"
+                value={filters.searchQuery}
+                onChange={(e) => updateFilter("searchQuery", e.target.value)}
+              />
+            </div>
+
+            {/* Filter Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Select
+                aria-label="English level filter"
+                classNames={{
+                  base: "w-auto min-w-[200px]",
+                  trigger: "h-10 rounded-xl bg-default-100 dark:bg-default-100/50 border-none data-[hover=true]:bg-default-200 dark:data-[hover=true]:bg-default-200/50",
+                  value: "font-medium text-default-700",
+                  popoverContent: "rounded-xl min-w-[200px]",
+                }}
+                placeholder={t.home.searcher.filters.english}
+                selectedKeys={filters.english ? [filters.english] : []}
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as string;
+                  updateFilter("english", selected || "");
+                }}
+              >
+                {t.dashboard.englishLevels.map((level) => (
+                  <SelectItem key={level.key}>{level.text}</SelectItem>
+                ))}
+              </Select>
+              <Select
+                aria-label="Availability filter"
+                classNames={{
+                  base: "w-auto min-w-[200px]",
+                  trigger: "h-10 dark:bg-default-100/50",
+                  value: "font-medium text-default-700",
+                  popoverContent: "rounded-xl min-w-[200px]",
+                }}
+                placeholder={t.home.searcher.filters.availability}
+                selectedKeys={filters.availability ? [filters.availability] : []}
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as Availability;
+                  updateFilter("availability", selected || null);
+                }}
+              >
+                <SelectItem key={Availability.FREELANCE}>{t.dashboard.availabilityFreelance}</SelectItem>
+                <SelectItem key={Availability.PART_TIME}>{t.dashboard.availabilityPartTime}</SelectItem>
+                <SelectItem key={Availability.FULL_TIME}>{t.dashboard.availabilityFullTime}</SelectItem>
+                <SelectItem key={Availability.CONSULTING}>{t.dashboard.availabilityConsulting}</SelectItem>
+                <SelectItem key={Availability.NOT_AVAILABLE}>{t.dashboard.availabilityNotAvailable}</SelectItem>
+              </Select>
+
+              <CountrySelect
+                value={filters.country || ''}
+                onChange={(value) => updateFilter("country", value)}
+                placeholder={t.home.searcher.filters.country}
+                variant="flat"
+                label=""
+                classNames={{
+                  base: "w-[200px]",
+                  selectorButton: "h-10 rounded-xl",
+                  inputWrapper: "h-10 min-h-10 rounded-xl",
+                }}
+              />
+              <Button
+                className="rounded-xl text-default-500"
+                variant="light"
+                onPress={clearFilters}
+              >
+                Clear filters
+              </Button>
+            </div>
+          </div>
+
           {status === "unauthenticated" && (
             <div className="mt-8 flex justify-center">
               <Button
