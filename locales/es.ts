@@ -30,6 +30,7 @@ export const es = {
         country: "País",
         availability: "Disponibilidad",
       },
+      clearFilters: "Limpiar filtros",
     },
   },
   login: {

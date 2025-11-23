@@ -52,6 +52,7 @@ export default function Home() {
     Record<string, number>
   >({});
   const tagsContainerRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const previousQueryRef = useRef("");
   const [filters, setFilters] = useState<SearchFilters>({
     searchQuery: "",
     availability: null,
@@ -86,6 +87,17 @@ export default function Home() {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     if (key === "searchQuery") {
+      const currentQuery = value as string;
+      const previousQuery = previousQueryRef.current;
+      const trimmedQuery = currentQuery.trim();
+      const endsWithSpace = currentQuery !== currentQuery.trimEnd();
+      const isAddingContent = currentQuery.length > previousQuery.length;
+      const isOnlySpaces = currentQuery.length > 0 && trimmedQuery === "";
+      if (isOnlySpaces || (endsWithSpace && isAddingContent)) {
+        previousQueryRef.current = currentQuery;
+        return;
+      }
+      previousQueryRef.current = currentQuery;
       debouncedFetch(newFilters);
     } else {
       fetchUsers(newFilters);
@@ -199,6 +211,7 @@ export default function Home() {
             {/* Search Input */}
             <div className="relative">
               <Input
+                aria-label={t.home.searcher.placeholder}
                 classNames={{
                   base: "w-full",
                   inputWrapper: "bg-default-100 dark:bg-default-100/50 border-none h-14 rounded-2xl",
@@ -217,10 +230,10 @@ export default function Home() {
             {/* Filter Buttons */}
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Select
-                aria-label="English level filter"
+                aria-label={t.home.searcher.filters.english}
                 classNames={{
                   base: "w-auto min-w-[200px]",
-                  trigger: "h-10 rounded-xl bg-default-100 dark:bg-default-100/50 border-none data-[hover=true]:bg-default-200 dark:data-[hover=true]:bg-default-200/50",
+                  trigger: "h-10 dark:bg-default-100/50",
                   value: "font-medium text-default-700",
                   popoverContent: "rounded-xl min-w-[200px]",
                 }}
@@ -236,7 +249,7 @@ export default function Home() {
                 ))}
               </Select>
               <Select
-                aria-label="Availability filter"
+                aria-label={t.home.searcher.filters.availability}
                 classNames={{
                   base: "w-auto min-w-[200px]",
                   trigger: "h-10 dark:bg-default-100/50",
@@ -258,11 +271,12 @@ export default function Home() {
               </Select>
 
               <CountrySelect
-                value={filters.country || ''}
                 onChange={(value) => updateFilter("country", value)}
                 placeholder={t.home.searcher.filters.country}
                 variant="flat"
+                value={filters.country || ''}
                 label=""
+                ariaLabel={t.home.searcher.filters.country}
                 classNames={{
                   base: "w-[200px]",
                   selectorButton: "h-10 rounded-xl",
@@ -274,7 +288,7 @@ export default function Home() {
                 variant="light"
                 onPress={clearFilters}
               >
-                Clear filters
+                {t.home.searcher.clearFilters}
               </Button>
             </div>
           </div>
