@@ -10,6 +10,7 @@ interface CountrySelectProps {
   placeholder?: string;
   variant?: "bordered" | "flat" | "faded" | "underlined";
   label?: string;
+  ariaLabel?: string;
   classNames?: {
     base?: string;
     selectorButton?: string;
@@ -25,6 +26,7 @@ export function CountrySelect({
   placeholder = "Select your country",
   variant = "bordered",
   label,
+  ariaLabel,
   classNames,
   isDisabled = false,
 }: CountrySelectProps) {
@@ -41,6 +43,7 @@ export function CountrySelect({
 
   return (
     <Autocomplete
+      aria-label={ariaLabel}
       classNames={classNames}
       inputValue={
         searchValue ||
@@ -63,31 +66,25 @@ export function CountrySelect({
       variant={variant}
       onInputChange={(inputValue) => {
         setSearchValue(inputValue);
-        if (!inputValue) {
-          onChange("");
-        } else {
-          if (value) {
-            const selectedCountry = countries.find((c) => c.code === value);
-
-            if (
-              selectedCountry &&
-              !selectedCountry.name
-                .toLowerCase()
-                .startsWith(inputValue.toLowerCase())
-            ) {
-              onChange("");
-            }
+        if (value) {
+          const selectedCountry = countries.find((c) => c.code === value);
+          if (
+            inputValue &&
+            selectedCountry &&
+            !selectedCountry.name
+              .toLowerCase()
+              .startsWith(inputValue.toLowerCase())
+          ) {
+            onChange("");
           }
         }
       }}
       onSelectionChange={(key) => {
-        if (key) {
-          onChange(key as string);
-          setSearchValue("");
-        } else {
-          onChange("");
-          setSearchValue("");
+        const newValue = key ? (key as string) : "";
+        if (newValue !== value) {
+          onChange(newValue);
         }
+        setSearchValue("");
       }}
     >
       {(country) => (

@@ -979,15 +979,13 @@ export default function DashboardPage() {
 
             <div className="flex flex-col gap-2">
               <span className={typography.label}>{t.dashboard.country}</span>
-              <span className="text-sm font-semibold">
-                {t.dashboard.country}
-              </span>
               <CountrySelect
                 value={country}
                 onChange={setCountry}
                 placeholder={t.dashboard.countryPlaceholder}
                 variant="bordered"
                 label=""
+                ariaLabel={t.dashboard.countryPlaceholder}
                 classNames={{
                   selectorButton:
                     "bg-background hover:bg-background group-data-[focus=true]:bg-background",

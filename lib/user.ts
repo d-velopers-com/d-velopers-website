@@ -207,16 +207,25 @@ export async function getPublicUsers(filters?: SearchFilters) {
   const conditions: Prisma.Sql[] = [Prisma.sql`"isPublic" = true`];
 
   if (filters?.searchQuery) {
-    const query = `%${filters.searchQuery.trim()}%`;
-    conditions.push(Prisma.sql`(
-      LOWER(title) LIKE LOWER(${query}) OR
-      LOWER(description) LIKE LOWER(${query}) OR
-      LOWER(name) LIKE LOWER(${query}) OR
-      EXISTS (
-        SELECT 1 FROM unnest(tags) AS tag
-        WHERE LOWER(tag) LIKE LOWER(${query})
-      )
-    )`);
+    const searchTerms = filters.searchQuery.trim().split(/\s+/);
+    const searchConditions: Prisma.Sql[] = [];
+
+    for (const term of searchTerms) {
+      const query = `%${term}%`;
+      searchConditions.push(Prisma.sql`(
+        LOWER(title) LIKE LOWER(${query}) OR
+        LOWER(description) LIKE LOWER(${query}) OR
+        LOWER(name) LIKE LOWER(${query}) OR
+        EXISTS (
+          SELECT 1 FROM unnest(tags) AS tag
+          WHERE LOWER(tag) LIKE LOWER(${query})
+        )
+      )`);
+    }
+
+    if (searchConditions.length > 0) {
+      conditions.push(Prisma.sql`(${Prisma.join(searchConditions, " AND ")})`);
+    }
   }
 
   if (filters?.english) {
