@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Card, CardBody } from "@heroui/card";
@@ -8,10 +8,17 @@ import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
 import { Skeleton } from "@heroui/skeleton";
+import { Input } from "@heroui/input";
 
 import { useLanguage } from "@/contexts/language-context";
 import { useSession } from "@/hooks/useSession";
 import { getCountryFlagUrl, getCountryName } from "@/lib/countries";
+import { SearchIcon } from "@/components/icons";
+import { Select, SelectItem } from "@heroui/select";
+import { Availability } from "@/lib/constants";
+import { CountrySelect } from "@/components/country-select";
+import {debounce, filtersToSearchParams} from "@/lib/search-utils";
+import { SearchFilters } from "@/types";
 import {
   cardStyles,
   typography,
@@ -45,32 +52,71 @@ export default function Home() {
     Record<string, number>
   >({});
   const tagsContainerRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const previousQueryRef = useRef("");
+  const [filters, setFilters] = useState<SearchFilters>({
+    searchQuery: "",
+    availability: null,
+    english: "",
+    country: "",
+  });
   const { t } = useLanguage();
   const { status } = useSession();
 
-  useEffect(() => {
-    let isMounted = true;
+  const fetchUsers = useCallback(async (currentFilters: SearchFilters) => {
+    setLoading(true);
+    try {
+      const queryString = filtersToSearchParams(currentFilters).toString();
+      const url = `/api/users/public${queryString ? `?${queryString}` : ""}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setUsers(data.users || []);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    fetch("/api/users/public")
-      .then((res) => {
-        if (!isMounted) return;
-        return res.json();
-      })
-      .then((data) => {
-        if (!isMounted) return;
-        const usersData = data.users || [];
-        setUsers(usersData);
-        setLoading(false);
-      })
-      .catch(() => {
-        if (isMounted) {
-          setLoading(false);
-        }
-      });
+  const debouncedFetch = useMemo(
+    () => debounce((filters: SearchFilters) => fetchUsers(filters), 500),
+    [fetchUsers],
+  );
 
-    return () => {
-      isMounted = false;
+  const updateFilter = <K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) => {
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+    if (key === "searchQuery") {
+      const currentQuery = value as string;
+      const previousQuery = previousQueryRef.current;
+      const trimmedQuery = currentQuery.trim();
+      const endsWithSpace = currentQuery !== currentQuery.trimEnd();
+      const isAddingContent = currentQuery.length > previousQuery.length;
+      const isOnlySpaces = currentQuery.length > 0 && trimmedQuery === "";
+      if (isOnlySpaces || (endsWithSpace && isAddingContent)) {
+        previousQueryRef.current = currentQuery;
+        return;
+      }
+      previousQueryRef.current = currentQuery;
+      debouncedFetch(newFilters);
+    } else {
+      fetchUsers(newFilters);
+    }
+  };
+
+  const clearFilters = () => {
+    const emptyFilters: SearchFilters = {
+      searchQuery: "",
+      availability: null,
+      english: "",
+      country: "",
     };
+    setFilters(emptyFilters);
+    fetchUsers(emptyFilters);
+  };
+
+  useEffect(() => {
+    fetchUsers(filters);
   }, []);
 
   // Calcular cuántos chips caben en cada card
@@ -138,11 +184,10 @@ export default function Home() {
     >
       <div className="max-w-7xl mx-auto">
         <motion.div
-          className="text-center mb-12 mt-0"
+          className="text-center mb-12 mt-0 min-h-[120px]"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          style={{ overflow: "visible" }}
         >
           <motion.h1
             className={`${typography.h1} mb-4 text-foreground min-h-[2.5rem]`}
@@ -160,18 +205,113 @@ export default function Home() {
           >
             {t.home.subtitle}
           </motion.p>
-          <div className="mt-8 flex justify-center min-h-[3.5rem]">
-            <Button
-              as={Link}
-              className={`${focusStates.button} rounded-full`}
-              color="primary"
-              href="/login"
-              size="lg"
-              variant="shadow"
-            >
-              {t.home.joinCommunity}
-            </Button>
+
+          {/* Search and Filter Section */}
+          <div className="max-w-4xl mx-auto mb-8 space-y-4">
+            {/* Search Input */}
+            <div className="relative">
+              <Input
+                aria-label={t.home.searcher.placeholder}
+                classNames={{
+                  base: "w-full",
+                  inputWrapper: "bg-default-100 dark:bg-default-100/50 border-none h-14 rounded-2xl",
+                  input: "text-base placeholder:text-default-500",
+                }}
+                placeholder={t.home.searcher.placeholder}
+                startContent={
+                  <SearchIcon className="text-default-400" size={20} />
+                }
+                type="text"
+                value={filters.searchQuery}
+                onChange={(e) => updateFilter("searchQuery", e.target.value)}
+              />
+            </div>
+
+            {/* Filter Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Select
+                aria-label={t.home.searcher.filters.english}
+                classNames={{
+                  base: "w-auto min-w-[200px]",
+                  trigger: "h-10 dark:bg-default-100/50",
+                  value: "font-medium text-default-700",
+                  popoverContent: "rounded-xl min-w-[200px]",
+                }}
+                placeholder={t.home.searcher.filters.english}
+                selectedKeys={filters.english ? [filters.english] : []}
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as string;
+                  updateFilter("english", selected || "");
+                }}
+              >
+                {t.dashboard.englishLevels.map((level) => (
+                  <SelectItem key={level.key}>{level.text}</SelectItem>
+                ))}
+              </Select>
+              <Select
+                aria-label={t.home.searcher.filters.availability}
+                classNames={{
+                  base: "w-auto min-w-[200px]",
+                  trigger: "h-10 dark:bg-default-100/50",
+                  value: "font-medium text-default-700",
+                  popoverContent: "rounded-xl min-w-[200px]",
+                }}
+                placeholder={t.home.searcher.filters.availability}
+                selectedKeys={filters.availability ? [filters.availability] : []}
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as Availability;
+                  updateFilter("availability", selected || null);
+                }}
+              >
+                <SelectItem key={Availability.FREELANCE}>{t.dashboard.availabilityFreelance}</SelectItem>
+                <SelectItem key={Availability.PART_TIME}>{t.dashboard.availabilityPartTime}</SelectItem>
+                <SelectItem key={Availability.FULL_TIME}>{t.dashboard.availabilityFullTime}</SelectItem>
+                <SelectItem key={Availability.CONSULTING}>{t.dashboard.availabilityConsulting}</SelectItem>
+                <SelectItem key={Availability.NOT_AVAILABLE}>{t.dashboard.availabilityNotAvailable}</SelectItem>
+              </Select>
+
+              <CountrySelect
+                onChange={(value) => updateFilter("country", value)}
+                placeholder={t.home.searcher.filters.country}
+                variant="flat"
+                value={filters.country || ''}
+                label=""
+                ariaLabel={t.home.searcher.filters.country}
+                classNames={{
+                  base: "w-[200px]",
+                  selectorButton: "h-10 rounded-xl",
+                  inputWrapper: "h-10 min-h-10 rounded-xl",
+                }}
+              />
+              <Button
+                className="rounded-xl text-default-500"
+                variant="light"
+                onPress={clearFilters}
+              >
+                {t.home.searcher.clearFilters}
+              </Button>
+            </div>
           </div>
+
+          {status === "unauthenticated" && (
+            <motion.div
+              className="mt-8 flex justify-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
+            >
+              <Button
+                as={Link}
+                className={`${typography.buttonLg} px-8 py-6 ${focusStates.button}`}
+                color="primary"
+                href="/login"
+                size="lg"
+                variant="shadow"
+              >
+                {t.home.joinCommunity}
+              </Button>
+            </motion.div>
+          )}
         </motion.div>
 
         {loading ? (
