@@ -84,6 +84,13 @@ export default function Home() {
   );
 
   const updateFilter = <K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) => {
+    if (key === "searchQuery") {
+      const queryValue = value as string;
+      if (queryValue.length > 200) {
+        value = queryValue.slice(0, 200) as SearchFilters[K];
+      }
+    }
+    
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     if (key === "searchQuery") {
