@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
@@ -59,6 +59,7 @@ export default function Home() {
     english: "",
     country: "",
   });
+  const [showFilters, setShowFilters] = useState(false);
   const { t } = useLanguage();
   const { status } = useSession();
 
@@ -216,7 +217,7 @@ export default function Home() {
           {/* Search and Filter Section */}
           <div className="max-w-4xl mx-auto mb-8 space-y-4">
             {/* Search Input */}
-            <div className="relative">
+            <div className="relative flex gap-2">
               <Input
                 aria-label={t.home.searcher.placeholder}
                 classNames={{
@@ -232,71 +233,179 @@ export default function Home() {
                 value={filters.searchQuery}
                 onChange={(e) => updateFilter("searchQuery", e.target.value)}
               />
+              {/* Toggle Filters Button - Mobile Only */}
+              <Button
+                className="md:hidden rounded-xl h-14 min-w-14"
+                isIconOnly
+                variant="flat"
+                onPress={() => setShowFilters(!showFilters)}
+                aria-label={showFilters ? "Ocultar filtros" : "Mostrar filtros"}
+              >
+                <svg
+                  className={`w-5 h-5 transition-transform duration-300 ${showFilters ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  />
+                </svg>
+              </Button>
             </div>
 
-            {/* Filter Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Select
-                aria-label={t.home.searcher.filters.english}
-                classNames={{
-                  base: "w-auto min-w-[200px]",
-                  trigger: "h-10 dark:bg-default-100/50",
-                  value: "font-medium text-default-700",
-                  popoverContent: "rounded-xl min-w-[200px]",
-                }}
-                placeholder={t.home.searcher.filters.english}
-                selectedKeys={filters.english ? [filters.english] : []}
-                onSelectionChange={(keys) => {
-                  const selected = Array.from(keys)[0] as string;
-                  updateFilter("english", selected || "");
-                }}
-              >
-                {t.dashboard.englishLevels.map((level) => (
-                  <SelectItem key={level.key}>{level.text}</SelectItem>
-                ))}
-              </Select>
-              <Select
-                aria-label={t.home.searcher.filters.availability}
-                classNames={{
-                  base: "w-auto min-w-[200px]",
-                  trigger: "h-10 dark:bg-default-100/50",
-                  value: "font-medium text-default-700",
-                  popoverContent: "rounded-xl min-w-[200px]",
-                }}
-                placeholder={t.home.searcher.filters.availability}
-                selectedKeys={filters.availability ? [filters.availability] : []}
-                onSelectionChange={(keys) => {
-                  const selected = Array.from(keys)[0] as Availability;
-                  updateFilter("availability", selected || null);
-                }}
-              >
-                <SelectItem key={Availability.FREELANCE}>{t.dashboard.availabilityFreelance}</SelectItem>
-                <SelectItem key={Availability.PART_TIME}>{t.dashboard.availabilityPartTime}</SelectItem>
-                <SelectItem key={Availability.FULL_TIME}>{t.dashboard.availabilityFullTime}</SelectItem>
-                <SelectItem key={Availability.CONSULTING}>{t.dashboard.availabilityConsulting}</SelectItem>
-                <SelectItem key={Availability.NOT_AVAILABLE}>{t.dashboard.availabilityNotAvailable}</SelectItem>
-              </Select>
+            {/* Filter Buttons - Desktop: Always visible, Mobile: Collapsible */}
+            <div>
+              {/* Desktop: Always visible */}
+              <div className="hidden md:flex md:flex-wrap md:items-center md:justify-center md:gap-3">
+                <Select
+                  aria-label={t.home.searcher.filters.english}
+                  classNames={{
+                    base: "w-auto min-w-[200px]",
+                    trigger: "h-10 dark:bg-default-100/50",
+                    value: "font-medium text-default-700",
+                    popoverContent: "rounded-xl min-w-[200px]",
+                  }}
+                  placeholder={t.home.searcher.filters.english}
+                  selectedKeys={filters.english ? [filters.english] : []}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0] as string;
+                    updateFilter("english", selected || "");
+                  }}
+                >
+                  {t.dashboard.englishLevels.map((level) => (
+                    <SelectItem key={level.key}>{level.text}</SelectItem>
+                  ))}
+                </Select>
+                <Select
+                  aria-label={t.home.searcher.filters.availability}
+                  classNames={{
+                    base: "w-auto min-w-[200px]",
+                    trigger: "h-10 dark:bg-default-100/50",
+                    value: "font-medium text-default-700",
+                    popoverContent: "rounded-xl min-w-[200px]",
+                  }}
+                  placeholder={t.home.searcher.filters.availability}
+                  selectedKeys={filters.availability ? [filters.availability] : []}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0] as Availability;
+                    updateFilter("availability", selected || null);
+                  }}
+                >
+                  <SelectItem key={Availability.FREELANCE}>{t.dashboard.availabilityFreelance}</SelectItem>
+                  <SelectItem key={Availability.PART_TIME}>{t.dashboard.availabilityPartTime}</SelectItem>
+                  <SelectItem key={Availability.FULL_TIME}>{t.dashboard.availabilityFullTime}</SelectItem>
+                  <SelectItem key={Availability.CONSULTING}>{t.dashboard.availabilityConsulting}</SelectItem>
+                  <SelectItem key={Availability.NOT_AVAILABLE}>{t.dashboard.availabilityNotAvailable}</SelectItem>
+                </Select>
+                <CountrySelect
+                  onChange={(value) => updateFilter("country", value)}
+                  placeholder={t.home.searcher.filters.country}
+                  variant="flat"
+                  value={filters.country || ''}
+                  label=""
+                  ariaLabel={t.home.searcher.filters.country}
+                  classNames={{
+                    base: "w-[200px]",
+                    selectorButton: "h-10 rounded-xl",
+                    inputWrapper: "h-10 min-h-10 rounded-xl",
+                  }}
+                />
+                <Button
+                  className="rounded-xl text-default-500"
+                  variant="light"
+                  onPress={clearFilters}
+                >
+                  {t.home.searcher.clearFilters}
+                </Button>
+              </div>
 
-              <CountrySelect
-                onChange={(value) => updateFilter("country", value)}
-                placeholder={t.home.searcher.filters.country}
-                variant="flat"
-                value={filters.country || ''}
-                label=""
-                ariaLabel={t.home.searcher.filters.country}
-                classNames={{
-                  base: "w-[200px]",
-                  selectorButton: "h-10 rounded-xl",
-                  inputWrapper: "h-10 min-h-10 rounded-xl",
-                }}
-              />
-              <Button
-                className="rounded-xl text-default-500"
-                variant="light"
-                onPress={clearFilters}
-              >
-                {t.home.searcher.clearFilters}
-              </Button>
+              {/* Mobile: Collapsible with animation */}
+              <AnimatePresence>
+                {showFilters && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="overflow-hidden md:hidden"
+                  >
+                    <div className="space-y-3 pt-3">
+                      <div className="w-full">
+                        <Select
+                          aria-label={t.home.searcher.filters.english}
+                          classNames={{
+                            base: "w-full",
+                            trigger: "h-10 dark:bg-default-100/50",
+                            value: "font-medium text-default-700",
+                            popoverContent: "rounded-xl min-w-[200px]",
+                          }}
+                          placeholder={t.home.searcher.filters.english}
+                          selectedKeys={filters.english ? [filters.english] : []}
+                          onSelectionChange={(keys) => {
+                            const selected = Array.from(keys)[0] as string;
+                            updateFilter("english", selected || "");
+                          }}
+                        >
+                          {t.dashboard.englishLevels.map((level) => (
+                            <SelectItem key={level.key}>{level.text}</SelectItem>
+                          ))}
+                        </Select>
+                      </div>
+                      <div className="w-full">
+                        <Select
+                          aria-label={t.home.searcher.filters.availability}
+                          classNames={{
+                            base: "w-full",
+                            trigger: "h-10 dark:bg-default-100/50",
+                            value: "font-medium text-default-700",
+                            popoverContent: "rounded-xl min-w-[200px]",
+                          }}
+                          placeholder={t.home.searcher.filters.availability}
+                          selectedKeys={filters.availability ? [filters.availability] : []}
+                          onSelectionChange={(keys) => {
+                            const selected = Array.from(keys)[0] as Availability;
+                            updateFilter("availability", selected || null);
+                          }}
+                        >
+                          <SelectItem key={Availability.FREELANCE}>{t.dashboard.availabilityFreelance}</SelectItem>
+                          <SelectItem key={Availability.PART_TIME}>{t.dashboard.availabilityPartTime}</SelectItem>
+                          <SelectItem key={Availability.FULL_TIME}>{t.dashboard.availabilityFullTime}</SelectItem>
+                          <SelectItem key={Availability.CONSULTING}>{t.dashboard.availabilityConsulting}</SelectItem>
+                          <SelectItem key={Availability.NOT_AVAILABLE}>{t.dashboard.availabilityNotAvailable}</SelectItem>
+                        </Select>
+                      </div>
+                      <div className="w-full">
+                        <CountrySelect
+                          onChange={(value) => updateFilter("country", value)}
+                          placeholder={t.home.searcher.filters.country}
+                          variant="flat"
+                          value={filters.country || ''}
+                          label=""
+                          ariaLabel={t.home.searcher.filters.country}
+                          classNames={{
+                            base: "w-full",
+                            selectorButton: "h-10 rounded-xl",
+                            inputWrapper: "h-10 min-h-10 rounded-xl",
+                          }}
+                        />
+                      </div>
+                      <div className="w-full pt-2">
+                        <Button
+                          className="w-full rounded-xl text-default-500"
+                          variant="light"
+                          onPress={clearFilters}
+                        >
+                          {t.home.searcher.clearFilters}
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
