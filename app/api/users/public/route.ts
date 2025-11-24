@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         );
       }
       if (searchQuery.length === 0) {
-        searchQuery = undefined;
+        searchQuery = null;
       }
     }
 
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
     }
 
     const filters: SearchFilters = {
-      searchQuery: searchQuery || undefined,
+      searchQuery: searchQuery && searchQuery.length > 0 ? searchQuery : undefined,
       english: english || undefined,
       availability: availability || undefined,
       country: country || undefined,
