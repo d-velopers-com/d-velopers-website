@@ -17,13 +17,13 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        ports:
-          - 5432:5432
 
     steps:
       - name: Checkout code
@@ -48,14 +48,17 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db?schema=public
         run: pnpm prisma generate
 
-      - name: Push database schema
+      - name: Run migrations
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db?schema=public
-        run: pnpm prisma db push --accept-data-loss
+        run: pnpm prisma migrate deploy
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db?schema=public
+        run: pnpm test
 
       - name: Build application
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db?schema=public
-          NODE_ENV: production
         run: pnpm build
-
