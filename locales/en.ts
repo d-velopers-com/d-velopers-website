@@ -23,6 +23,15 @@ export const en = {
     login: "Login",
     dashboard: "Dashboard",
     joinCommunity: "Join the Community",
+    searcher: {
+      placeholder: "Search developers",
+      filters: {
+        english: "English",
+        country: "Country",
+        availability: "Availability",
+      },
+      clearFilters: "Clear filters",
+    },
   },
   login: {
     title: "Welcome Back",
