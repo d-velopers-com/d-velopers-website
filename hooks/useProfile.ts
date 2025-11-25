@@ -76,7 +76,7 @@ export function useProfile() {
     tags?: string[];
     englishLevel?: string | null;
     availability?: string[];
-    careerStartYear?: number | null;
+    careerStartYear?: string | null;
   }) => {
     try {
       const res = await fetch("/api/user/profile", {

@@ -20,9 +20,10 @@ function isValidEmail(email: string): boolean {
 }
 
 function isValidCareerYear(year: string) {
+  const yearNumber = Number(year);
   const currentYear = new Date().getFullYear();
   const minYear = 1950;
-  return year >= minYear && year <= currentYear;
+  return yearNumber >= minYear && yearNumber <= currentYear;
 }
 
 export async function GET() {

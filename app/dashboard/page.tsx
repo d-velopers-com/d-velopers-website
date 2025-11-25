@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
+import {useEffect, useState, useMemo} from "react";
 import { toast } from "sonner";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
@@ -371,7 +371,7 @@ export default function DashboardPage() {
       new Date(profile.profileActivatedAt).getTime() + 30 * 24 * 60 * 60 * 1000,
     );
 
-  const handleCareerStartYearChange = (e) => {
+  const handleCareerStartYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (value === '' || /^\d+$/.test(value)) {
       setCareerStartYear(value);
