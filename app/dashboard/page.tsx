@@ -63,6 +63,7 @@ export default function DashboardPage() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [englishLevel, setEnglishLevel] = useState<string>("");
+  const [careerStartYear, setCareerStartYear] = useState<string>("");
   const [availability, setAvailability] = useState<string[]>([]);
   const [isNotAvailable, setIsNotAvailable] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
@@ -123,6 +124,7 @@ export default function DashboardPage() {
       } else {
         setAvailability(profileAvailability);
       }
+      setCareerStartYear(profile.careerStartYear || "");
       setTags(profile.tags || []);
     }
   }, [profile]);
@@ -269,6 +271,7 @@ export default function DashboardPage() {
       title: title.trim() || null,
       englishLevel: englishLevel || null,
       availability: isNotAvailable ? ["not_available"] : availability,
+      careerStartYear: careerStartYear || null,
       tags: tags,
     });
 
@@ -367,6 +370,13 @@ export default function DashboardPage() {
     new Date(
       new Date(profile.profileActivatedAt).getTime() + 30 * 24 * 60 * 60 * 1000,
     );
+
+  const handleCareerStartYearChange = (e) => {
+    const value = e.target.value;
+    if (value === '' || /^\d+$/.test(value)) {
+      setCareerStartYear(value);
+    }
+  }
 
   const handleSync = async () => {
     setSyncing(true);
@@ -1012,7 +1022,24 @@ export default function DashboardPage() {
                 ))}
               </Select>
             </div>
-
+            <div className="flex flex-col gap-2">
+              <span className={typography.label}>
+                {t.dashboard.careerStartYear}
+              </span>
+              <Input
+                classNames={{
+                  input: "bg-background",
+                  inputWrapper:
+                    "bg-background hover:bg-background group-data-[focus=true]:bg-background",
+                }}
+                placeholder={t.dashboard.careerStartYear}
+                type="year"
+                maxLength={4}
+                value={careerStartYear}
+                variant="bordered"
+                onChange={handleCareerStartYearChange}
+              />
+            </div>
             <div className="flex flex-col gap-2">
               <span className={typography.label}>
                 {t.dashboard.availability}

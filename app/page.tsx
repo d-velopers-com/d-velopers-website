@@ -41,6 +41,7 @@ interface PublicUser {
   country: string | null;
   tags: string[];
   roles: string[];
+  careerStartYear: number | null;
   joinedServerAt: string | null;
   createdAt: string;
 }
@@ -91,7 +92,6 @@ export default function Home() {
         value = queryValue.slice(0, 200) as SearchFilters[K];
       }
     }
-    
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     if (key === "searchQuery") {
@@ -185,6 +185,11 @@ export default function Home() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [users]);
+
+  const getYOEfromCareerStartYear = (careerStartYear: number): string => {
+    const currentYear = new Date().getFullYear();
+    return `${(currentYear - careerStartYear)}+ ${t.home.yearsOfExperience}`;
+  };
 
   return (
     <div
@@ -587,6 +592,11 @@ export default function Home() {
                             >
                               {user.title || "\u00A0"}
                             </p>
+                            {user.careerStartYear &&
+                              <p className={`${typography.caption} truncate overflow-hidden text-ellipsis leading-tight`}>
+                                {getYOEfromCareerStartYear(user.careerStartYear)}
+                              </p>
+                            }
                           </div>
                         </div>
                         <div

@@ -19,6 +19,12 @@ function isValidEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
+function isValidCareerYear(year: string) {
+  const currentYear = new Date().getFullYear();
+  const minYear = 1950;
+  return year >= minYear && year <= currentYear;
+}
+
 export async function GET() {
   const session = await getSession();
 
@@ -45,6 +51,7 @@ export async function GET() {
     tags: user.tags,
     englishLevel: user.englishLevel,
     availability: Array.isArray(user.availability) ? user.availability : [],
+    careerStartYear: user.careerStartYear,
     joinedServerAt: user.joinedServerAt,
     profileActivatedAt: user.profileActivatedAt,
   });
@@ -70,6 +77,7 @@ export async function PATCH(request: Request) {
     tags,
     englishLevel,
     availability,
+    careerStartYear,
   } = body;
 
   const updateData: {
@@ -84,6 +92,7 @@ export async function PATCH(request: Request) {
     tags?: string[];
     englishLevel?: string | null;
     availability?: string[];
+    careerStartYear?: number | null;
   } = {};
 
   if (isPublic !== undefined) {
@@ -339,6 +348,16 @@ export async function PATCH(request: Request) {
     }
   }
 
+  if (careerStartYear !== undefined) {
+    if (!isValidCareerYear(careerStartYear)) {
+      return NextResponse.json(
+        { error: `Please enter a valid career start year` },
+        { status: 400 },
+      );
+    }
+    updateData.careerStartYear = Number(careerStartYear);
+  }
+
   if (availability !== undefined) {
     if (!Array.isArray(availability)) {
       return NextResponse.json(
@@ -401,6 +420,7 @@ export async function PATCH(request: Request) {
     tags: user.tags,
     englishLevel: user.englishLevel,
     availability: Array.isArray(user.availability) ? user.availability : [],
+    careerStartYear: user.careerStartYear,
     joinedServerAt: user.joinedServerAt,
     profileActivatedAt: user.profileActivatedAt,
   });
