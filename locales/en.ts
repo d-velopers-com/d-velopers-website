@@ -32,7 +32,8 @@ export const en = {
       },
       clearFilters: "Clear filters",
     },
-    yearsOfExperience: "years exp",
+    yearsOfExperienceSingular: "year exp",
+    yearsOfExperiencePlural: "years exp",
   },
   login: {
     title: "Welcome Back",
@@ -180,7 +181,7 @@ export const en = {
       { key: "C1", text: "C1 (Advanced)" },
       { key: "C2", text: "C2 (Proficient)" },
     ],
-    careerStartYear: "Career Start Year",
+    yoe: "Years of experience",
   },
   profile: {
     about: "About",

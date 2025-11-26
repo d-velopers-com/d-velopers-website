@@ -19,11 +19,9 @@ function isValidEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
-function isValidCareerYear(year: string) {
-  const yearNumber = Number(year);
-  const currentYear = new Date().getFullYear();
-  const minYear = 1950;
-  return yearNumber >= minYear && yearNumber <= currentYear;
+function isValidYOE(year: string) {
+  const yearsNumber = Number(year);
+  return yearsNumber >= 0;
 }
 
 export async function GET() {
@@ -52,7 +50,7 @@ export async function GET() {
     tags: user.tags,
     englishLevel: user.englishLevel,
     availability: Array.isArray(user.availability) ? user.availability : [],
-    careerStartYear: user.careerStartYear,
+    yoe: user.yoe,
     joinedServerAt: user.joinedServerAt,
     profileActivatedAt: user.profileActivatedAt,
   });
@@ -78,7 +76,7 @@ export async function PATCH(request: Request) {
     tags,
     englishLevel,
     availability,
-    careerStartYear,
+    yoe,
   } = body;
 
   const updateData: {
@@ -93,7 +91,7 @@ export async function PATCH(request: Request) {
     tags?: string[];
     englishLevel?: string | null;
     availability?: string[];
-    careerStartYear?: number | null;
+    yoe?: number | null;
   } = {};
 
   if (isPublic !== undefined) {
@@ -349,14 +347,14 @@ export async function PATCH(request: Request) {
     }
   }
 
-  if (careerStartYear !== undefined) {
-    if (!isValidCareerYear(careerStartYear)) {
+  if (yoe !== undefined) {
+    if (!isValidYOE(yoe)) {
       return NextResponse.json(
-        { error: `Please enter a valid career start year` },
+        { error: `Please enter a valid years of experience` },
         { status: 400 },
       );
     }
-    updateData.careerStartYear = Number(careerStartYear);
+    updateData.yoe = Number(yoe);
   }
 
   if (availability !== undefined) {
@@ -421,7 +419,7 @@ export async function PATCH(request: Request) {
     tags: user.tags,
     englishLevel: user.englishLevel,
     availability: Array.isArray(user.availability) ? user.availability : [],
-    careerStartYear: user.careerStartYear,
+    yoe: user.yoe,
     joinedServerAt: user.joinedServerAt,
     profileActivatedAt: user.profileActivatedAt,
   });
