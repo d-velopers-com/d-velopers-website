@@ -41,7 +41,7 @@ interface PublicUser {
   country: string | null;
   tags: string[];
   roles: string[];
-  careerStartYear: number | null;
+  yoe: number | null;
   joinedServerAt: string | null;
   createdAt: string;
 }
@@ -185,11 +185,6 @@ export default function Home() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [users]);
-
-  const getYOEfromCareerStartYear = (careerStartYear: number): string => {
-    const currentYear = new Date().getFullYear();
-    return `${(currentYear - careerStartYear)}+ ${t.home.yearsOfExperience}`;
-  };
 
   return (
     <div
@@ -592,9 +587,9 @@ export default function Home() {
                             >
                               {user.title || "\u00A0"}
                             </p>
-                            {user.careerStartYear &&
+                            {(user.yoe && user.yoe > 0) &&
                               <p className={`${typography.caption} truncate overflow-hidden text-ellipsis leading-tight`}>
-                                {getYOEfromCareerStartYear(user.careerStartYear)}
+                                {user.yoe}+ {user.yoe > 1 ? t.home.yearsOfExperiencePlural : t.home.yearsOfExperienceSingular}
                               </p>
                             }
                           </div>

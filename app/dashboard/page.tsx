@@ -28,7 +28,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/language-context";
 import { useSession } from "@/hooks/useSession";
 import { useProfile } from "@/hooks/useProfile";
-import { countries, getCountryFlagUrl, getCountryName } from "@/lib/countries";
 import { CountrySelect } from "@/components/country-select";
 import {
   cardStyles,
@@ -63,7 +62,7 @@ export default function DashboardPage() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [englishLevel, setEnglishLevel] = useState<string>("");
-  const [careerStartYear, setCareerStartYear] = useState<string>("");
+  const [yoe, setYoe] = useState<string>("");
   const [availability, setAvailability] = useState<string[]>([]);
   const [isNotAvailable, setIsNotAvailable] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
@@ -124,7 +123,7 @@ export default function DashboardPage() {
       } else {
         setAvailability(profileAvailability);
       }
-      setCareerStartYear(profile.careerStartYear || "");
+      setYoe(profile.yoe || "");
       setTags(profile.tags || []);
     }
   }, [profile]);
@@ -271,7 +270,7 @@ export default function DashboardPage() {
       title: title.trim() || null,
       englishLevel: englishLevel || null,
       availability: isNotAvailable ? ["not_available"] : availability,
-      careerStartYear: careerStartYear || null,
+      yoe: yoe || null,
       tags: tags,
     });
 
@@ -371,10 +370,10 @@ export default function DashboardPage() {
       new Date(profile.profileActivatedAt).getTime() + 30 * 24 * 60 * 60 * 1000,
     );
 
-  const handleCareerStartYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleyoeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (value === '' || /^\d+$/.test(value)) {
-      setCareerStartYear(value);
+      setYoe(value);
     }
   }
 
@@ -1024,7 +1023,7 @@ export default function DashboardPage() {
             </div>
             <div className="flex flex-col gap-2">
               <span className={typography.label}>
-                {t.dashboard.careerStartYear}
+                {t.dashboard.yoe}
               </span>
               <Input
                 classNames={{
@@ -1032,12 +1031,12 @@ export default function DashboardPage() {
                   inputWrapper:
                     "bg-background hover:bg-background group-data-[focus=true]:bg-background",
                 }}
-                placeholder={t.dashboard.careerStartYear}
+                placeholder={t.dashboard.yoe}
                 type="year"
-                maxLength={4}
-                value={careerStartYear}
+                maxLength={2}
+                value={yoe}
                 variant="bordered"
-                onChange={handleCareerStartYearChange}
+                onChange={handleyoeChange}
               />
             </div>
             <div className="flex flex-col gap-2">

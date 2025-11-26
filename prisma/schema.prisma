@@ -16,18 +16,18 @@ model User {
   avatar        String?
   handler       String  @unique
 
-  isPublic        Boolean  @default(false)
-  description     String?
-  link            String?
-  contactLinks    String[] @default([])
-  contactEmail    String?
-  country         String?
-  name            String?
-  title           String?
-  tags            String[]
-  englishLevel    String?
-  availability    String[] @default([])
-  careerStartYear Int?
+  isPublic     Boolean  @default(false)
+  description  String?
+  link         String?
+  contactLinks String[] @default([])
+  contactEmail String?
+  country      String?
+  name         String?
+  title        String?
+  tags         String[]
+  englishLevel String?
+  availability String[] @default([])
+  yoe          Int?
 
   roles              String[]
   joinedServerAt     DateTime?
