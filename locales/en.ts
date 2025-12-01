@@ -233,4 +233,41 @@ export const en = {
   discord: {
     pageTitle: "Discord landing",
   },
+  jobs: {
+    title: "Job Opportunities",
+    subtitle: "Explore job postings from our community",
+    noPosts: "No job posts available at the moment. Check back later!",
+  },
+  jobManage: {
+    title: "Manage Job Posts",
+    validation: "Title and Iframe are required",
+    getting: {
+      errorMessage: "Failed to fetch posts"
+    },
+    save: {
+      saveSuccessMessage: "Post created successfully",
+      updatedSuccessMessage: "Post created successfully",
+      errorMessage: "Failed to save post",
+    },
+    table: {
+      head: {
+        title: "Title",
+        createdAt: "Created At",
+        actions: "Actions",
+      },
+      body: {
+        edit: "Edit",
+        delete: "Delete",
+      },
+      noRows: "No posts found",
+    },
+    confirmDelete: {
+      title: "Confirm",
+      body: "Are you sure you want to delete this post?",
+      confirm: "Confirm",
+      cancel: "Cancel",
+      successMessage: "Post deleted successfully",
+      errorMessage: "Failed to delete post",
+    },
+  },
 };

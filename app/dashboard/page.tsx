@@ -8,7 +8,6 @@ import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
-import { Skeleton } from "@heroui/skeleton";
 import { Switch } from "@heroui/switch";
 import { Input } from "@heroui/input";
 import { Textarea } from "@heroui/input";
@@ -41,6 +40,7 @@ import {
   colors,
   colorOpacity,
 } from "@/lib/ui-constants";
+import {SkeletonLoading} from "@/components/skeleton-loading";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -312,20 +312,7 @@ export default function DashboardPage() {
     allowedRolesLoading;
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen px-4">
-        <Card className="max-w-md w-full">
-          <CardBody className="gap-4 p-8">
-            <div className="flex flex-col items-center gap-4">
-              <Skeleton className="rounded-full w-24 h-24 shimmer" />
-              <Skeleton className="rounded-lg w-48 h-6 shimmer" />
-              <Skeleton className="rounded-lg w-64 h-4 shimmer" />
-              <Skeleton className="rounded-lg w-full h-20 shimmer" />
-            </div>
-          </CardBody>
-        </Card>
-      </div>
-    );
+    return <SkeletonLoading/>;
   }
 
   if (!session?.user) {

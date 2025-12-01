@@ -235,4 +235,41 @@ export const es = {
   discord: {
     pageTitle: "Aterrizaje de Discord",
   },
+  jobs: {
+    title: "Oportunidades de Trabajo",
+    subtitle: "Explora ofertas laborales de nuestra comunidad",
+    noPosts: "No hay ofertas de trabajo disponibles por el momento. ¡Vuelve más tarde!",
+  },
+  jobManage: {
+    title: "Administrar ofertas de trabajo",
+    validation: "El título y el iframe son obligatorios",
+    getting: {
+      errorMessage: "No se pudieron obtener las publicaciones"
+    },
+    save: {
+      saveSuccessMessage: "Publicación creada exitosamente",
+      updatedSuccessMessage: "Publicación actualizada exitosamente",
+      errorMessage: "No se pudo guardar la publicación"
+    },
+    table: {
+      head: {
+        title: "Título",
+        createdAt: "Fecha de Creación",
+        actions: "Acciones",
+      },
+      body: {
+        edit: "Editar",
+        delete: "Eliminar",
+      },
+      noRows: "No se encontraron publicaciones",
+    },
+    confirmDelete: {
+      title: "Confirmar",
+      body: "¿Está seguro de que desea eliminar esta publicación?",
+      confirm: "Confirmar",
+      cancel: "Cancelar",
+      successMessage: "Publicación eliminada exitosamente",
+      errorMessage: "No se pudo eliminar la publicación",
+    },
+  },
 };
