@@ -3,12 +3,12 @@ import {getPost, updatePost, deletePost} from "@/lib/posts";
 import {withStaffRole} from "@/middlewares/auth";
 import {isValidHtmlString} from "@/lib/validations";
 
-export async function GET(
-  request: NextRequest,
-  {params}: { params: { id: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
-    const {id} = params;
+    const id = request.nextUrl.pathname.split('/').pop();
+    if (!id) {
+      return NextResponse.json({error: "Invalid post ID"}, {status: 400});
+    }
     const post = await getPost(id);
     if (!post) {
       return NextResponse.json({error: "Post not found"}, {status: 404});
@@ -25,11 +25,13 @@ export async function GET(
 
 export const PUT = withStaffRole(async (
   request: NextRequest,
-  {params}: { params: { id: string } },
   _session
 ) => {
   try {
-    const {id} = params;
+    const id = request.nextUrl.pathname.split('/').pop();
+    if (!id) {
+      return NextResponse.json({error: "Invalid post ID"}, {status: 400});
+    }
 
     const existingPost = await getPost(id);
     if (!existingPost) {
@@ -81,11 +83,13 @@ export const PUT = withStaffRole(async (
 
 export const DELETE = withStaffRole(async (
   request: NextRequest,
-  {params}: { params: { id: string } },
   _session
 ) => {
   try {
-    const {id} = params;
+    const id = request.nextUrl.pathname.split('/').pop();
+    if (!id) {
+      return NextResponse.json({error: "Invalid post ID"}, {status: 400});
+    }
 
     const existingPost = await getPost(id);
     if (!existingPost) {
