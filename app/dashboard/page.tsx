@@ -41,6 +41,7 @@ import {
   colorOpacity,
 } from "@/lib/ui-constants";
 import {SkeletonLoading} from "@/components/skeleton-loading";
+import {validateRecentActivation} from "@/lib/utils";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -174,6 +175,7 @@ export default function DashboardPage() {
       isServerMember &&
       allowedRoles.length > 0 &&
       session?.user?.roles?.some((roleId) => allowedRoles.includes(roleId));
+
     const canApplyTrial =
       isServerMember &&
       !hasAllowedRole &&
@@ -331,10 +333,7 @@ export default function DashboardPage() {
     allowedRoles.length > 0 &&
     user.roles.some((roleId) => allowedRoles.includes(roleId));
 
-  const hasRecentActivation =
-    profile?.profileActivatedAt &&
-    new Date(profile.profileActivatedAt).getTime() >
-      Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const hasRecentActivation = validateRecentActivation(profile?.profileActivatedAt);
 
   const canApplyTrialPeriod =
     isServerMember &&

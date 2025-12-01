@@ -26,3 +26,10 @@ export function filtersToSearchParams(filters: Record<string, any>): URLSearchPa
   });
   return params;
 }
+
+export const validateRecentActivation = (profileActivatedAt: string | null | undefined) => {
+  if (!profileActivatedAt) {
+    return false;
+  }
+  return profileActivatedAt && new Date(profileActivatedAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000;
+};

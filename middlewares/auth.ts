@@ -28,13 +28,19 @@ export function withAuth<T = any>(
   };
 }
 
-export function withStaffRole<T = any>(handler: AuthenticatedHandler<T>) {
+export function withRole<T = any>(
+  allowedRoles: string[],
+  handler: AuthenticatedHandler<T>
+) {
   return withAuth(async (request: NextRequest, context: T, session: Session) => {
-    const staffRoles = accessByRole["jobs_management"];
-    const hasStaffRole = session.roles?.some((role) => staffRoles.includes(role));
-    if (!hasStaffRole) {
+    const hasRequiredRole = session.roles?.some((role) => allowedRoles.includes(role));
+    if (!hasRequiredRole) {
       return NextResponse.json({error: "Forbidden"}, {status: 403});
     }
     return handler(request, context, session);
   });
+}
+
+export function withStaffRole<T = any>(handler: AuthenticatedHandler<T>) {
+  return withRole(accessByRole["jobs_management"], handler);
 }

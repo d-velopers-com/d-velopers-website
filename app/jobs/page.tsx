@@ -4,6 +4,11 @@ import {useEffect, useState} from "react";
 import {Card, CardHeader, CardBody} from "@heroui/card";
 import {Skeleton} from "@heroui/skeleton";
 import {useLanguage} from "@/contexts/language-context";
+import {useSession} from "@/hooks/useSession";
+import {useRouter} from "next/navigation";
+import {useProfile} from "@/hooks/useProfile";
+import {SkeletonLoading} from "@/components/skeleton-loading";
+import {validateRecentActivation} from "@/lib/utils";
 
 interface Post {
   id: string;
@@ -19,7 +24,39 @@ interface PostsResponse {
 export default function JobsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [enableView, setViewEnable] = useState<boolean | undefined>(undefined);
   const {t} = useLanguage();
+  const {data: session, status} = useSession();
+  const router = useRouter();
+  const {profile} = useProfile();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+      return;
+    }
+  }, [status, router]);
+
+  useEffect(() => {
+    if (status === "unauthenticated" || !session?.user?.roles) {
+      return;
+    }
+
+    const hasRecentActivation = validateRecentActivation(profile?.profileActivatedAt);
+    fetch("/api/config/allowed-roles")
+      .then((res) => res.json())
+      .then((data) => {
+        const backRoles = data.roles || [];
+        const hasRole = session?.user?.roles?.some((role) => backRoles.includes(role)) || false;
+        const isServerMember = session?.user?.roles && session?.user.roles.length > 0 || false;
+        const hasAllowedRole = isServerMember && hasRole;
+        const canApplyTrialPeriod = isServerMember && !hasAllowedRole && !profile?.profileActivatedAt;
+        const canMakePublic = hasAllowedRole || hasRecentActivation || canApplyTrialPeriod;
+        setViewEnable(canMakePublic);
+      })
+      .catch(() => setViewEnable(false))
+      .finally(() => setIsLoading(false));
+  }, [session, status == "authenticated", profile]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -33,9 +70,18 @@ export default function JobsPage() {
         setIsLoading(false);
       }
     };
-
     fetchPosts();
-  }, []);
+  }, [enableView]);
+
+  useEffect(() => {
+    if (enableView === false) {
+      router.push('/');
+    }
+  }, [enableView, router]);
+
+  if (isLoading || !enableView) {
+    return <SkeletonLoading/>;
+  }
 
   return (
     <div className="flex flex-col items-center min-h-screen px-4 py-8">
@@ -56,8 +102,8 @@ export default function JobsPage() {
             {[1, 2, 3].map((i) => (
               <Card key={i}>
                 <CardBody>
-                  <Skeleton className="h-8 w-3/4 mb-4 rounded-lg" />
-                  <Skeleton className="h-64 w-full rounded-lg" />
+                  <Skeleton className="h-8 w-3/4 mb-4 rounded-lg"/>
+                  <Skeleton className="h-64 w-full rounded-lg"/>
                 </CardBody>
               </Card>
             ))}

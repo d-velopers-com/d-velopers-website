@@ -14,6 +14,7 @@ export const es = {
     openMenu: "Abrir menú",
     profileActions: "Acciones del Perfil",
     theme: "Tema",
+    jobs: "Puestos disponibles",
   },
   home: {
     title: "D-velopers",
