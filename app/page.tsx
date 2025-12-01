@@ -17,7 +17,7 @@ import { SearchIcon } from "@/components/icons";
 import { Select, SelectItem } from "@heroui/select";
 import { Availability } from "@/lib/constants";
 import { CountrySelect } from "@/components/country-select";
-import {debounce, filtersToSearchParams} from "@/lib/search-utils";
+import {debounce, filtersToSearchParams} from "@/lib/utils";
 import { SearchFilters } from "@/types";
 import {
   cardStyles,

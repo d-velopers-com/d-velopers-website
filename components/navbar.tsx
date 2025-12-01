@@ -121,30 +121,43 @@ export function Navbar() {
         ) : (
           status === "authenticated" &&
           session?.user && (
-            <NavbarItem className="hidden sm:flex">
-              <Dropdown placement="bottom-end">
-                <DropdownTrigger>
-                  <Avatar
-                    as="button"
-                    className="transition-transform cursor-pointer"
-                    size="sm"
-                    src={avatarUrl}
-                  />
-                </DropdownTrigger>
-                <DropdownMenu aria-label={t.nav.profileActions} variant="flat">
-                  <DropdownItem key="dashboard" href="/dashboard">
-                    {t.nav.profile}
-                  </DropdownItem>
-                  <DropdownItem
-                    key="logout"
-                    color="danger"
-                    onPress={() => signOut()}
-                  >
-                    {t.common.logout}
-                  </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-            </NavbarItem>
+            <>
+              <NavbarItem className="hidden sm:flex">
+                <Button
+                  variant="light"
+                  className="data-[hover=true]:bg-transparent"
+                  as={Link}
+                  href="/jobs"
+                  size="md"
+                >
+                  {t.nav.jobs}
+                </Button>
+              </NavbarItem>
+              <NavbarItem className="hidden sm:flex">
+                <Dropdown placement="bottom-end">
+                  <DropdownTrigger>
+                    <Avatar
+                      as="button"
+                      className="transition-transform cursor-pointer"
+                      size="sm"
+                      src={avatarUrl}
+                    />
+                  </DropdownTrigger>
+                  <DropdownMenu aria-label={t.nav.profileActions} variant="flat">
+                    <DropdownItem key="dashboard" href="/dashboard">
+                      {t.nav.profile}
+                    </DropdownItem>
+                    <DropdownItem
+                      key="logout"
+                      color="danger"
+                      onPress={() => signOut()}
+                    >
+                      {t.common.logout}
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </NavbarItem>
+            </>
           )
         )}
       </NavbarContent>
