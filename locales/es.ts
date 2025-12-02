@@ -247,10 +247,25 @@ export const es = {
     getting: {
       errorMessage: "No se pudieron obtener las publicaciones"
     },
+    form: {
+      titleNewPost: "Crear Nuevo Post",
+      titleEditPost: "Editar Post",
+      titleField: {
+        title: "Título",
+        placeholder: "Ingresa el título del post",
+      },
+      iframeField: {
+        title: "Iframe",
+        placeholder: "Ingresa el contenido HTML del iframe",
+      },
+      updateButton: "Actualizar",
+      createButton: "Crear",
+      cancelButton: "Cancelar",
+    },
     save: {
       saveSuccessMessage: "Publicación creada exitosamente",
       updatedSuccessMessage: "Publicación actualizada exitosamente",
-      errorMessage: "No se pudo guardar la publicación"
+      errorMessage: "No se pudo guardar la publicación",
     },
     table: {
       head: {

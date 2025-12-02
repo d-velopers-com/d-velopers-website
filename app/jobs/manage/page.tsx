@@ -87,8 +87,7 @@ export default function ManageJobPostsPage() {
           setIsLoading(false);
         }
       })
-      .catch(() => setHasJobManagementRole(false))
-      .finally(() => setIsLoading(false));
+      .catch(() => setHasJobManagementRole(false));
   }, [session, status]);
 
   const fetchPosts = async (page: number = 1) => {
@@ -97,9 +96,9 @@ export default function ManageJobPostsPage() {
       const data: PostsResponse = await res.json();
       setPosts(data.posts);
       setPagination(data.pagination);
-      setIsLoading(false);
     } catch (err) {
       toast.error(t.jobManage.getting.errorMessage);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -162,7 +161,7 @@ export default function ManageJobPostsPage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t.jobManage.confirmDelete.errorMessage);
     }
-  }
+  };
 
   const handleCancel = () => {
     setFormData({title: "", iframe: ""});
@@ -204,7 +203,7 @@ export default function ManageJobPostsPage() {
               variant="shadow"
               onPress={() => setIsCreating(true)}
             >
-              Create New Post
+              {t.jobManage.form.titleNewPost}
             </Button>
           </div>
         )}
@@ -212,21 +211,21 @@ export default function ManageJobPostsPage() {
         {isCreating && (
           <Card>
             <CardHeader>
-              <h2 className="text-xl font-bold">{editingId ? "Edit Post" : "Create New Post"}</h2>
+              <h2 className="text-xl font-bold">{editingId ? t.jobManage.form.titleEditPost : t.jobManage.form.titleNewPost}</h2>
             </CardHeader>
             <CardBody>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <Input
-                  label="Title"
-                  placeholder="Enter post title"
+                  label={t.jobManage.form.titleField.title}
+                  placeholder={t.jobManage.form.titleField.placeholder}
                   value={formData.title}
                   onValueChange={(value) => setFormData({...formData, title: value})}
                   maxLength={50}
                 />
 
                 <Textarea
-                  label="Iframe"
-                  placeholder="Enter iframe HTML content"
+                  label={t.jobManage.form.iframeField.title}
+                  placeholder={t.jobManage.form.iframeField.placeholder}
                   value={formData.iframe}
                   onValueChange={(value) => setFormData({...formData, iframe: value})}
                   minRows={6}
@@ -242,7 +241,7 @@ export default function ManageJobPostsPage() {
                     variant="shadow"
                     color="primary"
                   >
-                    {editingId ? "Update" : "Create"}
+                    {editingId ? t.jobManage.form.updateButton : t.jobManage.form.createButton}
                   </Button>
                   <Button
                     type="button"
@@ -250,7 +249,7 @@ export default function ManageJobPostsPage() {
                     variant="shadow"
                     onPress={handleCancel}
                   >
-                    Cancel
+                    {t.jobManage.form.cancelButton}
                   </Button>
                 </div>
               </form>
@@ -278,7 +277,7 @@ export default function ManageJobPostsPage() {
                         <Button
                           size="sm"
                           className={`font-semibold ${focusStates.button}`}
-                          type="submit"
+                          type="button"
                           variant="shadow"
                           color="primary"
                           onPress={() => handleEdit(post)}

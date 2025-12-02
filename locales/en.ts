@@ -245,9 +245,24 @@ export const en = {
     getting: {
       errorMessage: "Failed to fetch posts"
     },
+    form: {
+      titleNewPost: "Create New Post",
+      titleEditPost: "Edit Post",
+      titleField: {
+        title: "Title",
+        placeholder: "Enter post title",
+      },
+      iframeField: {
+        title: "Iframe",
+        placeholder: "Enter iframe HTML content",
+      },
+      updateButton: "Update",
+      createButton: "Create",
+      cancelButton: "Cancel",
+    },
     save: {
       saveSuccessMessage: "Post created successfully",
-      updatedSuccessMessage: "Post created successfully",
+      updatedSuccessMessage: "Post updated successfully",
       errorMessage: "Failed to save post",
     },
     table: {
