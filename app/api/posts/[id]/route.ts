@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
 
 export const PUT = withStaffRole(async (
   request: NextRequest,
+  _context,
   _session
 ) => {
   try {
@@ -83,6 +84,7 @@ export const PUT = withStaffRole(async (
 
 export const DELETE = withStaffRole(async (
   request: NextRequest,
+  _context,
   _session
 ) => {
   try {

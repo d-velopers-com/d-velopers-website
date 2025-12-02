@@ -3,25 +3,22 @@ export function isValidHtmlString(htmlString: string): boolean {
   if (htmlString.length > MAX_LENGTH) {
     return false;
   }
-
   const trimmed = htmlString.trim();
   if (!trimmed) {
     return false;
   }
-
   const lowerCased = trimmed.toLowerCase();
-
   if (!lowerCased.startsWith('<iframe')) {
     return false;
   }
-
   if (!lowerCased.endsWith('</iframe>')) {
     return false;
   }
-
+  if (trimmed.includes('/>')) {
+    return false;
+  }
   const openCount = countOccurrences(lowerCased, '<iframe');
   const closeCount = countOccurrences(lowerCased, '</iframe>');
-
   if (openCount !== 1 || closeCount !== 1) {
     return false;
   }
@@ -31,12 +28,7 @@ export function isValidHtmlString(htmlString: string): boolean {
       return false;
     }
   }
-  const openBrackets = countOccurrences(trimmed, '<');
-  const closeBrackets = countOccurrences(trimmed, '>');
-  if (openBrackets !== closeBrackets) {
-    return false;
-  }
-  return openBrackets === 2;
+  return true;
 }
 
 function countOccurrences(str: string, substring: string): number {

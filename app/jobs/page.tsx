@@ -56,7 +56,7 @@ export default function JobsPage() {
       })
       .catch(() => setViewEnable(false))
       .finally(() => setIsLoading(false));
-  }, [session, status == "authenticated", profile]);
+  }, [session, status === "authenticated", profile]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -97,18 +97,7 @@ export default function JobsPage() {
           </CardHeader>
         </Card>
 
-        {isLoading ? (
-          <div className="space-y-6">
-            {[1, 2, 3].map((i) => (
-              <Card key={i}>
-                <CardBody>
-                  <Skeleton className="h-8 w-3/4 mb-4 rounded-lg"/>
-                  <Skeleton className="h-64 w-full rounded-lg"/>
-                </CardBody>
-              </Card>
-            ))}
-          </div>
-        ) : posts.length === 0 ? (
+        {posts.length === 0 ? (
           <Card>
             <CardBody>
               <p className="text-center text-default-500 py-8">
