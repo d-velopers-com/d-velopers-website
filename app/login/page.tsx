@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Divider } from "@heroui/divider";
@@ -19,7 +19,7 @@ import { DiscordIconLarge } from "@/components/discord-icon";
 import { useSession } from "@/hooks/useSession";
 import { typography, focusStates, stateColors, iconSizes } from "@/lib/ui-constants";
 
-export default function LoginPage() {
+function LoginContent() {
   const { status } = useSession();
   const { t } = useLanguage();
   const router = useRouter();
@@ -257,5 +257,13 @@ export default function LoginPage() {
         </ModalContent>
       </Modal>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   );
 }
