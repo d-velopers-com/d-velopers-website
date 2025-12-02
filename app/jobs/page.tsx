@@ -2,7 +2,6 @@
 
 import {useEffect, useState} from "react";
 import {Card, CardHeader, CardBody} from "@heroui/card";
-import {Skeleton} from "@heroui/skeleton";
 import {useLanguage} from "@/contexts/language-context";
 import {useSession} from "@/hooks/useSession";
 import {useRouter} from "next/navigation";
