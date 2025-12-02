@@ -2,12 +2,11 @@
 
 import {useRouter} from "next/navigation";
 import {useSession} from "@/hooks/useSession";
-import {useEffect, useState} from "react";
+import {useEffect, useState, useCallback} from "react";
 import {SkeletonLoading} from "@/components/skeleton-loading";
 import {Card, CardHeader, CardBody} from "@heroui/card";
 import {Button} from "@heroui/button";
 import {Input} from "@heroui/input";
-import {Textarea} from "@heroui/input";
 import {toast} from "sonner";
 import {
   Table,
@@ -18,9 +17,11 @@ import {
   TableCell,
 } from "@heroui/table";
 import {Pagination} from "@heroui/pagination";
-import {focusStates} from "@/lib/ui-constants";
+import {Chip} from "@heroui/chip";
+import {focusStates, stateColors, typography} from "@/lib/ui-constants";
 import {Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure} from "@heroui/modal";
 import {useLanguage} from "@/contexts/language-context";
+import {generateEmbed, isUrl, detectPlatform, type SupportedPlatform} from "@/lib/embed-generator";
 
 interface Post {
   id: string;
@@ -46,6 +47,7 @@ export default function ManageJobPostsPage() {
   const {t} = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
   const [hasJobManagementRole, setHasJobManagementRole] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [pagination, setPagination] = useState({
     total: 0,
@@ -56,6 +58,10 @@ export default function ManageJobPostsPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({title: "", iframe: ""});
+  const [urlInput, setUrlInput] = useState("");
+  const [embedPreview, setEmbedPreview] = useState<string | null>(null);
+  const [embedError, setEmbedError] = useState<string | null>(null);
+  const [detectedPlatform, setDetectedPlatform] = useState<SupportedPlatform | null>(null);
   const [idForDelete, setIdForDelete] = useState<string | null>(null);
 
   const {
@@ -69,6 +75,19 @@ export default function ManageJobPostsPage() {
       router.push("/login");
     }
   }, [status, router]);
+
+  // Handle redirect when user doesn't have job management role
+  useEffect(() => {
+    if (!isLoading && !hasJobManagementRole && session?.user) {
+      setShouldRedirect(true);
+    }
+  }, [isLoading, hasJobManagementRole, session]);
+
+  useEffect(() => {
+    if (shouldRedirect) {
+      router.replace('/');
+    }
+  }, [shouldRedirect, router]);
 
   useEffect(() => {
     if (status === "unauthenticated" || !session?.user?.roles) {
@@ -138,6 +157,10 @@ export default function ManageJobPostsPage() {
 
   const handleEdit = (post: Post) => {
     setFormData({title: post.title, iframe: post.iframe});
+    setUrlInput(post.iframe); // Show existing iframe in input
+    setEmbedPreview(post.iframe);
+    setEmbedError(null);
+    setDetectedPlatform(null);
     setEditingId(post.id);
     setIsCreating(true);
     window.scrollTo(0, 0);
@@ -165,9 +188,48 @@ export default function ManageJobPostsPage() {
 
   const handleCancel = () => {
     setFormData({title: "", iframe: ""});
+    setUrlInput("");
+    setEmbedPreview(null);
+    setEmbedError(null);
+    setDetectedPlatform(null);
     setEditingId(null);
     setIsCreating(false);
   };
+
+  // Handle URL input change and generate embed
+  const handleUrlChange = useCallback((value: string) => {
+    setUrlInput(value);
+    setEmbedError(null);
+    
+    if (!value.trim()) {
+      setEmbedPreview(null);
+      setDetectedPlatform(null);
+      setFormData(prev => ({...prev, iframe: ""}));
+      return;
+    }
+
+    // Detect platform for visual feedback
+    if (isUrl(value)) {
+      setDetectedPlatform(detectPlatform(value));
+    } else {
+      setDetectedPlatform(null);
+    }
+
+    // Generate embed
+    const result = generateEmbed(value);
+    
+    if (result.success && result.iframe) {
+      setEmbedPreview(result.iframe);
+      setFormData(prev => ({...prev, iframe: result.iframe!}));
+      setEmbedError(null);
+    } else {
+      setEmbedPreview(null);
+      setFormData(prev => ({...prev, iframe: ""}));
+      if (value.trim()) {
+        setEmbedError(result.error || t.jobManage.form.urlField.invalidUrl);
+      }
+    }
+  }, [t]);
 
   const handlePageChange = (page: number) => {
     fetchPosts(page);
@@ -181,9 +243,9 @@ export default function ManageJobPostsPage() {
     return null;
   }
 
-  if (!hasJobManagementRole) {
-    router.replace('/');
-    return null;
+  // Show skeleton while redirecting to prevent flash of content
+  if (!hasJobManagementRole || shouldRedirect) {
+    return <SkeletonLoading/>;
   }
 
   return (
@@ -223,16 +285,43 @@ export default function ManageJobPostsPage() {
                   maxLength={50}
                 />
 
-                <Textarea
-                  label={t.jobManage.form.iframeField.title}
-                  placeholder={t.jobManage.form.iframeField.placeholder}
-                  value={formData.iframe}
-                  onValueChange={(value) => setFormData({...formData, iframe: value})}
-                  minRows={6}
-                  classNames={{
-                    input: "font-mono text-sm",
-                  }}
-                />
+                <div className="space-y-2">
+                  <Input
+                    label={t.jobManage.form.urlField.title}
+                    placeholder={t.jobManage.form.urlField.placeholder}
+                    value={urlInput}
+                    onValueChange={handleUrlChange}
+                    description={t.jobManage.form.urlField.description}
+                    isInvalid={!!embedError}
+                    errorMessage={embedError}
+                    classNames={{
+                      input: "font-mono text-sm",
+                    }}
+                  />
+                  
+                  {detectedPlatform && detectedPlatform !== 'unknown' && (
+                    <div className="flex items-center gap-2">
+                      <Chip 
+                        size="sm" 
+                        color={detectedPlatform === 'linkedin' ? 'primary' : 'secondary'}
+                        variant="flat"
+                      >
+                        {detectedPlatform === 'linkedin' ? 'LinkedIn' : 'Twitter/X'}
+                      </Chip>
+                      <span className={typography.caption}>{t.jobManage.form.urlField.detected}</span>
+                    </div>
+                  )}
+                </div>
+
+                {embedPreview && (
+                  <div className="space-y-2">
+                    <span className={`${typography.label} text-default-600`}>{t.jobManage.form.preview}</span>
+                    <div 
+                      className="border border-default-200 rounded-lg p-4 bg-default-50 flex justify-center overflow-hidden"
+                      dangerouslySetInnerHTML={{__html: embedPreview}}
+                    />
+                  </div>
+                )}
 
                 <div className="flex gap-2">
                   <Button
@@ -240,6 +329,7 @@ export default function ManageJobPostsPage() {
                     type="submit"
                     variant="shadow"
                     color="primary"
+                    isDisabled={!formData.iframe}
                   >
                     {editingId ? t.jobManage.form.updateButton : t.jobManage.form.createButton}
                   </Button>

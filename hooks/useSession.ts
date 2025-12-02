@@ -13,6 +13,7 @@ interface User {
 
 interface SessionResponse {
   user: User | null;
+  tokenExpired?: boolean;
 }
 
 export function useSession() {
@@ -25,6 +26,11 @@ export function useSession() {
     fetch("/api/auth/session")
       .then((res) => res.json())
       .then((data: SessionResponse) => {
+        // If token expired, redirect to login with expired flag
+        if (data.tokenExpired) {
+          window.location.href = "/login?expired=true";
+          return;
+        }
         setSession(data);
         setStatus(data.user ? "authenticated" : "unauthenticated");
       })

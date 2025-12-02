@@ -2,6 +2,7 @@ import {NextRequest, NextResponse} from "next/server";
 import {createPost, getPosts, getPostsCount} from "@/lib/posts";
 import {withStaffRole} from "@/middlewares/auth";
 import {isValidHtmlString} from "@/lib/validations";
+import {getUserByDiscordId} from "@/lib/user";
 
 export const POST = withStaffRole(async (request: NextRequest, _context, session) => {
   const body = await request.json();
@@ -36,7 +37,16 @@ export const POST = withStaffRole(async (request: NextRequest, _context, session
   }
 
   try {
-    const post = await createPost(title, iframe);
+    // Get user ID from database
+    const user = await getUserByDiscordId(session.discordId);
+    if (!user) {
+      return NextResponse.json(
+        {error: "User not found"},
+        {status: 404}
+      );
+    }
+
+    const post = await createPost(title, iframe, user.id);
     return NextResponse.json(post, {status: 201});
   } catch (error) {
     console.error("Error creating post:", error);

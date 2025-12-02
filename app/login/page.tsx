@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
 import { Button } from "@heroui/button";
@@ -17,12 +17,14 @@ import {
 import { useLanguage } from "@/contexts/language-context";
 import { DiscordIconLarge } from "@/components/discord-icon";
 import { useSession } from "@/hooks/useSession";
-import { typography, focusStates } from "@/lib/ui-constants";
+import { typography, focusStates, stateColors, iconSizes } from "@/lib/ui-constants";
 
 export default function LoginPage() {
   const { status } = useSession();
   const { t } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isSessionExpired = searchParams.get("expired") === "true";
 
   const {
     isOpen: isTermsOpen,
@@ -61,6 +63,31 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardBody className="px-8 py-6">
+          {isSessionExpired && (
+            <div className={`flex items-start gap-3 p-4 rounded-lg ${stateColors.warning.full} mb-4`}>
+              <svg
+                className={`${iconSizes.md} flex-shrink-0 mt-0.5 ${stateColors.warning.text}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                />
+              </svg>
+              <div className="flex-1">
+                <p className={`${typography.body} font-semibold ${stateColors.warning.text} mb-1`}>
+                  {t.login.sessionExpiredTitle}
+                </p>
+                <p className={`${typography.caption} text-foreground/70`}>
+                  {t.login.sessionExpiredDesc}
+                </p>
+              </div>
+            </div>
+          )}
           <Button
             className={`bg-[#5865F2] hover:bg-[#4752C4] w-full ${focusStates.button}`}
             color="primary"

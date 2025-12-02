@@ -2,6 +2,7 @@ import {NextRequest, NextResponse} from "next/server";
 import {getPost, updatePost, deletePost} from "@/lib/posts";
 import {withStaffRole} from "@/middlewares/auth";
 import {isValidHtmlString} from "@/lib/validations";
+import {getUserByDiscordId} from "@/lib/user";
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
 export const PUT = withStaffRole(async (
   request: NextRequest,
   _context,
-  _session
+  session
 ) => {
   try {
     const id = request.nextUrl.pathname.split('/').pop();
@@ -70,7 +71,16 @@ export const PUT = withStaffRole(async (
       );
     }
 
-    const updatedPost = await updatePost(id, title, iframe);
+    // Get user ID from database
+    const user = await getUserByDiscordId(session.discordId);
+    if (!user) {
+      return NextResponse.json(
+        {error: "User not found"},
+        {status: 404}
+      );
+    }
+
+    const updatedPost = await updatePost(id, title, iframe, user.id);
 
     return NextResponse.json(updatedPost);
   } catch (error) {

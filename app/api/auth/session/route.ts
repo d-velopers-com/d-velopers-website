@@ -1,12 +1,22 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/session";
+import { getSession, isDiscordTokenExpired, deleteSession } from "@/lib/session";
 
 export async function GET() {
   const session = await getSession();
 
   if (!session) {
     return NextResponse.json({ user: null }, { status: 200 });
+  }
+
+  // Check if Discord token has expired
+  if (isDiscordTokenExpired(session.expiresAt)) {
+    // Clear the expired session
+    await deleteSession();
+    return NextResponse.json({ 
+      user: null, 
+      tokenExpired: true 
+    }, { status: 200 });
   }
 
   return NextResponse.json(

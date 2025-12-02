@@ -52,3 +52,9 @@ export async function getSession(): Promise<SessionData | null> {
 export async function deleteSession(): Promise<void> {
   (await cookies()).delete("session");
 }
+
+export function isDiscordTokenExpired(expiresAt: number): boolean {
+  // Add 5 minute buffer to avoid edge cases
+  const bufferMs = 5 * 60 * 1000;
+  return Date.now() >= (expiresAt - bufferMs);
+}

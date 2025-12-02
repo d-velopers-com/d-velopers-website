@@ -53,6 +53,18 @@ export async function POST() {
       joinedServerAt: memberData.joinedAt,
     });
   } catch (error) {
+    console.error("Sync error details:", error);
+    
+    // Detect if it's a token expiration error
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    
+    if (errorMessage.includes("Failed to fetch Discord")) {
+      return NextResponse.json(
+        { error: "Discord token expired. Please log out and log in again." },
+        { status: 401 },
+      );
+    }
+    
     return NextResponse.json(
       { error: "Failed to sync profile" },
       { status: 500 },

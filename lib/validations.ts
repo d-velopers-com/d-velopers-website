@@ -1,5 +1,5 @@
 export function isValidHtmlString(htmlString: string): boolean {
-  const MAX_LENGTH = 220;
+  const MAX_LENGTH = 500; // Increased to support generated iframes
   if (htmlString.length > MAX_LENGTH) {
     return false;
   }

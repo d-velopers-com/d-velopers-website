@@ -39,6 +39,8 @@ export const en = {
   login: {
     title: "Welcome Back",
     subtitle: "Sign in to continue to your account",
+    sessionExpiredTitle: "Session Expired",
+    sessionExpiredDesc: "Your session has expired. Please sign in again to continue.",
     discordButton: "Continue with Discord",
     terms: "By continuing, you agree to our",
     termsLink: "Terms of Service",
@@ -238,6 +240,7 @@ export const en = {
     title: "Job Opportunities",
     subtitle: "Explore job postings from our community",
     noPosts: "No job posts available at the moment. Check back later!",
+    postedBy: "Posted by",
   },
   jobManage: {
     title: "Manage Job Posts",
@@ -252,10 +255,18 @@ export const en = {
         title: "Title",
         placeholder: "Enter post title",
       },
+      urlField: {
+        title: "Post URL or Iframe",
+        placeholder: "Paste LinkedIn or Twitter/X post URL",
+        description: "Paste the URL of a LinkedIn or Twitter/X post, and the embed will be generated automatically",
+        detected: "Platform detected",
+        invalidUrl: "Could not generate embed from this URL. Try pasting the iframe code directly.",
+      },
       iframeField: {
         title: "Iframe",
         placeholder: "Enter iframe HTML content",
       },
+      preview: "Preview",
       updateButton: "Update",
       createButton: "Create",
       cancelButton: "Cancel",

@@ -39,6 +39,8 @@ export const es = {
   login: {
     title: "Bienvenido de Nuevo",
     subtitle: "Inicia sesión para continuar a tu cuenta",
+    sessionExpiredTitle: "Sesión Expirada",
+    sessionExpiredDesc: "Tu sesión ha expirado. Por favor inicia sesión nuevamente para continuar.",
     discordButton: "Continuar con Discord",
     terms: "Al continuar, aceptas nuestros",
     termsLink: "Términos de Servicio",
@@ -240,6 +242,7 @@ export const es = {
     title: "Oportunidades de Trabajo",
     subtitle: "Explora ofertas laborales de nuestra comunidad",
     noPosts: "No hay ofertas de trabajo disponibles por el momento. ¡Vuelve más tarde!",
+    postedBy: "Publicado por",
   },
   jobManage: {
     title: "Administrar ofertas de trabajo",
@@ -254,10 +257,18 @@ export const es = {
         title: "Título",
         placeholder: "Ingresa el título del post",
       },
+      urlField: {
+        title: "URL del Post o Iframe",
+        placeholder: "Pega la URL del post de LinkedIn o Twitter/X",
+        description: "Pega la URL de un post de LinkedIn o Twitter/X, y el embed se generará automáticamente",
+        detected: "Plataforma detectada",
+        invalidUrl: "No se pudo generar el embed desde esta URL. Intenta pegar el código iframe directamente.",
+      },
       iframeField: {
         title: "Iframe",
         placeholder: "Ingresa el contenido HTML del iframe",
       },
+      preview: "Vista previa",
       updateButton: "Actualizar",
       createButton: "Crear",
       cancelButton: "Cancelar",
