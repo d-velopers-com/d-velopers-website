@@ -70,7 +70,7 @@ export function Navbar() {
       .then((data) => {
         const backRoles = data.roles || [];
         const hasRole = session?.user?.roles?.some((role) => backRoles.includes(role)) || false;
-        const isServerMember = session?.user?.roles && session?.user.roles.length > 0 || false;
+        const isServerMember = (session?.user?.roles?.length ?? 0) > 0;
         const hasAllowedRole = isServerMember && hasRole;
         const canApplyTrialPeriod = isServerMember && !hasAllowedRole && !profile?.profileActivatedAt;
         const canMakePublic = hasAllowedRole || hasRecentActivation || canApplyTrialPeriod;
