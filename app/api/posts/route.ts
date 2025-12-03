@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
       .trim()
       .split(/\s+/)
       .filter(term => term.length > 0)
-      .map((term) => ({title: {contains: term, mode: 'insensitive'}}));
+.map((term) => ({title: {contains: term, mode: 'insensitive' as const}}));
 
     const posts = await getPosts(limit, offset, orConditions);
     const total = await getPostsCount(orConditions);

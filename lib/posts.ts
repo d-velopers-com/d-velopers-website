@@ -54,7 +54,7 @@ export async function getPost(id: string): Promise<PostData | null> {
 export async function getPosts(
   limit: number = 10,
   offset: number = 0,
-  orConditions: Array<{ title: { contains: string, mode: string } }> = [],
+  orConditions: Array<{ title: { contains: string, mode: 'insensitive' } }> = [],
 ): Promise<PostData[]> {
   return await prisma.post.findMany({
     where: orConditions.length > 0 ? { OR: orConditions } : {},
@@ -69,7 +69,7 @@ export async function getPosts(
 }
 
 export async function getPostsCount(
-  orConditions: Array<{ title: { contains: string, mode: string } }> = [],
+  orConditions: Array<{ title: { contains: string, mode: 'insensitive' } }> = [],
 ): Promise<number> {
   return await prisma.post.count({
     where: orConditions.length > 0 ? { OR: orConditions } : {},
