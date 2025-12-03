@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useState, useCallback, useMemo, useRef} from "react";
+import {useEffect, useState, useCallback, useMemo} from "react";
 import {Card, CardHeader, CardBody} from "@heroui/card";
 import {Avatar} from "@heroui/avatar";
 import {Pagination} from "@heroui/pagination";
