@@ -31,6 +31,7 @@ import { typography, focusStates } from "@/lib/ui-constants";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [hasJobManagementRole, setHasJobManagementRole] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { data: session, status } = useSession();
   const { t } = useLanguage();
@@ -39,6 +40,21 @@ export function Navbar() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (status === "unauthenticated" || !session?.user?.roles) {
+      return;
+    }
+
+    fetch("/api/config/staff-roles")
+      .then((res) => res.json())
+      .then((data) => {
+        const staffRoles = data.roles || [];
+        const hasRole = session?.user?.roles?.some((role) => staffRoles.includes(role)) || false;
+        setHasJobManagementRole(hasRole);
+      })
+      .catch(() => setHasJobManagementRole(false));
+  }, [session, status]);
 
   const avatarUrl = session?.user
     ? session.user.avatar
@@ -147,6 +163,11 @@ export function Navbar() {
                     <DropdownItem key="dashboard" href="/dashboard">
                       {t.nav.profile}
                     </DropdownItem>
+                    {hasJobManagementRole && (
+                      <DropdownItem key="manageJobs" href="/jobs/manage">
+                        {t.nav.manageJobs}
+                      </DropdownItem>
+                    )}
                     <DropdownItem
                       key="logout"
                       color="danger"

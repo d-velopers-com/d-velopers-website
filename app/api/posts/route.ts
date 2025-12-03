@@ -63,9 +63,15 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get("limit") || "10"), 100);
     const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
     const offset = (page - 1) * limit;
+    const search = searchParams.get("search") || "";
+    const orConditions = search
+      .trim()
+      .split(/\s+/)
+      .filter(term => term.length > 0)
+      .map((term) => ({title: {contains: term}}));
 
-    const posts = await getPosts(limit, offset);
-    const total = await getPostsCount();
+    const posts = await getPosts(limit, offset, orConditions);
+    const total = await getPostsCount(orConditions);
 
     return NextResponse.json({
       posts,
