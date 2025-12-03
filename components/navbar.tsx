@@ -163,11 +163,11 @@ export function Navbar() {
                     <DropdownItem key="dashboard" href="/dashboard">
                       {t.nav.profile}
                     </DropdownItem>
-                    {hasJobManagementRole && (
+                    {hasJobManagementRole ? (
                       <DropdownItem key="manageJobs" href="/jobs/manage">
                         {t.nav.manageJobs}
                       </DropdownItem>
-                    )}
+                    ) : null}
                     <DropdownItem
                       key="logout"
                       color="danger"
