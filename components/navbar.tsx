@@ -28,10 +28,15 @@ import { useSession, signOut } from "@/hooks/useSession";
 import { useLanguage } from "@/contexts/language-context";
 import { DiscordIcon } from "@/components/icons";
 import { typography, focusStates } from "@/lib/ui-constants";
+import {useProfile} from "@/hooks/useProfile";
+import {validateRecentActivation} from "@/lib/utils";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [hasJobManagementRole, setHasJobManagementRole] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [enableJobs, setEnableJobs] = useState<boolean | undefined>(undefined);
+  const {profile} = useProfile();
   const { data: session, status } = useSession();
   const { t } = useLanguage();
   const { theme } = useTheme();
@@ -39,6 +44,40 @@ export function Navbar() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (status === "unauthenticated" || !session?.user?.roles) {
+      return;
+    }
+    fetch("/api/config/staff-roles")
+      .then((res) => res.json())
+      .then((data) => {
+        const staffRoles = data.roles || [];
+        const hasRole = session?.user?.roles?.some((role) => staffRoles.includes(role)) || false;
+        setHasJobManagementRole(hasRole);
+      })
+      .catch(() => setHasJobManagementRole(false));
+  }, [session, status]);
+
+  useEffect(() => {
+    if (status !== "authenticated" || !session?.user?.roles) {
+      return;
+    }
+
+    const hasRecentActivation = validateRecentActivation(profile?.profileActivatedAt);
+    fetch("/api/config/allowed-roles")
+      .then((res) => res.json())
+      .then((data) => {
+        const backRoles = data.roles || [];
+        const hasRole = session?.user?.roles?.some((role) => backRoles.includes(role)) || false;
+        const isServerMember = (session?.user?.roles?.length ?? 0) > 0;
+        const hasAllowedRole = isServerMember && hasRole;
+        const canApplyTrialPeriod = isServerMember && !hasAllowedRole && !profile?.profileActivatedAt;
+        const canMakePublic = hasAllowedRole || hasRecentActivation || canApplyTrialPeriod;
+        setEnableJobs(canMakePublic);
+      })
+      .catch(() => setEnableJobs(false));
+  }, [session, status, profile]);
 
   const avatarUrl = session?.user
     ? session.user.avatar
@@ -147,6 +186,11 @@ export function Navbar() {
                     <DropdownItem key="dashboard" href="/dashboard">
                       {t.nav.profile}
                     </DropdownItem>
+                    {hasJobManagementRole ? (
+                      <DropdownItem key="manageJobs" href="/jobs/manage">
+                        {t.nav.manageJobs}
+                      </DropdownItem>
+                    ) : null}
                     <DropdownItem
                       key="logout"
                       color="danger"
@@ -269,6 +313,37 @@ export function Navbar() {
         </NavbarMenuItem>
         {status === "authenticated" && (
           <>
+            {enableJobs ? (
+              <NavbarMenuItem>
+                <Button
+                  as={Link}
+                  className={`w-full justify-start ${focusStates.button} p-0`}
+                  variant="light"
+                  href="/jobs"
+                  onPress={() => {
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  {t.nav.jobs}
+                </Button>
+              </NavbarMenuItem>
+            ) : null}
+            {hasJobManagementRole ? (
+              <NavbarMenuItem>
+                <Button
+                  as={Link}
+                  className={`w-full justify-start ${focusStates.button} p-0`}
+                  variant="light"
+                  href="/jobs/manage"
+                  onPress={() => {
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  {t.nav.manageJobs}
+                </Button>
+              </NavbarMenuItem>
+            ) : null}
+
             <NavbarMenuItem>
               <div className="border-t border-default-200 dark:border-default-100 my-2" />
             </NavbarMenuItem>

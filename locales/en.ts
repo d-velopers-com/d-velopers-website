@@ -14,7 +14,8 @@ export const en = {
     openMenu: "Open menu",
     profileActions: "Profile Actions",
     theme: "Theme",
-    jobs: "Available positions",
+    jobs: "Jobs",
+    manageJobs: "Manage Jobs",
   },
   home: {
     title: "D-velopers",
@@ -241,6 +242,7 @@ export const en = {
     subtitle: "Explore job postings from our community",
     noPosts: "No job posts available at the moment. Check back later!",
     postedBy: "Posted by",
+    searcher: "Search for posting",
   },
   jobManage: {
     title: "Manage Job Posts",

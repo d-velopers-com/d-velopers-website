@@ -1,16 +1,18 @@
 "use client";
 
-import {useEffect, useState, useCallback} from "react";
+import {useEffect, useState, useCallback, useMemo} from "react";
 import {Card, CardHeader, CardBody} from "@heroui/card";
 import {Avatar} from "@heroui/avatar";
 import {Pagination} from "@heroui/pagination";
+import {Input} from "@heroui/input";
 import {useLanguage} from "@/contexts/language-context";
 import {useSession} from "@/hooks/useSession";
 import {useRouter} from "next/navigation";
 import {useProfile} from "@/hooks/useProfile";
 import {SkeletonLoading} from "@/components/skeleton-loading";
-import {validateRecentActivation} from "@/lib/utils";
+import {validateRecentActivation, debounce} from "@/lib/utils";
 import {typography} from "@/lib/ui-constants";
+import {SearchIcon} from "@/components/icons";
 
 interface PostAuthor {
   id: string;
@@ -48,6 +50,7 @@ export default function JobsPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState('');
   const {t} = useLanguage();
   const {data: session, status} = useSession();
   const router = useRouter();
@@ -86,10 +89,16 @@ export default function JobsPage() {
       .finally(() => setIsLoading(false));
   }, [session, status, profile]);
 
-  const fetchPosts = useCallback(async (page: number) => {
+  const fetchPosts = useCallback(async (page: number, searchQuery: string) => {
     setIsLoadingPosts(true);
     try {
-      const res = await fetch(`/api/posts?page=${page}&limit=${POSTS_PER_PAGE}`);
+      const params = new URLSearchParams();
+      params.append('page', page.toString());
+      params.append('limit', POSTS_PER_PAGE.toString());
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+      const res = await fetch(`/api/posts?${params.toString()}`);
       const data: PostsResponse = await res.json();
       setPosts(data.posts);
       setTotalPages(data.pagination.pages);
@@ -101,11 +110,23 @@ export default function JobsPage() {
     }
   }, []);
 
+  const debouncedFetch = useMemo(
+    () => debounce((page: number, searchQuery: string) => fetchPosts(page, searchQuery), 500),
+    [fetchPosts]
+  );
+
   useEffect(() => {
     if (enableView) {
-      fetchPosts(currentPage);
+      setCurrentPage(1);
+      debouncedFetch(1, search);
     }
-  }, [enableView, currentPage, fetchPosts]);
+  }, [enableView, search, debouncedFetch]);
+
+  useEffect(() => {
+    if (enableView && currentPage !== 1) {
+      fetchPosts(currentPage, search);
+    }
+  }, [enableView, currentPage, search, fetchPosts]);
 
   useEffect(() => {
     if (enableView === false) {
@@ -115,17 +136,15 @@ export default function JobsPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Scroll to top when changing pages
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({top: 0, behavior: 'smooth'});
   };
 
-  // Show skeleton during SSR and initial client render to prevent hydration mismatch
   if (!isMounted || isLoading || !enableView) {
     return <SkeletonLoading/>;
   }
 
   return (
-    <div className="flex flex-col items-center min-h-screen px-4 py-8">
+    <div className="flex flex-col items-center min-h-screen px-6 lg:px-4 py-8">
       <div className="max-w-7xl w-full space-y-8">
         <Card>
           <CardHeader className="flex flex-col justify-center px-6 py-4">
@@ -138,19 +157,35 @@ export default function JobsPage() {
           </CardHeader>
         </Card>
 
+        <Input
+          aria-label={t.jobs.searcher}
+          classNames={{
+            base: "w-full",
+            inputWrapper: "bg-default-100 dark:bg-default-100/50 border-none h-14 rounded-2xl",
+            input: "text-base placeholder:text-default-500",
+          }}
+          placeholder={t.jobs.searcher}
+          startContent={
+            <SearchIcon className="text-default-400" size={20}/>
+          }
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
         {isLoadingPosts ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {[...Array(POSTS_PER_PAGE)].map((_, i) => (
               <Card key={i} className="overflow-hidden animate-pulse">
                 <CardHeader className="flex flex-row items-center gap-3 px-4 py-3 bg-default-50">
-                  <div className="w-8 h-8 rounded-full bg-default-200" />
+                  <div className="w-8 h-8 rounded-full bg-default-200"/>
                   <div className="flex flex-col flex-1 gap-2">
-                    <div className="h-4 w-32 bg-default-200 rounded" />
-                    <div className="h-3 w-24 bg-default-200 rounded" />
+                    <div className="h-4 w-32 bg-default-200 rounded"/>
+                    <div className="h-3 w-24 bg-default-200 rounded"/>
                   </div>
                 </CardHeader>
                 <CardBody className="p-4">
-                  <div className="h-64 bg-default-100 rounded" />
+                  <div className="h-64 bg-default-100 rounded"/>
                 </CardBody>
               </Card>
             ))}
@@ -172,7 +207,7 @@ export default function JobsPage() {
                     {post.createdBy && (
                       <Avatar
                         size="sm"
-                        src={post.createdBy.avatar 
+                        src={post.createdBy.avatar
                           ? `https://cdn.discordapp.com/avatars/${post.createdBy.id}/${post.createdBy.avatar}.png`
                           : undefined
                         }
@@ -194,7 +229,7 @@ export default function JobsPage() {
                     </div>
                   </CardHeader>
                   <CardBody className="p-0 flex justify-center items-center overflow-hidden">
-                    <div 
+                    <div
                       className="w-full flex justify-center"
                       dangerouslySetInnerHTML={{__html: post.iframe}}
                     />

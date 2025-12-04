@@ -14,7 +14,8 @@ export const es = {
     openMenu: "Abrir menú",
     profileActions: "Acciones del Perfil",
     theme: "Tema",
-    jobs: "Puestos disponibles",
+    jobs: "Trabajos",
+    manageJobs: "Administrar trabajos",
   },
   home: {
     title: "D-velopers",
@@ -243,6 +244,7 @@ export const es = {
     subtitle: "Explora ofertas laborales de nuestra comunidad",
     noPosts: "No hay ofertas de trabajo disponibles por el momento. ¡Vuelve más tarde!",
     postedBy: "Publicado por",
+    searcher: "Buscar publicación",
   },
   jobManage: {
     title: "Administrar ofertas de trabajo",
