@@ -30,6 +30,7 @@ import {
   spacing,
   borderRadius,
 } from "@/lib/ui-constants";
+import { getDiscordAvatarUrl } from "@/shared/lib";
 
 interface User {
   username: string;
@@ -107,9 +108,7 @@ export default function ProfilePage() {
     notFound();
   }
 
-  const avatarUrl = user.avatar
-    ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`
-    : `https://cdn.discordapp.com/embed/avatars/0.png`;
+  const avatarUrl = getDiscordAvatarUrl(user.discordId, user.avatar, user.discriminator || "0");
 
   const handleCopyEmail = () => {
     if (user.contactEmail) {

@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { getUserByHandler } from "@/lib/user";
 import { siteConfig } from "@/config/site";
 import { en } from "@/locales/en";
+import { getDiscordAvatarUrl } from "@/shared/lib";
 
 type Props = {
   params: Promise<{ handler: string }>;
@@ -25,9 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     `${displayName}${user.title ? ` - ${user.title}` : ""}${user.country ? ` from ${user.country}` : ""} on D-velopers. ${user.tags && user.tags.length > 0 ? `Technologies: ${user.tags.slice(0, 5).join(", ")}.` : ""}`;
 
   // Usar imagen más grande para mejor calidad en redes sociales
-  const avatarUrl = user.avatar
-    ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png?size=1024`
-    : `https://cdn.discordapp.com/embed/avatars/0.png?size=1024`;
+  const avatarUrl = getDiscordAvatarUrl(user.discordId, user.avatar, "0", 1024);
 
   const profileUrl = `${siteConfig.url}/users/${handler}`;
 

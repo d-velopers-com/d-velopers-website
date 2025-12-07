@@ -1,13 +1,13 @@
 "use client";
 
-import {useRouter} from "next/navigation";
-import {useSession} from "@/hooks/useSession";
-import {useEffect, useState, useCallback} from "react";
-import {SkeletonLoading} from "@/components/skeleton-loading";
-import {Card, CardHeader, CardBody} from "@heroui/card";
-import {Button} from "@heroui/button";
-import {Input} from "@heroui/input";
-import {toast} from "sonner";
+import { useRouter } from "next/navigation";
+import { useSession } from "@/hooks/useSession";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { SkeletonLoading } from "@/components/skeleton-loading";
+import { Card, CardHeader, CardBody } from "@heroui/card";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { toast } from "sonner";
 import {
   Table,
   TableHeader,
@@ -16,17 +16,30 @@ import {
   TableRow,
   TableCell,
 } from "@heroui/table";
-import {Pagination} from "@heroui/pagination";
-import {Chip} from "@heroui/chip";
-import {focusStates, stateColors, typography} from "@/lib/ui-constants";
-import {Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure} from "@heroui/modal";
-import {useLanguage} from "@/contexts/language-context";
-import {generateEmbed, isUrl, detectPlatform, type SupportedPlatform} from "@/lib/embed-generator";
+import { Pagination } from "@heroui/pagination";
+import { Chip } from "@heroui/chip";
+import { Tabs, Tab } from "@heroui/tabs";
+import { focusStates, stateColors, typography } from "@/lib/ui-constants";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@heroui/modal";
+import { useLanguage } from "@/contexts/language-context";
+import { generateEmbed, isUrl, detectPlatform, type SupportedPlatform } from "@/lib/embed-generator";
+import { Avatar } from "@heroui/avatar";
+import { getDiscordAvatarUrl } from "@/shared/lib";
+
+interface PostAuthor {
+  id: string;
+  discordId: string;
+  username: string;
+  avatar: string | null;
+}
 
 interface Post {
   id: string;
   title: string;
   iframe: string;
+  sourceUrl?: string | null;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  createdBy?: PostAuthor | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -41,12 +54,27 @@ interface PostsResponse {
   };
 }
 
+import { memo } from "react";
+
+/**
+ * Memoized embed preview to prevent re-renders when other form fields change
+ */
+const EmbedPreview = memo(function EmbedPreview({ html }: { html: string }) {
+  return (
+    <div
+      className="border border-default-200 rounded-lg p-4 bg-default-50 flex justify-center overflow-hidden"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+});
+
 export default function ManageJobPostsPage() {
-  const {data: session, status} = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const {t} = useLanguage();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
   const [hasJobManagementRole, setHasJobManagementRole] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [pagination, setPagination] = useState({
@@ -57,12 +85,14 @@ export default function ManageJobPostsPage() {
   });
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({title: "", iframe: ""});
+  const [formData, setFormData] = useState({ title: "", iframe: "" });
   const [urlInput, setUrlInput] = useState("");
   const [embedPreview, setEmbedPreview] = useState<string | null>(null);
   const [embedError, setEmbedError] = useState<string | null>(null);
+
   const [detectedPlatform, setDetectedPlatform] = useState<SupportedPlatform | null>(null);
   const [idForDelete, setIdForDelete] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const {
     isOpen: isConfirmOpen,
@@ -94,24 +124,39 @@ export default function ManageJobPostsPage() {
       return;
     }
 
-    fetch("/api/config/staff-roles")
-      .then((res) => res.json())
-      .then((data) => {
-        const staffRoles = data.roles || [];
-        const hasRole = session?.user?.roles?.some((role) => staffRoles.includes(role)) || false;
-        setHasJobManagementRole(hasRole);
-        if (hasRole) {
-          fetchPosts();
-        } else {
-          setIsLoading(false);
-        }
-      })
-      .catch(() => setHasJobManagementRole(false));
+    // Fetch both staff and collaborator roles
+    Promise.all([
+      fetch("/api/config/staff-roles").then(res => res.json()),
+      fetch("/api/config/collaborator-roles").then(res => res.json()).catch(() => ({ roles: [] }))
+    ]).then(([staffData, collabData]) => {
+      const staffRoles = staffData.roles || [];
+      const collabRoles = collabData.roles || [];
+      const userRoles = session?.user?.roles || [];
+
+      const userIsStaff = userRoles.some((role) => staffRoles.includes(role));
+      const userIsCollab = userRoles.some((role) => collabRoles.includes(role));
+
+      setIsStaff(userIsStaff);
+      setHasJobManagementRole(userIsStaff || userIsCollab);
+
+      if (userIsStaff || userIsCollab) {
+        fetchPosts();
+      } else {
+        setIsLoading(false);
+      }
+    }).catch(() => {
+      setHasJobManagementRole(false);
+      setIsLoading(false);
+    });
   }, [session, status]);
 
   const fetchPosts = async (page: number = 1) => {
     try {
-      const res = await fetch(`/api/posts?page=${page}&limit=10`);
+      let url = `/api/posts/manage?page=${page}&limit=10`;
+      if (statusFilter !== "all") {
+        url += `&status=${statusFilter.toUpperCase()}`;
+      }
+      const res = await fetch(url);
       const data: PostsResponse = await res.json();
       setPosts(data.posts);
       setPagination(data.pagination);
@@ -136,8 +181,11 @@ export default function ManageJobPostsPage() {
 
       const res = await fetch(url, {
         method,
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(formData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          sourceUrl: urlInput, // Save original URL
+        }),
       });
 
       if (!res.ok) {
@@ -146,7 +194,12 @@ export default function ManageJobPostsPage() {
       }
 
       toast.success(editingId ? t.jobManage.save.updatedSuccessMessage : t.jobManage.save.saveSuccessMessage);
-      setFormData({title: "", iframe: ""});
+      // Clear all form state
+      setFormData({ title: "", iframe: "" });
+      setUrlInput("");
+      setEmbedPreview(null);
+      setEmbedError(null);
+      setDetectedPlatform(null);
       setEditingId(null);
       setIsCreating(false);
       fetchPosts(pagination.page);
@@ -156,8 +209,9 @@ export default function ManageJobPostsPage() {
   };
 
   const handleEdit = (post: Post) => {
-    setFormData({title: post.title, iframe: post.iframe});
-    setUrlInput(post.iframe); // Show existing iframe in input
+    setFormData({ title: post.title, iframe: post.iframe });
+    // Show sourceUrl if available, otherwise show iframe
+    setUrlInput(post.sourceUrl || post.iframe);
     setEmbedPreview(post.iframe);
     setEmbedError(null);
     setDetectedPlatform(null);
@@ -174,7 +228,7 @@ export default function ManageJobPostsPage() {
   const confirmDelete = async () => {
     onConfirmOpenChange();
     try {
-      const res = await fetch(`/api/posts/${idForDelete}`, {method: "DELETE"});
+      const res = await fetch(`/api/posts/${idForDelete}`, { method: "DELETE" });
       setIdForDelete(null);
       if (!res.ok) {
         throw new Error(t.jobManage.confirmDelete.errorMessage);
@@ -186,8 +240,34 @@ export default function ManageJobPostsPage() {
     }
   };
 
+  const handleStatusUpdate = async (id: string, newStatus: string) => {
+    try {
+      const res = await fetch(`/api/posts/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update status");
+      }
+
+      toast.success(`Post ${newStatus.toLowerCase()} successfully`);
+      fetchPosts(pagination.page);
+    } catch (err) {
+      toast.error("Failed to update post status");
+    }
+  };
+
+  // Re-fetch when status filter changes
+  useEffect(() => {
+    if (hasJobManagementRole) {
+      fetchPosts(1);
+    }
+  }, [statusFilter]);
+
   const handleCancel = () => {
-    setFormData({title: "", iframe: ""});
+    setFormData({ title: "", iframe: "" });
     setUrlInput("");
     setEmbedPreview(null);
     setEmbedError(null);
@@ -200,11 +280,11 @@ export default function ManageJobPostsPage() {
   const handleUrlChange = useCallback((value: string) => {
     setUrlInput(value);
     setEmbedError(null);
-    
+
     if (!value.trim()) {
       setEmbedPreview(null);
       setDetectedPlatform(null);
-      setFormData(prev => ({...prev, iframe: ""}));
+      setFormData(prev => ({ ...prev, iframe: "" }));
       return;
     }
 
@@ -217,14 +297,14 @@ export default function ManageJobPostsPage() {
 
     // Generate embed
     const result = generateEmbed(value);
-    
+
     if (result.success && result.iframe) {
       setEmbedPreview(result.iframe);
-      setFormData(prev => ({...prev, iframe: result.iframe!}));
+      setFormData(prev => ({ ...prev, iframe: result.iframe! }));
       setEmbedError(null);
     } else {
       setEmbedPreview(null);
-      setFormData(prev => ({...prev, iframe: ""}));
+      setFormData(prev => ({ ...prev, iframe: "" }));
       if (value.trim()) {
         setEmbedError(result.error || t.jobManage.form.urlField.invalidUrl);
       }
@@ -235,8 +315,19 @@ export default function ManageJobPostsPage() {
     fetchPosts(page);
   };
 
+  // Check if user can edit/delete a post
+  const canEditPost = useCallback((post: Post) => {
+    // Staff can edit/delete any post
+    if (isStaff) return true;
+    // Collaborators can only edit their own posts
+    if (post.createdBy && session?.user?.id) {
+      return post.createdBy.discordId === session.user.id;
+    }
+    return false;
+  }, [isStaff, session?.user?.id]);
+
   if (isLoading) {
-    return <SkeletonLoading/>;
+    return <SkeletonLoading />;
   }
 
   if (!session?.user) {
@@ -245,7 +336,7 @@ export default function ManageJobPostsPage() {
 
   // Show skeleton while redirecting to prevent flash of content
   if (!hasJobManagementRole || shouldRedirect) {
-    return <SkeletonLoading/>;
+    return <SkeletonLoading />;
   }
 
   return (
@@ -255,6 +346,20 @@ export default function ManageJobPostsPage() {
           <CardHeader className="flex flex-col items-start px-6 py-4">
             <h1 className="text-3xl font-bold">{t.jobManage.title}</h1>
           </CardHeader>
+          <CardBody>
+            <Tabs
+              aria-label={t.jobManage.status.label}
+              color="primary"
+              variant="underlined"
+              selectedKey={statusFilter}
+              onSelectionChange={(key) => setStatusFilter(key as string)}
+            >
+              <Tab key="all" title={t.jobManage.tabs.all} />
+              <Tab key="pending" title={t.jobManage.tabs.pending} />
+              <Tab key="approved" title={t.jobManage.tabs.approved} />
+              <Tab key="rejected" title={t.jobManage.tabs.rejected} />
+            </Tabs>
+          </CardBody>
         </Card>
 
         {!isCreating && (
@@ -281,7 +386,7 @@ export default function ManageJobPostsPage() {
                   label={t.jobManage.form.titleField.title}
                   placeholder={t.jobManage.form.titleField.placeholder}
                   value={formData.title}
-                  onValueChange={(value) => setFormData({...formData, title: value})}
+                  onValueChange={(value) => setFormData({ ...formData, title: value })}
                   maxLength={50}
                 />
 
@@ -298,11 +403,11 @@ export default function ManageJobPostsPage() {
                       input: "font-mono text-sm",
                     }}
                   />
-                  
+
                   {detectedPlatform && detectedPlatform !== 'unknown' && (
                     <div className="flex items-center gap-2">
-                      <Chip 
-                        size="sm" 
+                      <Chip
+                        size="sm"
                         color={detectedPlatform === 'linkedin' ? 'primary' : 'secondary'}
                         variant="flat"
                       >
@@ -316,10 +421,7 @@ export default function ManageJobPostsPage() {
                 {embedPreview && (
                   <div className="space-y-2">
                     <span className={`${typography.label} text-default-600`}>{t.jobManage.form.preview}</span>
-                    <div 
-                      className="border border-default-200 rounded-lg p-4 bg-default-50 flex justify-center overflow-hidden"
-                      dangerouslySetInnerHTML={{__html: embedPreview}}
-                    />
+                    <EmbedPreview html={embedPreview} />
                   </div>
                 )}
 
@@ -352,36 +454,117 @@ export default function ManageJobPostsPage() {
             <Table aria-label="Posts table">
               <TableHeader>
                 <TableColumn>{t.jobManage.table.head.title}</TableColumn>
+                <TableColumn>{t.jobManage.table.head.status}</TableColumn>
+                <TableColumn>{t.jobManage.table.head.author}</TableColumn>
                 <TableColumn>{t.jobManage.table.head.createdAt}</TableColumn>
                 <TableColumn>{t.jobManage.table.head.actions}</TableColumn>
               </TableHeader>
               <TableBody emptyContent={t.jobManage.table.noRows}>
                 {posts.map((post) => (
                   <TableRow key={post.id}>
-                    <TableCell>{post.title}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{post.title}</span>
+                        {post.sourceUrl && (
+                          <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate max-w-[200px]">
+                            {post.sourceUrl}
+                          </a>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        size="sm"
+                        variant="flat"
+                        color={
+                          post.status === "APPROVED" ? "success" :
+                            post.status === "REJECTED" ? "danger" : "warning"
+                        }
+                      >
+                        {post.status || "PENDING"}
+                      </Chip>
+                    </TableCell>
+                    <TableCell>
+                      {post.createdBy ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar
+                            size="sm"
+                            src={post.createdBy.avatar
+                              ? getDiscordAvatarUrl(post.createdBy.discordId, post.createdBy.avatar, "0")
+                              : undefined
+                            }
+                            name={post.createdBy.username}
+                          />
+                          <span className="text-sm">{post.createdBy.username}</span>
+                        </div>
+                      ) : (
+                        <span className="text-default-400">-</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {new Date(post.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          className={`font-semibold ${focusStates.button}`}
-                          type="button"
-                          variant="shadow"
-                          color="primary"
-                          onPress={() => handleEdit(post)}
-                        >
-                          {t.jobManage.table.body.edit}
-                        </Button>
-                        <Button
-                          size="sm"
-                          color="danger"
-                          variant="shadow"
-                          onPress={() => handleDelete(post.id)}
-                        >
-                          {t.jobManage.table.body.delete}
-                        </Button>
+                      <div className="flex items-center gap-2">
+                        {/* Status Actions (Only for PENDING or if staff needs to change it) */}
+                        {isStaff && (
+                          <>
+                            {post.status !== "APPROVED" && (
+                              <Button
+                                isIconOnly
+                                size="sm"
+                                color="success"
+                                variant="flat"
+                                title={t.jobManage.actions.approve}
+                                onPress={() => handleStatusUpdate(post.id, "APPROVED")}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                </svg>
+                              </Button>
+                            )}
+                            {post.status !== "REJECTED" && (
+                              <Button
+                                isIconOnly
+                                size="sm"
+                                color="danger"
+                                variant="flat"
+                                title={t.jobManage.actions.reject}
+                                onPress={() => handleStatusUpdate(post.id, "REJECTED")}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </Button>
+                            )}
+                          </>
+                        )}
+
+                        {canEditPost(post) && (
+                          <>
+                            <Button
+                              size="sm"
+                              className={`font-semibold ${focusStates.button}`}
+                              type="button"
+                              variant="shadow"
+                              color="primary"
+                              onPress={() => handleEdit(post)}
+                            >
+                              {t.jobManage.table.body.edit}
+                            </Button>
+                            <Button
+                              isIconOnly
+                              size="sm"
+                              color="danger"
+                              variant="shadow"
+                              onPress={() => handleDelete(post.id)}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                              </svg>
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

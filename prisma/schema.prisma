@@ -47,6 +47,7 @@ model Post {
   id        String   @id @default(cuid())
   title     String
   iframe    String
+  sourceUrl String?  // Original URL before conversion to iframe
   
   createdBy   User?    @relation("PostsCreated", fields: [createdById], references: [id])
   createdById String?
@@ -55,4 +56,12 @@ model Post {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  status    PostStatus @default(PENDING)
+}
+
+enum PostStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

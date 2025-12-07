@@ -180,12 +180,12 @@ export const es = {
     availabilityNotAvailableDesc:
       "Si se selecciona, las otras opciones se deshabilitarán",
     englishLevels: [
-      {key: "A1", text: "A1 (Elemental)"},
-      {key: "A2", text: "A2 (Preintermedio)"},
-      {key: "B1", text: "B1 (Intermedio)"},
-      {key: "B2", text: "B2 (Intermedio Alto)"},
-      {key: "C1", text: "C1 (Avanzado)"},
-      {key: "C2", text: "C2 (Dominio del idioma)"},
+      { key: "A1", text: "A1 (Elemental)" },
+      { key: "A2", text: "A2 (Preintermedio)" },
+      { key: "B1", text: "B1 (Intermedio)" },
+      { key: "B2", text: "B2 (Intermedio Alto)" },
+      { key: "C1", text: "C1 (Avanzado)" },
+      { key: "C2", text: "C2 (Dominio del idioma)" },
     ],
     yoe: "Años de experiencia",
   },
@@ -252,6 +252,22 @@ export const es = {
     getting: {
       errorMessage: "No se pudieron obtener las publicaciones"
     },
+    tabs: {
+      all: "Todos",
+      pending: "Pendiente de revisión",
+      approved: "Aprobado",
+      rejected: "Rechazado",
+    },
+    actions: {
+      approve: "Aprobar",
+      reject: "Rechazar",
+    },
+    status: {
+      label: "Estado del trabajo",
+      pending: "PENDIENTE",
+      approved: "APROBADO",
+      rejected: "RECHAZADO",
+    },
     form: {
       titleNewPost: "Crear Nuevo Post",
       titleEditPost: "Editar Post",
@@ -283,6 +299,8 @@ export const es = {
     table: {
       head: {
         title: "Título",
+        status: "Estado",
+        author: "Autor",
         createdAt: "Fecha de Creación",
         actions: "Acciones",
       },
