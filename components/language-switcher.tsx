@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "@heroui/button";
 import {
   Dropdown,
@@ -12,6 +13,19 @@ import { useLanguage } from "@/contexts/language-context";
 
 export const LanguageSwitcher = () => {
   const { locale, setLocale, t } = useLanguage();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Button size="sm" variant="light">
+        {locale.toUpperCase()}
+      </Button>
+    );
+  }
 
   return (
     <Dropdown>

@@ -348,16 +348,16 @@ export default function ManageJobPostsPage() {
           </CardHeader>
           <CardBody>
             <Tabs
-              aria-label="Job Status"
+              aria-label={t.jobManage.status.label}
               color="primary"
               variant="underlined"
               selectedKey={statusFilter}
               onSelectionChange={(key) => setStatusFilter(key as string)}
             >
-              <Tab key="all" title="All Posts" />
-              <Tab key="pending" title="Pending Review" />
-              <Tab key="approved" title="Approved" />
-              <Tab key="rejected" title="Rejected" />
+              <Tab key="all" title={t.jobManage.tabs.all} />
+              <Tab key="pending" title={t.jobManage.tabs.pending} />
+              <Tab key="approved" title={t.jobManage.tabs.approved} />
+              <Tab key="rejected" title={t.jobManage.tabs.rejected} />
             </Tabs>
           </CardBody>
         </Card>
@@ -454,8 +454,8 @@ export default function ManageJobPostsPage() {
             <Table aria-label="Posts table">
               <TableHeader>
                 <TableColumn>{t.jobManage.table.head.title}</TableColumn>
-                <TableColumn>Status</TableColumn>
-                <TableColumn>Author</TableColumn>
+                <TableColumn>{t.jobManage.table.head.status}</TableColumn>
+                <TableColumn>{t.jobManage.table.head.author}</TableColumn>
                 <TableColumn>{t.jobManage.table.head.createdAt}</TableColumn>
                 <TableColumn>{t.jobManage.table.head.actions}</TableColumn>
               </TableHeader>
@@ -515,7 +515,7 @@ export default function ManageJobPostsPage() {
                                 size="sm"
                                 color="success"
                                 variant="flat"
-                                title="Approve"
+                                title={t.jobManage.actions.approve}
                                 onPress={() => handleStatusUpdate(post.id, "APPROVED")}
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -529,7 +529,7 @@ export default function ManageJobPostsPage() {
                                 size="sm"
                                 color="danger"
                                 variant="flat"
-                                title="Reject"
+                                title={t.jobManage.actions.reject}
                                 onPress={() => handleStatusUpdate(post.id, "REJECTED")}
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">

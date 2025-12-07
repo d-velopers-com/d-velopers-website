@@ -250,6 +250,22 @@ export const en = {
     getting: {
       errorMessage: "Failed to fetch posts"
     },
+    tabs: {
+      all: "All Posts",
+      pending: "Pending Review",
+      approved: "Approved",
+      rejected: "Rejected",
+    },
+    actions: {
+      approve: "Approve",
+      reject: "Reject",
+    },
+    status: {
+      label: "Job Status",
+      pending: "PENDING",
+      approved: "APPROVED",
+      rejected: "REJECTED",
+    },
     form: {
       titleNewPost: "Create New Post",
       titleEditPost: "Edit Post",
@@ -281,6 +297,8 @@ export const en = {
     table: {
       head: {
         title: "Title",
+        status: "Status",
+        author: "Author",
         createdAt: "Created At",
         actions: "Actions",
       },

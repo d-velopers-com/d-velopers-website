@@ -78,10 +78,20 @@ export const PUT = withStaffRole(async (
     }
 
     const body = await request.json();
-    const { title, iframe, sourceUrl, status } = body;
+    // Use existing values if not provided (partial update)
+    const title = body.title || existingPost.title;
+    const iframe = body.iframe || existingPost.iframe;
+    const sourceUrl = body.sourceUrl !== undefined ? body.sourceUrl : existingPost.sourceUrl;
+    const status = body.status;
 
-    // Only staff can change status
-    if (status && !userIsStaff) {
+    // Check for management role (Staff or Collaborator)
+    const hasJobManagementRole = session.roles?.some(role =>
+      accessByRole.jobs_management.includes(role)
+    );
+
+    // Permission check for changing status
+    // Only management roles can change status
+    if (status && !hasJobManagementRole) {
       return NextResponse.json(
         { error: "Only staff can change post status" },
         { status: 403 }
@@ -116,7 +126,20 @@ export const PUT = withStaffRole(async (
       );
     }
 
-    const updatedPost = await updatePost(id, title, iframe, user.id, sourceUrl, status);
+    // Determine final status
+    let finalStatus = existingPost.status;
+
+    if (status && hasJobManagementRole) {
+      // 1. Explicit status change by authorized user (Approve OR Reject)
+      finalStatus = status;
+    } else if (hasJobManagementRole) {
+      // 2. Content edit by authorized user without explicit status -> Auto-Approve
+      // (This handles the case where they edit a Pending post to fix it)
+      finalStatus = PostStatus.APPROVED;
+    }
+    // 3. Else (non-management user edit), status remains as is (Pending/etc)
+
+    const updatedPost = await updatePost(id, title, iframe, user.id, sourceUrl, finalStatus);
 
     return NextResponse.json(updatedPost);
   } catch (error) {

@@ -4,6 +4,7 @@ import { PostStatus } from "@prisma/client";
 import { withStaffRole } from "@/middlewares/auth";
 import { isValidHtmlString } from "@/lib/validations";
 import { getUserByDiscordId } from "@/lib/user";
+import { accessByRole } from "@/config/access-by-role";
 
 export const POST = withStaffRole(async (request: NextRequest, _context, session) => {
   const body = await request.json();
@@ -47,7 +48,13 @@ export const POST = withStaffRole(async (request: NextRequest, _context, session
       );
     }
 
-    const post = await createPost(title, iframe, user.id, sourceUrl);
+    // Check for auto-approval (staff or collaborators)
+    const hasJobManagementRole = session.roles?.some(role =>
+      accessByRole.jobs_management.includes(role)
+    );
+    const initialStatus = hasJobManagementRole ? PostStatus.APPROVED : PostStatus.PENDING;
+
+    const post = await createPost(title, iframe, user.id, sourceUrl, initialStatus);
     return NextResponse.json(post, { status: 201 });
   } catch (error) {
     console.error("Error creating post:", error);
@@ -72,8 +79,8 @@ export async function GET(request: NextRequest) {
       .filter(term => term.length > 0)
       .map((term) => ({ title: { contains: term, mode: 'insensitive' as const } }));
 
-    const posts = await getPosts(limit, offset, orConditions);
-    const total = await getPostsCount(orConditions);
+    const posts = await getPosts(limit, offset, orConditions, undefined, PostStatus.APPROVED);
+    const total = await getPostsCount(orConditions, undefined, PostStatus.APPROVED);
 
     return NextResponse.json({
       posts,

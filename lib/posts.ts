@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import { PostStatus } from "@prisma/client";
+import { PostStatus, Prisma } from "@prisma/client";
 
 export interface PostAuthor {
   id: string;
@@ -32,13 +32,14 @@ export async function createPost(
   iframe: string,
   userId: string,
   sourceUrl?: string,
+  status: PostStatus = PostStatus.PENDING,
 ): Promise<PostData> {
   return await prisma.post.create({
     data: {
       title,
       iframe,
       sourceUrl,
-      status: PostStatus.PENDING,
+      status,
       createdById: userId,
       updatedById: userId,
     },
@@ -97,7 +98,7 @@ export async function getPostsCount(
   createdById?: string,
   status?: PostStatus | null,
 ): Promise<number> {
-  const where: any = {};
+  const where: Prisma.PostWhereInput = {};
 
   if (orConditions.length > 0) {
     where.OR = orConditions;
@@ -128,7 +129,7 @@ export async function updatePost(
       title,
       iframe,
       sourceUrl,
-      ...(status && { status }),
+      ...(status !== undefined && { status }),
       updatedById: userId,
     },
     include: {
