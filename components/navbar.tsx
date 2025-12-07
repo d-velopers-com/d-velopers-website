@@ -28,15 +28,16 @@ import { useSession, signOut } from "@/hooks/useSession";
 import { useLanguage } from "@/contexts/language-context";
 import { DiscordIcon } from "@/components/icons";
 import { typography, focusStates } from "@/lib/ui-constants";
-import {useProfile} from "@/hooks/useProfile";
-import {validateRecentActivation} from "@/lib/utils";
+import { useProfile } from "@/hooks/useProfile";
+import { validateRecentActivation } from "@/lib/utils";
+import { getDiscordAvatarUrl } from "@/shared/lib";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasJobManagementRole, setHasJobManagementRole] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [enableJobs, setEnableJobs] = useState<boolean | undefined>(undefined);
-  const {profile} = useProfile();
+  const { profile } = useProfile();
   const { data: session, status } = useSession();
   const { t } = useLanguage();
   const { theme } = useTheme();
@@ -80,9 +81,7 @@ export function Navbar() {
   }, [session, status, profile]);
 
   const avatarUrl = session?.user
-    ? session.user.avatar
-      ? `https://cdn.discordapp.com/avatars/${session.user.id}/${session.user.avatar}.png`
-      : `https://cdn.discordapp.com/embed/avatars/${parseInt(session.user.discriminator) % 5}.png`
+    ? getDiscordAvatarUrl(session.user.id, session.user.avatar, session.user.discriminator)
     : undefined;
 
   // Usar un logo por defecto durante SSR para evitar hydration mismatch

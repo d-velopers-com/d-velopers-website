@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import {useEffect, useState, useMemo} from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
@@ -40,8 +40,9 @@ import {
   colors,
   colorOpacity,
 } from "@/lib/ui-constants";
-import {SkeletonLoading} from "@/components/skeleton-loading";
-import {validateRecentActivation} from "@/lib/utils";
+import { SkeletonLoading } from "@/components/skeleton-loading";
+import { validateRecentActivation } from "@/lib/utils";
+import { getDiscordAvatarUrl } from "@/shared/lib";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -225,11 +226,11 @@ export default function DashboardPage() {
     if (title.trim().length > 80) {
       setTitleError(
         t.dashboard.titleMaxLengthError ||
-          "Title must be 80 characters or less",
+        "Title must be 80 characters or less",
       );
       toast.error(
         t.dashboard.titleMaxLengthError ||
-          "Title must be 80 characters or less",
+        "Title must be 80 characters or less",
       );
 
       return;
@@ -288,7 +289,7 @@ export default function DashboardPage() {
       setSaving(false);
       const errorMessage =
         result.error?.includes("Maximum 15 tags") ||
-        result.error?.includes("tags")
+          result.error?.includes("tags")
           ? t.dashboard.maxTagsError
           : result.error || t.dashboard.invalidUrl;
 
@@ -314,7 +315,7 @@ export default function DashboardPage() {
     allowedRolesLoading;
 
   if (isLoading) {
-    return <SkeletonLoading/>;
+    return <SkeletonLoading />;
   }
 
   if (!session?.user) {
@@ -323,9 +324,7 @@ export default function DashboardPage() {
 
   const user = session.user;
 
-  const avatarUrl = user.avatar
-    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-    : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator) % 5}.png`;
+  const avatarUrl = getDiscordAvatarUrl(user.id, user.avatar, user.discriminator);
 
   const isServerMember = user.roles && user.roles.length > 0;
   const hasAllowedRole =
@@ -429,18 +428,16 @@ export default function DashboardPage() {
             </div>
             {syncMessage && (
               <div
-                className={`flex items-center ${spacing.sm} p-2 rounded-md ${
-                  syncMessage.type === "success"
+                className={`flex items-center ${spacing.sm} p-2 rounded-md ${syncMessage.type === "success"
                     ? stateColors.success.full
                     : stateColors.danger.full
-                }`}
+                  }`}
               >
                 <svg
-                  className={`${iconSizes.sm} ${
-                    syncMessage.type === "success"
+                  className={`${iconSizes.sm} ${syncMessage.type === "success"
                       ? stateColors.success.text
                       : stateColors.danger.text
-                  }`}
+                    }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -462,11 +459,10 @@ export default function DashboardPage() {
                   )}
                 </svg>
                 <span
-                  className={`${typography.caption} font-medium ${
-                    syncMessage.type === "success"
+                  className={`${typography.caption} font-medium ${syncMessage.type === "success"
                       ? stateColors.success.text
                       : stateColors.danger.text
-                  }`}
+                    }`}
                 >
                   {syncMessage.text}
                 </span>
@@ -800,7 +796,7 @@ export default function DashboardPage() {
                 >
                   {title.length > 80
                     ? t.dashboard.titleMaxLengthError ||
-                      "Title must be 80 characters or less"
+                    "Title must be 80 characters or less"
                     : ""}
                 </span>
                 <span
@@ -1065,9 +1061,8 @@ export default function DashboardPage() {
                     }
                   }}
                   disabled={isNotAvailable}
-                  className={`cursor-pointer border-none bg-transparent p-0 ${
-                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   aria-disabled={isNotAvailable}
                 >
                   <Chip
@@ -1093,9 +1088,8 @@ export default function DashboardPage() {
                     }
                   }}
                   disabled={isNotAvailable}
-                  className={`cursor-pointer border-none bg-transparent p-0 ${
-                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   aria-disabled={isNotAvailable}
                 >
                   <Chip
@@ -1121,9 +1115,8 @@ export default function DashboardPage() {
                     }
                   }}
                   disabled={isNotAvailable}
-                  className={`cursor-pointer border-none bg-transparent p-0 ${
-                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   aria-disabled={isNotAvailable}
                 >
                   <Chip
@@ -1149,9 +1142,8 @@ export default function DashboardPage() {
                     }
                   }}
                   disabled={isNotAvailable}
-                  className={`cursor-pointer border-none bg-transparent p-0 ${
-                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   aria-disabled={isNotAvailable}
                 >
                   <Chip

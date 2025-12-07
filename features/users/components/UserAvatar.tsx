@@ -3,6 +3,7 @@
 import { memo } from "react";
 import { Avatar } from "@heroui/avatar";
 import { getCountryFlagUrl, getCountryName } from "@/lib/countries";
+import { getDiscordAvatarUrl } from "@/shared/lib";
 
 export interface UserAvatarProps {
     avatar: string | null;
@@ -36,9 +37,7 @@ export const UserAvatar = memo(function UserAvatar({
     size = "md",
     className = "",
 }: UserAvatarProps) {
-    const avatarUrl = avatar
-        ? `https://cdn.discordapp.com/avatars/${discordId}/${avatar}.png`
-        : `https://cdn.discordapp.com/embed/avatars/${parseInt(discriminator) % 5}.png`;
+    const avatarUrl = getDiscordAvatarUrl(discordId, avatar, discriminator);
 
     const flagUrl = country ? getCountryFlagUrl(country, "24") : null;
     const countryName = country ? getCountryName(country) : null;
