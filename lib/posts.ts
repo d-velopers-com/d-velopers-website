@@ -13,6 +13,7 @@ export interface PostData {
   title: string;
   iframe: string;
   sourceUrl?: string | null;
+  embeddable: boolean;
   status: PostStatus;
   createdBy?: PostAuthor | null;
   updatedBy?: PostAuthor | null;
@@ -33,12 +34,14 @@ export async function createPost(
   userId: string,
   sourceUrl?: string,
   status: PostStatus = PostStatus.PENDING,
+  embeddable: boolean = true,
 ): Promise<PostData> {
   return await prisma.post.create({
     data: {
       title,
       iframe,
       sourceUrl,
+      embeddable,
       status,
       createdById: userId,
       updatedById: userId,
@@ -122,6 +125,7 @@ export async function updatePost(
   userId: string,
   sourceUrl?: string,
   status?: PostStatus,
+  embeddable?: boolean,
 ): Promise<PostData> {
   return await prisma.post.update({
     where: { id },
@@ -130,6 +134,7 @@ export async function updatePost(
       iframe,
       sourceUrl,
       ...(status !== undefined && { status }),
+      ...(embeddable !== undefined && { embeddable }),
       updatedById: userId,
     },
     include: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo, memo } from "react";
+import { useEffect, useState, useCallback, useMemo, memo, useRef } from "react";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Pagination } from "@heroui/pagination";
 import { Input } from "@heroui/input";
@@ -24,6 +24,8 @@ interface Post {
   id: string;
   title: string;
   iframe: string;
+  sourceUrl?: string | null;
+  embeddable: boolean;
   createdAt: string;
 }
 
@@ -67,19 +69,101 @@ const JobCardSkeleton = memo(function JobCardSkeleton() {
 });
 
 /**
- * Individual job post card
+ * LinkedIn Embed component - shows embed or fallback based on server-side embeddable check
+ */
+const LinkedInEmbed = memo(function LinkedInEmbed({
+  iframeHtml,
+  sourceUrl,
+  embeddable
+}: {
+  iframeHtml: string;
+  sourceUrl: string;
+  embeddable: boolean;
+}) {
+  // Extract src from iframe HTML
+  const iframeSrc = useMemo(() => {
+    const srcMatch = iframeHtml.match(/src=["']([^"']+)["']/);
+    const src = srcMatch ? srcMatch[1] : null;
+    // Only return valid LinkedIn embed URLs, not placeholders like "about:blank"
+    if (src && src.includes('linkedin.com/embed')) {
+      return src;
+    }
+    return null;
+  }, [iframeHtml]);
+
+  // If not embeddable (determined by server), or no valid iframe src, show fallback
+  if (!embeddable || !iframeSrc) {
+    return (
+      <div className="w-full px-5 py-8">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-[#0A66C2]/10 flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-[#0A66C2]"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+            </svg>
+          </div>
+          <p className="text-default-500 text-sm text-center">
+            This post cannot be embedded
+          </p>
+          <a
+            href={sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#0A66C2] hover:bg-[#004182] text-white font-semibold transition-all duration-200 shadow-md hover:shadow-lg"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+            </svg>
+            Open in LinkedIn
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // Embeddable - show the iframe
+  return (
+    <div className="w-full flex justify-center">
+      <iframe
+        src={iframeSrc}
+        height="600"
+        width="504"
+        frameBorder="0"
+        allowFullScreen
+        title="LinkedIn Post"
+        className="max-w-full"
+      />
+    </div>
+  );
+});
+
+/**
+ * Individual job post card with LinkedIn fallback
  */
 const JobCard = memo(function JobCard({ post }: { post: Post }) {
   // Use static date format to avoid hydration mismatch
-  // Relative dates like "Today" use client time which differs from server
   const formattedDate = useMemo(() => {
     const date = new Date(post.createdAt);
-    // Use stable format that won't change between server/client
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     });
   }, [post.createdAt]);
+
+  // Detect if this is a LinkedIn post
+  const isLinkedIn = useMemo(() => {
+    const url = post.sourceUrl || "";
+    return url.toLowerCase().includes("linkedin.com");
+  }, [post.sourceUrl]);
 
   return (
     <Card className={`overflow-hidden ${cardStyles.base}`}>
@@ -96,11 +180,15 @@ const JobCard = memo(function JobCard({ post }: { post: Post }) {
           {formattedDate}
         </Chip>
       </CardHeader>
-      <CardBody className="p-0 flex justify-center items-center overflow-hidden bg-default-50">
-        <div
-          className="w-full flex justify-center [&>iframe]:max-w-full [&>iframe]:rounded-none"
-          dangerouslySetInnerHTML={{ __html: post.iframe }}
-        />
+      <CardBody className="p-0 flex flex-col justify-center items-center overflow-hidden bg-default-50">
+        {isLinkedIn && post.sourceUrl ? (
+          <LinkedInEmbed iframeHtml={post.iframe} sourceUrl={post.sourceUrl} embeddable={post.embeddable} />
+        ) : (
+          <div
+            className="w-full flex justify-center [&>iframe]:max-w-full [&>iframe]:rounded-none"
+            dangerouslySetInnerHTML={{ __html: post.iframe }}
+          />
+        )}
       </CardBody>
     </Card>
   );

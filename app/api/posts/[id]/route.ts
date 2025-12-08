@@ -5,6 +5,7 @@ import { withStaffRole } from "@/middlewares/auth";
 import { isValidHtmlString } from "@/lib/validations";
 import { getUserByDiscordId } from "@/lib/user";
 import { accessByRole } from "@/config/access-by-role";
+import { checkLinkedInEmbedAccessibility } from "@/lib/embed-checker";
 
 /**
  * Check if user is staff (can edit/delete any post)
@@ -139,7 +140,13 @@ export const PUT = withStaffRole(async (
     }
     // 3. Else (non-management user edit), status remains as is (Pending/etc)
 
-    const updatedPost = await updatePost(id, title, iframe, user.id, sourceUrl, finalStatus);
+    // Check if the embed is accessible (if iframe changed)
+    let embeddable = existingPost.embeddable;
+    if (body.iframe && body.iframe !== existingPost.iframe) {
+      embeddable = await checkLinkedInEmbedAccessibility(iframe);
+    }
+
+    const updatedPost = await updatePost(id, title, iframe, user.id, sourceUrl, finalStatus, embeddable);
 
     return NextResponse.json(updatedPost);
   } catch (error) {

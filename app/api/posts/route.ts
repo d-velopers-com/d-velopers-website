@@ -54,7 +54,11 @@ export const POST = withStaffRole(async (request: NextRequest, _context, session
     );
     const initialStatus = hasJobManagementRole ? PostStatus.APPROVED : PostStatus.PENDING;
 
-    const post = await createPost(title, iframe, user.id, sourceUrl, initialStatus);
+    // Use embeddable from request (determined by frontend during embed generation)
+    // Fallback: check if it's a LinkedIn URL with a valid post ID
+    const embeddable = body.embeddable ?? true;
+
+    const post = await createPost(title, iframe, user.id, sourceUrl, initialStatus, embeddable);
     return NextResponse.json(post, { status: 201 });
   } catch (error) {
     console.error("Error creating post:", error);

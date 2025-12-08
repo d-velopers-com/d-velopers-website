@@ -48,6 +48,7 @@ model Post {
   title     String
   iframe    String
   sourceUrl String?  // Original URL before conversion to iframe
+  embeddable Boolean @default(true) // Whether the embed URL is accessible
   
   createdBy   User?    @relation("PostsCreated", fields: [createdById], references: [id])
   createdById String?

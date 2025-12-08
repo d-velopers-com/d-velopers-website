@@ -38,6 +38,7 @@ interface Post {
   title: string;
   iframe: string;
   sourceUrl?: string | null;
+  embeddable?: boolean;
   status: "PENDING" | "APPROVED" | "REJECTED";
   createdBy?: PostAuthor | null;
   createdAt: string;
@@ -85,7 +86,7 @@ export default function ManageJobPostsPage() {
   });
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ title: "", iframe: "" });
+  const [formData, setFormData] = useState({ title: "", iframe: "", embeddable: true });
   const [urlInput, setUrlInput] = useState("");
   const [embedPreview, setEmbedPreview] = useState<string | null>(null);
   const [embedError, setEmbedError] = useState<string | null>(null);
@@ -195,7 +196,7 @@ export default function ManageJobPostsPage() {
 
       toast.success(editingId ? t.jobManage.save.updatedSuccessMessage : t.jobManage.save.saveSuccessMessage);
       // Clear all form state
-      setFormData({ title: "", iframe: "" });
+      setFormData({ title: "", iframe: "", embeddable: true });
       setUrlInput("");
       setEmbedPreview(null);
       setEmbedError(null);
@@ -209,7 +210,7 @@ export default function ManageJobPostsPage() {
   };
 
   const handleEdit = (post: Post) => {
-    setFormData({ title: post.title, iframe: post.iframe });
+    setFormData({ title: post.title, iframe: post.iframe, embeddable: post.embeddable ?? true });
     // Show sourceUrl if available, otherwise show iframe
     setUrlInput(post.sourceUrl || post.iframe);
     setEmbedPreview(post.iframe);
@@ -267,7 +268,7 @@ export default function ManageJobPostsPage() {
   }, [statusFilter]);
 
   const handleCancel = () => {
-    setFormData({ title: "", iframe: "" });
+    setFormData({ title: "", iframe: "", embeddable: true });
     setUrlInput("");
     setEmbedPreview(null);
     setEmbedError(null);
@@ -300,11 +301,15 @@ export default function ManageJobPostsPage() {
 
     if (result.success && result.iframe) {
       setEmbedPreview(result.iframe);
-      setFormData(prev => ({ ...prev, iframe: result.iframe! }));
+      setFormData(prev => ({
+        ...prev,
+        iframe: result.iframe!,
+        embeddable: result.embeddable ?? true
+      }));
       setEmbedError(null);
     } else {
       setEmbedPreview(null);
-      setFormData(prev => ({ ...prev, iframe: "" }));
+      setFormData(prev => ({ ...prev, iframe: "", embeddable: true }));
       if (value.trim()) {
         setEmbedError(result.error || t.jobManage.form.urlField.invalidUrl);
       }
