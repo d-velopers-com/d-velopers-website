@@ -14,6 +14,7 @@ export const es = {
     openMenu: "Abrir menú",
     profileActions: "Acciones del Perfil",
     theme: "Tema",
+    snow: "Nieve",
     jobs: "Trabajos",
     manageJobs: "Administrar trabajos",
   },
@@ -245,10 +246,22 @@ export const es = {
     noPosts: "No hay ofertas de trabajo disponibles por el momento. ¡Vuelve más tarde!",
     postedBy: "Publicado por",
     searcher: "Buscar publicación",
+    embed: {
+      cannotBeEmbedded: "Esta publicación no se puede incrustar",
+      openInLinkedIn: "Abrir en LinkedIn",
+      openInTwitter: "Abrir en Twitter",
+      openInSite: "Abrir sitio",
+    },
   },
   jobManage: {
     title: "Administrar ofertas de trabajo",
     validation: "El título y el iframe son obligatorios",
+    autoApprove: {
+      label: "Auto-aprobar publicaciones del bot",
+      enabled: "Auto-aprobación habilitada para publicaciones del bot",
+      disabled: "Auto-aprobación deshabilitada para publicaciones del bot",
+      error: "No se pudo actualizar la configuración de auto-aprobación",
+    },
     getting: {
       errorMessage: "No se pudieron obtener las publicaciones"
     },

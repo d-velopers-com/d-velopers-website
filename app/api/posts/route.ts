@@ -5,6 +5,7 @@ import { withStaffRole } from "@/middlewares/auth";
 import { isValidHtmlString } from "@/lib/validations";
 import { getUserByDiscordId } from "@/lib/user";
 import { accessByRole } from "@/config/access-by-role";
+import { checkIframeEmbedAccessibility } from "@/lib/embed-checker";
 
 export const POST = withStaffRole(async (request: NextRequest, _context, session) => {
   const body = await request.json();
@@ -54,9 +55,15 @@ export const POST = withStaffRole(async (request: NextRequest, _context, session
     );
     const initialStatus = hasJobManagementRole ? PostStatus.APPROVED : PostStatus.PENDING;
 
-    // Use embeddable from request (determined by frontend during embed generation)
-    // Fallback: check if it's a LinkedIn URL with a valid post ID
-    const embeddable = body.embeddable ?? true;
+    // Server-side embed accessibility check
+    // Use the value from frontend as a hint, but verify server-side
+    let embeddable = body.embeddable ?? true;
+
+    // Only perform server-side check if frontend says it's embeddable
+    // This avoids unnecessary checks for content already marked as non-embeddable
+    if (embeddable) {
+      embeddable = await checkIframeEmbedAccessibility(iframe);
+    }
 
     const post = await createPost(title, iframe, user.id, sourceUrl, initialStatus, embeddable);
     return NextResponse.json(post, { status: 201 });

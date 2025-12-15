@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 import { LanguageProvider } from "@/contexts/language-context";
+import { SnowfallProvider } from "@/contexts/snowfall-context";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -28,7 +29,9 @@ export function Providers({ children, themeProps }: ProvidersProps) {
   return (
     <HeroUIProvider navigate={router.push}>
       <NextThemesProvider {...themeProps}>
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          <SnowfallProvider>{children}</SnowfallProvider>
+        </LanguageProvider>
       </NextThemesProvider>
     </HeroUIProvider>
   );

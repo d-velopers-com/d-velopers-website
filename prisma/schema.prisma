@@ -66,3 +66,10 @@ enum PostStatus {
   APPROVED
   REJECTED
 }
+
+model SystemConfig {
+  id        String   @id @default("default")
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}

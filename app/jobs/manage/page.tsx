@@ -18,6 +18,8 @@ import {
 } from "@heroui/table";
 import { Pagination } from "@heroui/pagination";
 import { Chip } from "@heroui/chip";
+import { Skeleton } from "@heroui/skeleton";
+import { Switch } from "@heroui/switch";
 import { Tabs, Tab } from "@heroui/tabs";
 import { focusStates, stateColors, typography } from "@/lib/ui-constants";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@heroui/modal";
@@ -57,15 +59,154 @@ interface PostsResponse {
 
 import { memo } from "react";
 
+interface OGMetadata {
+  title?: string;
+  description?: string;
+  image?: string;
+  siteName?: string;
+}
+
 /**
- * Memoized embed preview to prevent re-renders when other form fields change
+ * Job Card Preview - matches the card style from jobs page
  */
-const EmbedPreview = memo(function EmbedPreview({ html }: { html: string }) {
+const JobCardPreview = memo(function JobCardPreview({
+  html,
+  title,
+  sourceUrl,
+  embeddable
+}: {
+  html: string;
+  title: string;
+  sourceUrl: string;
+  embeddable: boolean;
+}) {
+  const [ogData, setOgData] = useState<OGMetadata | null>(null);
+  const [isLoadingOG, setIsLoadingOG] = useState(false);
+
+  // Detect platform
+  const platform = useMemo(() => {
+    const url = sourceUrl.toLowerCase();
+    if (url.includes("linkedin.com")) return "linkedin";
+    if (url.includes("twitter.com") || url.includes("x.com")) return "twitter";
+    return "unknown";
+  }, [sourceUrl]);
+
+  // For LinkedIn, check if it's a valid embed URL
+  const isLinkedInEmbeddable = useMemo(() => {
+    if (platform !== "linkedin") return true;
+    const srcMatch = html.match(/src=["']([^"']+)["']/);
+    const src = srcMatch ? srcMatch[1] : null;
+    return src && src.includes('linkedin.com/embed');
+  }, [platform, html]);
+
+  // Fetch OG data for non-embeddable content
+  useEffect(() => {
+    const shouldFetchOG = !embeddable || (platform !== "linkedin" && platform !== "twitter");
+    if (shouldFetchOG && sourceUrl && !ogData) {
+      setIsLoadingOG(true);
+      fetch(`/api/og-metadata?url=${encodeURIComponent(sourceUrl)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.error) {
+            setOgData(data);
+          }
+        })
+        .catch(() => { })
+        .finally(() => setIsLoadingOG(false));
+    }
+  }, [embeddable, sourceUrl, ogData, platform]);
+
+  // Render LinkedIn fallback
+  const { t } = useLanguage();
+  const renderLinkedInFallback = () => (
+    <div className="w-full px-5 py-8">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-16 h-16 rounded-full bg-[#0A66C2]/10 flex items-center justify-center">
+          <svg className="w-8 h-8 text-[#0A66C2]" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+          </svg>
+        </div>
+        <p className="text-default-500 text-sm text-center">{t.jobs.embed?.cannotBeEmbedded || "This post cannot be embedded"}</p>
+        <span className="flex items-center gap-2 py-2 px-4 rounded-lg bg-[#0A66C2] text-white text-sm font-semibold">
+          {t.jobs.embed?.openInLinkedIn || "Open in LinkedIn"}
+        </span>
+      </div>
+    </div>
+  );
+
+  // Render OG fallback for generic URLs
+  const renderOGFallback = () => (
+    <div className="w-full px-5 py-6">
+      <div className="block rounded-xl overflow-hidden border border-default-200 bg-default-50">
+        {isLoadingOG ? (
+          <Skeleton className="w-full h-48" />
+        ) : ogData?.image ? (
+          <div className="w-full h-48 overflow-hidden">
+            <img src={ogData.image} alt={ogData.title || "Preview"} className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="w-full h-32 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+            <svg className="w-12 h-12 text-default-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          </div>
+        )}
+        <div className="p-4">
+          {isLoadingOG ? (
+            <>
+              <Skeleton className="h-5 w-3/4 mb-2 rounded" />
+              <Skeleton className="h-4 w-full rounded" />
+            </>
+          ) : (
+            <>
+              <h4 className="font-semibold text-foreground line-clamp-2 mb-1">{ogData?.title || sourceUrl}</h4>
+              {ogData?.description && <p className="text-sm text-default-500 line-clamp-2">{ogData.description}</p>}
+              <div className="flex items-center gap-2 mt-3 text-xs text-default-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                <span>{ogData?.siteName || new URL(sourceUrl).hostname}</span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Determine what to render in body
+  const renderBody = () => {
+    if (platform === "linkedin") {
+      if (!embeddable || !isLinkedInEmbeddable) {
+        return renderLinkedInFallback();
+      }
+      return <div className="w-full flex justify-center p-4" dangerouslySetInnerHTML={{ __html: html }} />;
+    }
+
+    if (platform === "twitter") {
+      // Twitter embeds work, show the iframe
+      return <div className="w-full flex justify-center p-4" dangerouslySetInnerHTML={{ __html: html }} />;
+    }
+
+    // For unknown/generic URLs, always show OG fallback in preview
+    // because we can't know if it's embeddable until server-side validation
+    return renderOGFallback();
+  };
+
   return (
-    <div
-      className="border border-default-200 rounded-lg p-4 bg-default-50 flex justify-center overflow-hidden"
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-row items-center justify-between gap-4 px-5 py-4 border-b border-default-200">
+        <h3 className="text-sm font-semibold text-foreground truncate flex-1">
+          {title || "Untitled Post"}
+        </h3>
+        <Chip size="sm" variant="flat" color="default" className="text-xs font-medium flex-shrink-0">
+          Preview
+        </Chip>
+      </CardHeader>
+      <CardBody className="p-0 flex flex-col justify-center items-center overflow-hidden bg-default-50">
+        {renderBody()}
+      </CardBody>
+    </Card>
   );
 });
 
@@ -94,6 +235,8 @@ export default function ManageJobPostsPage() {
   const [detectedPlatform, setDetectedPlatform] = useState<SupportedPlatform | null>(null);
   const [idForDelete, setIdForDelete] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [autoApproveEnabled, setAutoApproveEnabled] = useState<boolean>(false);
+  const [isTogglingAutoApprove, setIsTogglingAutoApprove] = useState(false);
 
   const {
     isOpen: isConfirmOpen,
@@ -142,6 +285,10 @@ export default function ManageJobPostsPage() {
 
       if (userIsStaff || userIsCollab) {
         fetchPosts();
+        // Fetch auto-approve setting for staff
+        if (userIsStaff) {
+          fetchAutoApproveSetting();
+        }
       } else {
         setIsLoading(false);
       }
@@ -150,6 +297,44 @@ export default function ManageJobPostsPage() {
       setIsLoading(false);
     });
   }, [session, status]);
+
+  const fetchAutoApproveSetting = async () => {
+    try {
+      const res = await fetch("/api/config/auto-approve");
+      if (res.ok) {
+        const data = await res.json();
+        setAutoApproveEnabled(data.enabled);
+      }
+    } catch (err) {
+      console.error("Failed to fetch auto-approve setting");
+    }
+  };
+
+  const handleAutoApproveToggle = async (enabled: boolean) => {
+    setIsTogglingAutoApprove(true);
+    try {
+      const res = await fetch("/api/config/auto-approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update setting");
+      }
+
+      setAutoApproveEnabled(enabled);
+      toast.success(
+        enabled
+          ? t.jobManage.autoApprove?.enabled || "Auto-approve enabled for bot posts"
+          : t.jobManage.autoApprove?.disabled || "Auto-approve disabled for bot posts"
+      );
+    } catch (err) {
+      toast.error(t.jobManage.autoApprove?.error || "Failed to update auto-approve setting");
+    } finally {
+      setIsTogglingAutoApprove(false);
+    }
+  };
 
   const fetchPosts = async (page: number = 1) => {
     try {
@@ -348,8 +533,22 @@ export default function ManageJobPostsPage() {
     <div className="flex items-center justify-center min-h-screen px-4 py-8">
       <div className="max-w-6xl w-full space-y-6">
         <Card>
-          <CardHeader className="flex flex-col items-start px-6 py-4">
+          <CardHeader className="flex flex-row items-center justify-between px-6 py-4">
             <h1 className="text-3xl font-bold">{t.jobManage.title}</h1>
+            {isStaff && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-default-500">
+                  {t.jobManage.autoApprove?.label || "Auto-approve bot posts"}
+                </span>
+                <Switch
+                  isSelected={autoApproveEnabled}
+                  isDisabled={isTogglingAutoApprove}
+                  onValueChange={handleAutoApproveToggle}
+                  size="sm"
+                  color="success"
+                />
+              </div>
+            )}
           </CardHeader>
           <CardBody>
             <Tabs
@@ -426,7 +625,12 @@ export default function ManageJobPostsPage() {
                 {embedPreview && (
                   <div className="space-y-2">
                     <span className={`${typography.label} text-default-600`}>{t.jobManage.form.preview}</span>
-                    <EmbedPreview html={embedPreview} />
+                    <JobCardPreview
+                      html={embedPreview}
+                      title={formData.title}
+                      sourceUrl={urlInput}
+                      embeddable={formData.embeddable}
+                    />
                   </div>
                 )}
 

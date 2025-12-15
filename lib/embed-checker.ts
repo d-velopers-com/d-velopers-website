@@ -1,5 +1,5 @@
 /**
- * Utility to check if a LinkedIn embed URL is accessible
+ * Utility to check if an embed URL is accessible
  */
 
 /**
@@ -11,28 +11,20 @@ export function extractEmbedUrl(iframeHtml: string): string | null {
 }
 
 /**
- * Checks if a LinkedIn embed URL is accessible by making a HEAD request
+ * Checks if any URL can be embedded by making a HEAD request
  * Returns true if the embed is likely to work, false otherwise
  */
-export async function checkLinkedInEmbedAccessibility(iframeHtml: string): Promise<boolean> {
-    const embedUrl = extractEmbedUrl(iframeHtml);
-
-    if (!embedUrl) {
+export async function checkEmbedAccessibility(url: string): Promise<boolean> {
+    if (!url || url === 'about:blank') {
         return false;
     }
 
-    // Only check LinkedIn embed URLs
-    if (!embedUrl.includes('linkedin.com/embed')) {
-        // For non-LinkedIn embeds, assume they work
-        return true;
-    }
-
     try {
-        // Make a HEAD request to check if the embed URL is accessible
+        // Make a HEAD request to check if the URL is accessible
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
-        const response = await fetch(embedUrl, {
+        const response = await fetch(url, {
             method: 'HEAD',
             signal: controller.signal,
             headers: {
@@ -42,29 +34,61 @@ export async function checkLinkedInEmbedAccessibility(iframeHtml: string): Promi
 
         clearTimeout(timeoutId);
 
-        // LinkedIn returns 200 for valid embeds, various error codes for invalid ones
-        // Some posts return 200 but with X-Frame-Options that block embedding
+        // Check if response is OK
         if (!response.ok) {
             return false;
         }
 
         // Check for X-Frame-Options header that might block embedding
         const xFrameOptions = response.headers.get('X-Frame-Options');
-        if (xFrameOptions && (xFrameOptions.toUpperCase() === 'DENY' || xFrameOptions.toUpperCase() === 'SAMEORIGIN')) {
-            return false;
+        if (xFrameOptions) {
+            const upper = xFrameOptions.toUpperCase();
+            if (upper === 'DENY' || upper === 'SAMEORIGIN') {
+                return false;
+            }
         }
 
         // Check Content-Security-Policy for frame-ancestors
         const csp = response.headers.get('Content-Security-Policy');
-        if (csp && csp.includes('frame-ancestors') && !csp.includes('*')) {
-            // If frame-ancestors is specified and doesn't include *, it might block embedding
-            return false;
+        if (csp && csp.includes('frame-ancestors')) {
+            // If frame-ancestors doesn't include * or 'self', it blocks embedding
+            if (!csp.includes('frame-ancestors *') && !csp.includes("frame-ancestors 'self'")) {
+                // More restrictive check - if it has frame-ancestors with specific domains
+                if (csp.match(/frame-ancestors\s+(?:(?![\*])[^\s;]+)/)) {
+                    return false;
+                }
+            }
         }
 
         return true;
     } catch (error) {
-        // Network error, timeout, or other issue
-        console.error('Error checking LinkedIn embed accessibility:', error);
-        return false;
+        // Network error, timeout, CORS, or other issue
+        console.error('Error checking embed accessibility:', error);
+        // For CORS errors (which are common), we can't determine - assume embeddable
+        // The browser will handle the actual embedding
+        return true;
     }
 }
+
+/**
+ * Checks if an iframe HTML content can be embedded
+ * @param iframeHtml - The iframe HTML string
+ */
+export async function checkIframeEmbedAccessibility(iframeHtml: string): Promise<boolean> {
+    const embedUrl = extractEmbedUrl(iframeHtml);
+
+    if (!embedUrl) {
+        return false;
+    }
+
+    return checkEmbedAccessibility(embedUrl);
+}
+
+/**
+ * Legacy function - kept for backwards compatibility
+ * @deprecated Use checkIframeEmbedAccessibility instead
+ */
+export async function checkLinkedInEmbedAccessibility(iframeHtml: string): Promise<boolean> {
+    return checkIframeEmbedAccessibility(iframeHtml);
+}
+

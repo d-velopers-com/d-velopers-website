@@ -23,6 +23,7 @@ import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 
 import { ThemeSwitch } from "@/components/theme-switch";
+import { SnowToggle } from "@/components/snow-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useSession, signOut } from "@/hooks/useSession";
 import { useLanguage } from "@/contexts/language-context";
@@ -148,6 +149,9 @@ export function Navbar() {
         </NavbarItem>
         <NavbarItem className="hidden sm:flex">
           <ThemeSwitch />
+        </NavbarItem>
+        <NavbarItem className="hidden sm:flex">
+          <SnowToggle />
         </NavbarItem>
         <NavbarItem className="hidden sm:flex">
           <LanguageSwitcher />
@@ -307,6 +311,23 @@ export function Navbar() {
             </span>
             <span className="flex items-center justify-center h-6 min-w-[2.5rem]">
               <ThemeSwitch />
+            </span>
+          </div>
+        </NavbarMenuItem>
+        <NavbarMenuItem>
+          <div
+            className="flex items-center justify-between w-full py-1 cursor-pointer hover:bg-default-100 dark:hover:bg-default-50 rounded-lg px-2 -mx-2 transition-colors"
+            onClick={() => {
+              // Trigger click handled by SnowToggle button
+            }}
+            role="button"
+            tabIndex={0}
+          >
+            <span className="text-sm font-medium flex items-center h-6">
+              ❄️ {t.nav.snow}
+            </span>
+            <span className="flex items-center justify-center h-6 min-w-[2.5rem]">
+              <SnowToggle />
             </span>
           </div>
         </NavbarMenuItem>

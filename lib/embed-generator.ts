@@ -177,9 +177,13 @@ export function generateEmbed(input: string): EmbedResult {
     case 'twitter':
       return generateTwitterEmbed(trimmed);
     default:
+      // For any other URL, generate a generic iframe
+      // Mark as embeddable by default - frontend can verify later
       return {
-        success: false,
-        error: 'Unsupported platform. Currently supported: LinkedIn, Twitter/X',
+        success: true,
+        iframe: `<iframe src="${trimmed}" width="100%" height="500" frameborder="0" allowfullscreen="" title="External Content"></iframe>`,
+        platform: 'unknown',
+        embeddable: true,
       };
   }
 }

@@ -14,6 +14,7 @@ export const en = {
     openMenu: "Open menu",
     profileActions: "Profile Actions",
     theme: "Theme",
+    snow: "Snow",
     jobs: "Jobs",
     manageJobs: "Manage Jobs",
   },
@@ -243,10 +244,22 @@ export const en = {
     noPosts: "No job posts available at the moment. Check back later!",
     postedBy: "Posted by",
     searcher: "Search for posting",
+    embed: {
+      cannotBeEmbedded: "This post cannot be embedded",
+      openInLinkedIn: "Open in LinkedIn",
+      openInTwitter: "Open in Twitter",
+      openInSite: "Open site",
+    },
   },
   jobManage: {
     title: "Manage Job Posts",
     validation: "Title and Iframe are required",
+    autoApprove: {
+      label: "Auto-approve bot posts",
+      enabled: "Auto-approve enabled for bot posts",
+      disabled: "Auto-approve disabled for bot posts",
+      error: "Failed to update auto-approve setting",
+    },
     getting: {
       errorMessage: "Failed to fetch posts"
     },
