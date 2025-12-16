@@ -10,6 +10,7 @@ interface CreateUserData {
   avatar: string | null;
   roles: string[];
   joinedServerAt?: string | null;
+  isMember?: boolean; // Si es true, el usuario está confirmado en el servidor
 }
 
 function generateHandler(username: string): string {
@@ -40,6 +41,15 @@ export async function upsertUser(data: CreateUserData) {
   });
 
   if (existingUser) {
+    // Protección: Solo actualizar roles si:
+    // 1. isMember es true (confirmamos que el usuario está en el servidor), o
+    // 2. Los nuevos roles NO están vacíos, o
+    // 3. El usuario no tenía roles de todos modos
+    const shouldUpdateRoles =
+      data.isMember === true ||
+      data.roles.length > 0 ||
+      existingUser.roles.length === 0;
+
     return await prisma.user.update({
       where: { discordId: data.discordId },
       data: {
@@ -47,7 +57,7 @@ export async function upsertUser(data: CreateUserData) {
         discriminator: data.discriminator,
         email: data.email,
         avatar: data.avatar,
-        roles: data.roles,
+        ...(shouldUpdateRoles && { roles: data.roles }),
         joinedServerAt: data.joinedServerAt
           ? new Date(data.joinedServerAt)
           : null,

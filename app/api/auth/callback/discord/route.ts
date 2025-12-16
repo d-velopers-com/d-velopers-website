@@ -45,12 +45,14 @@ export async function GET(request: NextRequest) {
     const guildId = process.env.DISCORD_GUILD_ID;
     let roles: string[] = [];
     let joinedServerAt: string | null = null;
+    let isMember = false;
 
     if (guildId) {
       const memberData = await getGuildMember(tokenData.access_token, guildId);
 
       roles = memberData.roles;
       joinedServerAt = memberData.joinedAt || null;
+      isMember = memberData.isMember;
     }
 
     await upsertUser({
@@ -61,6 +63,7 @@ export async function GET(request: NextRequest) {
       avatar: user.avatar,
       roles,
       joinedServerAt,
+      isMember,
     });
 
     await createSession({
