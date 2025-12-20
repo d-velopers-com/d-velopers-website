@@ -1,7 +1,7 @@
 "use client";
 
-import {useEffect, useState, useCallback, useMemo, memo} from "react";
-import {Card, CardHeader, CardBody} from "@heroui/card";
+import {memo, useCallback, useEffect, useMemo, useState} from "react";
+import {Card, CardBody, CardHeader} from "@heroui/card";
 import {Pagination} from "@heroui/pagination";
 import {Input} from "@heroui/input";
 import {Chip} from "@heroui/chip";
@@ -11,8 +11,8 @@ import {useLanguage} from "@/contexts/language-context";
 import {useSession} from "@/hooks/useSession";
 import {useProfile} from "@/hooks/useProfile";
 import {SkeletonLoading} from "@/components/skeleton-loading";
-import {validateRecentActivation, debounce} from "@/lib/utils";
-import {typography, cardStyles} from "@/lib/ui-constants";
+import {debounce, validateRecentActivation} from "@/lib/utils";
+import {cardStyles, typography} from "@/lib/ui-constants";
 import {SearchIcon} from "@/components/icons";
 import {GenericEmbed} from "@/app/jobs/genericEmbed";
 import {JobCardSkeleton} from "@/app/jobs/jobCardSkeleton";
@@ -63,14 +63,7 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
   // Extract src from iframe HTML
   const iframeSrc = useMemo(() => {
     const srcMatch = iframeHtml.match(/src=["']([^"']+)["']/);
-    const src = srcMatch ? srcMatch[1] : null;
-
-    // Only return valid LinkedIn embed URLs, not placeholders like "about:blank"
-    if (src && src.includes("linkedin.com/embed")) {
-      return src;
-    }
-
-    return null;
+    return srcMatch ? srcMatch[1] : null;
   }, [iframeHtml]);
 
   const handleIframeError = useCallback(() => {
