@@ -1,7 +1,7 @@
 "use client";
 
-import {memo, useCallback, useEffect, useMemo, useState} from "react";
-import {Card, CardBody, CardHeader} from "@heroui/card";
+import {useEffect, useState, useCallback, useMemo, memo} from "react";
+import {Card, CardHeader, CardBody} from "@heroui/card";
 import {Pagination} from "@heroui/pagination";
 import {Input} from "@heroui/input";
 import {Chip} from "@heroui/chip";
@@ -11,13 +11,14 @@ import {useLanguage} from "@/contexts/language-context";
 import {useSession} from "@/hooks/useSession";
 import {useProfile} from "@/hooks/useProfile";
 import {SkeletonLoading} from "@/components/skeleton-loading";
-import {debounce, validateRecentActivation} from "@/lib/utils";
-import {cardStyles, typography} from "@/lib/ui-constants";
+import {validateRecentActivation, debounce} from "@/lib/utils";
+import {typography, cardStyles} from "@/lib/ui-constants";
 import {SearchIcon} from "@/components/icons";
 import {GenericEmbed} from "@/app/jobs/genericEmbed";
 import {JobCardSkeleton} from "@/app/jobs/jobCardSkeleton";
 import {EmptyState} from "@/app/jobs/emptyState";
 import {PageHeader} from "@/app/jobs/pageHeader";
+import {generateEmbed} from "@/lib/embed-generator";
 
 interface Post {
   id: string;
@@ -59,16 +60,57 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
     };
   }) {
   const [iframeError, setIframeError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Extract src from iframe HTML
   const iframeSrc = useMemo(() => {
     const srcMatch = iframeHtml.match(/src=["']([^"']+)["']/);
-    return srcMatch ? srcMatch[1] : null;
+    const src = srcMatch ? srcMatch[1] : null;
+
+    // Check if src is a valid LinkedIn embed URL
+    if (src && src.includes("linkedin.com/embed")) {
+      return src;
+    }
+
+    // If src is not an embed URL, try to transform it using generateEmbed
+    if (src && (src.includes("linkedin.com") && !src.includes("linkedin.com/embed")) && src !== "about:blank") {
+      const result = generateEmbed(src);
+      if (result.success && result.embeddable && result.iframe) {
+        // Extract the src from the generated iframe
+        const generatedSrcMatch = result.iframe.match(/src=["']([^"']+)["']/);
+        return generatedSrcMatch ? generatedSrcMatch[1] : null;
+      }
+    }
+
+    return null;
   }, [iframeHtml]);
 
   const handleIframeError = useCallback(() => {
     setIframeError(true);
+    setIsLoading(false);
   }, []);
+
+  const handleIframeLoad = useCallback(() => {
+    setIsLoading(false);
+  }, []);
+
+  // Set a timeout to detect if iframe fails to load (e.g., 404 errors)
+  useEffect(() => {
+    if (!iframeSrc) {
+      setIsLoading(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      // If still loading after 10 seconds, consider it an error
+      if (isLoading) {
+        setIframeError(true);
+        setIsLoading(false);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timeout);
+  }, [iframeSrc, isLoading]);
 
   if (iframeError || !iframeSrc) {
     return (
@@ -110,7 +152,14 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
     );
   }
   return (
-    <div className="w-full flex justify-center">
+    <div className="w-full flex justify-center relative">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-default-50">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        </div>
+      )}
       <iframe
         allowFullScreen
         className="max-w-full"
@@ -120,6 +169,7 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
         title="LinkedIn Post"
         width="504"
         onError={handleIframeError}
+        onLoad={handleIframeLoad}
       />
     </div>
   );
