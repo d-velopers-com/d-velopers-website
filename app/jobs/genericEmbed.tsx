@@ -1,9 +1,6 @@
-import {memo, useEffect, useMemo, useState} from "react";
+import {memo, useCallback, useEffect, useMemo, useState} from "react";
 import {Skeleton} from "@heroui/skeleton";
 
-/**
- * Generic Embed component - shows OG preview for non-embeddable URLs
- */
 export const GenericEmbed = memo(function GenericEmbed(
   {
     iframeHtml,
@@ -22,6 +19,7 @@ export const GenericEmbed = memo(function GenericEmbed(
   const [ogData, setOgData] = useState<OGMetadata | null>(null);
   const [isLoadingOG, setIsLoadingOG] = useState(false);
   const [iframeError, setIframeError] = useState(false);
+  const [isLoadingIframe, setIsLoadingIframe] = useState(true);
 
   // Extract src from iframe HTML
   const iframeSrc = useMemo(() => {
@@ -29,9 +27,50 @@ export const GenericEmbed = memo(function GenericEmbed(
     return srcMatch ? srcMatch[1] : null;
   }, [iframeHtml]);
 
+  // Check if URL is known to be non-embeddable
+  const isKnownNonEmbeddable = useMemo(() => {
+    if (!sourceUrl) return false;
+    const url = sourceUrl.toLowerCase();
+    // Add known non-embeddable domains
+    const nonEmbeddableDomains = [
+      'ashbyhq.com',
+      'greenhouse.io',
+      'lever.co',
+      'workday.com',
+      'myworkdayjobs.com',
+    ];
+    return nonEmbeddableDomains.some(domain => url.includes(domain));
+  }, [sourceUrl]);
+
+  // Handlers for iframe load events
+  const handleIframeError = useCallback(() => {
+    setIframeError(true);
+    setIsLoadingIframe(false);
+  }, []);
+
+  const handleIframeLoad = useCallback(() => {
+    setIsLoadingIframe(false);
+  }, []);
+
+  useEffect(() => {
+    if (!embeddable || isKnownNonEmbeddable || !iframeSrc) {
+      setIsLoadingIframe(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      if (isLoadingIframe) {
+        setIframeError(true);
+        setIsLoadingIframe(false);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timeout);
+  }, [iframeSrc, isLoadingIframe, embeddable, isKnownNonEmbeddable]);
+
   // Fetch OG data when not embeddable
   useEffect(() => {
-    if (!embeddable && sourceUrl) {
+    if ((!embeddable || isKnownNonEmbeddable || iframeError) && sourceUrl && !ogData) {
       setIsLoadingOG(true);
       fetch(`/api/og-metadata?url=${encodeURIComponent(sourceUrl)}`)
         .then(res => res.json())
@@ -44,10 +83,9 @@ export const GenericEmbed = memo(function GenericEmbed(
         })
         .finally(() => setIsLoadingOG(false));
     }
-  }, [embeddable, sourceUrl]);
+  }, [embeddable, sourceUrl, isKnownNonEmbeddable, iframeError]);
 
-  // If not embeddable, show OG preview
-  if (!embeddable || iframeError) {
+  if (!embeddable || iframeError || isKnownNonEmbeddable) {
     return (
       <div className="w-full px-5 py-6">
         <a
@@ -112,9 +150,15 @@ export const GenericEmbed = memo(function GenericEmbed(
     );
   }
 
-  // Embeddable - show the iframe
   return (
-    <div className="w-full flex justify-center">
+    <div className="w-full flex justify-center relative">
+      {isLoadingIframe && (
+        <div className="absolute inset-0 flex items-center justify-center bg-default-50" style={{minHeight: '500px'}}>
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"/>
+          </div>
+        </div>
+      )}
       <iframe
         src={iframeSrc || ''}
         width="100%"
@@ -123,7 +167,8 @@ export const GenericEmbed = memo(function GenericEmbed(
         allowFullScreen
         title="External Content"
         className="max-w-full"
-        onError={() => setIframeError(true)}
+        onError={handleIframeError}
+        onLoad={handleIframeLoad}
       />
     </div>
   );
