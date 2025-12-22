@@ -1,24 +1,24 @@
 "use client";
 
-import {useEffect, useState, useCallback, useMemo, memo} from "react";
-import {Card, CardHeader, CardBody} from "@heroui/card";
-import {Pagination} from "@heroui/pagination";
-import {Input} from "@heroui/input";
-import {Chip} from "@heroui/chip";
-import {Button} from "@heroui/button";
-import {useRouter} from "next/navigation";
-import {useLanguage} from "@/contexts/language-context";
-import {useSession} from "@/hooks/useSession";
-import {useProfile} from "@/hooks/useProfile";
-import {SkeletonLoading} from "@/components/skeleton-loading";
-import {validateRecentActivation, debounce} from "@/lib/utils";
-import {typography, cardStyles} from "@/lib/ui-constants";
-import {SearchIcon} from "@/components/icons";
-import {GenericEmbed} from "@/app/jobs/genericEmbed";
-import {JobCardSkeleton} from "@/app/jobs/jobCardSkeleton";
-import {EmptyState} from "@/app/jobs/emptyState";
-import {PageHeader} from "@/app/jobs/pageHeader";
-import {generateEmbed} from "@/lib/embed-generator";
+import { useEffect, useState, useCallback, useMemo, memo } from "react";
+import { Card, CardHeader, CardBody } from "@heroui/card";
+import { Pagination } from "@heroui/pagination";
+import { Input } from "@heroui/input";
+import { Chip } from "@heroui/chip";
+import { Button } from "@heroui/button";
+import { useRouter } from "next/navigation";
+import { useLanguage } from "@/contexts/language-context";
+import { useSession } from "@/hooks/useSession";
+import { useProfile } from "@/hooks/useProfile";
+import { SkeletonLoading } from "@/components/skeleton-loading";
+import { validateRecentActivation, debounce } from "@/lib/utils";
+import { typography, cardStyles } from "@/lib/ui-constants";
+import { SearchIcon } from "@/components/icons";
+import { GenericEmbed } from "@/app/jobs/genericEmbed";
+import { JobCardSkeleton } from "@/app/jobs/jobCardSkeleton";
+import { EmptyState } from "@/app/jobs/emptyState";
+import { PageHeader } from "@/app/jobs/pageHeader";
+import { generateEmbed } from "@/lib/embed-generator";
 
 interface Post {
   id: string;
@@ -57,6 +57,7 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
     translations: {
       cannotBeEmbedded: string;
       openInLinkedIn: string;
+      linkedInPost: string;
     };
   }) {
   const [iframeError, setIframeError] = useState(false);
@@ -124,7 +125,7 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
               viewBox="0 0 24 24"
             >
               <path
-                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
             </svg>
           </div>
           <p className="text-default-500 text-sm text-center">
@@ -143,7 +144,7 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
               viewBox="0 0 24 24"
             >
               <path
-                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
             </svg>
             {translations.openInLinkedIn}
           </a>
@@ -166,7 +167,7 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
         frameBorder="0"
         height="600"
         src={iframeSrc}
-        title="LinkedIn Post"
+        title={translations.linkedInPost}
         width="504"
         onError={handleIframeError}
         onLoad={handleIframeLoad}
@@ -188,6 +189,8 @@ const JobCard = memo(function JobCard(
       cannotBeEmbedded: string;
       openInLinkedIn: string;
       openInSite: string;
+      externalContent: string;
+      linkedInPost: string;
     };
   }) {
   // Use static date format to avoid hydration mismatch
@@ -235,6 +238,7 @@ const JobCard = memo(function JobCard(
             translations={{
               cannotBeEmbedded: embedTranslations.cannotBeEmbedded,
               openInLinkedIn: embedTranslations.openInLinkedIn,
+              linkedInPost: embedTranslations.linkedInPost,
             }}
           />
         ) : post.sourceUrl ? (
@@ -245,11 +249,12 @@ const JobCard = memo(function JobCard(
             translations={{
               cannotBeEmbedded: embedTranslations.cannotBeEmbedded,
               openInSite: embedTranslations.openInSite,
+              externalContent: embedTranslations.externalContent,
             }}
           />
         ) : (
           <div
-            dangerouslySetInnerHTML={{__html: post.iframe}}
+            dangerouslySetInnerHTML={{ __html: post.iframe }}
             className="w-full flex justify-center [&>iframe]:max-w-full [&>iframe]:rounded-none"
           />
         )}
@@ -273,10 +278,10 @@ export default function JobsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
-  const {t} = useLanguage();
-  const {data: session, status} = useSession();
+  const { t } = useLanguage();
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const {profile} = useProfile();
+  const { profile } = useProfile();
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -300,21 +305,33 @@ export default function JobsPage() {
       profile?.profileActivatedAt,
     );
 
-    fetch("/api/config/allowed-roles")
-      .then((res) => res.json())
-      .then((data) => {
-        const backRoles = data.roles || [];
-        const hasRole =
-          session?.user?.roles?.some((role) => backRoles.includes(role)) ||
-          false;
-        const isServerMember = (session?.user?.roles?.length ?? 0) > 0;
-        const hasAllowedRole = isServerMember && hasRole;
+    // Fetch allowed roles, collaborator roles, and staff roles
+    Promise.all([
+      fetch("/api/config/allowed-roles").then((res) => res.json()),
+      fetch("/api/config/collaborator-roles").then((res) => res.json()).catch(() => ({ roles: [] })),
+      fetch("/api/config/staff-roles").then((res) => res.json()).catch(() => ({ roles: [] }))
+    ])
+      .then(([allowedData, collabData, staffData]) => {
+        const backRoles = allowedData.roles || [];
+        const collabRoles = collabData.roles || [];
+        const staffRoles = staffData.roles || [];
+        const userRoles = session?.user?.roles || [];
+
+        const hasAllowedRole = userRoles.some((role) => backRoles.includes(role));
+        const hasCollaboratorRole = userRoles.some((role) => collabRoles.includes(role));
+        const hasStaffRole = userRoles.some((role) => staffRoles.includes(role));
+        const isServerMember = userRoles.length > 0;
+
         const canApplyTrialPeriod =
           isServerMember && !hasAllowedRole && !profile?.profileActivatedAt;
-        const canMakePublic =
-          hasAllowedRole || hasRecentActivation || canApplyTrialPeriod;
 
-        setViewEnable(canMakePublic);
+        // User can view jobs if they have allowed role, staff role, collaborator role,
+        // recent activation, or can apply trial period
+        const canViewJobs =
+          hasAllowedRole || hasStaffRole || hasCollaboratorRole ||
+          hasRecentActivation || canApplyTrialPeriod;
+
+        setViewEnable(canViewJobs);
       })
       .catch(() => setViewEnable(false))
       .finally(() => setIsLoading(false));
@@ -381,7 +398,7 @@ export default function JobsPage() {
   // Handle page change
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-    window.scrollTo({top: 0, behavior: "smooth"});
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   // Clear search
@@ -391,7 +408,7 @@ export default function JobsPage() {
 
   // Loading state
   if (!isMounted || isLoading || enableView === undefined) {
-    return <SkeletonLoading/>;
+    return <SkeletonLoading />;
   }
 
   return (
@@ -410,9 +427,8 @@ export default function JobsPage() {
             aria-label={t.jobs.searcher}
             classNames={{
               base: "w-full",
-              inputWrapper: `bg-default-100/50 dark:bg-default-50/50 backdrop-blur-md border border-default-200 h-14 rounded-2xl shadow-sm hover:shadow-md transition-shadow ${
-                search ? "pr-10" : ""
-              }`,
+              inputWrapper: `bg-default-100/50 dark:bg-default-50/50 backdrop-blur-md border border-default-200 h-14 rounded-2xl shadow-sm hover:shadow-md transition-shadow ${search ? "pr-10" : ""
+                }`,
               input: "text-base placeholder:text-default-400",
             }}
             endContent={
@@ -457,11 +473,11 @@ export default function JobsPage() {
         {isLoadingPosts ? (
           <div className="grid grGenericEmbedid-cols-1 lg:grid-cols-2 gap-6">
             {[...Array(POSTS_PER_PAGE)].map((_, i) => (
-              <JobCardSkeleton key={i}/>
+              <JobCardSkeleton key={i} />
             ))}
           </div>
         ) : posts.length === 0 ? (
-          <EmptyState message={t.jobs.noPosts}/>
+          <EmptyState message={t.jobs.noPosts} />
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -475,6 +491,8 @@ export default function JobsPage() {
                     openInLinkedIn:
                       t.jobs.embed?.openInLinkedIn || "Open in LinkedIn",
                     openInSite: t.jobs.embed?.openInSite || "Open site",
+                    externalContent: t.jobs.embed?.externalContent || "External Content",
+                    linkedInPost: t.jobs.embed?.linkedInPost || "LinkedIn Post",
                   }}
                   post={post}
                 />

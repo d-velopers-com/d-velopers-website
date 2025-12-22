@@ -51,11 +51,18 @@ export function Navbar() {
     if (status === "unauthenticated" || !session?.user?.roles) {
       return;
     }
-    fetch("/api/config/staff-roles")
-      .then((res) => res.json())
-      .then((data) => {
-        const staffRoles = data.roles || [];
-        const hasRole = session?.user?.roles?.some((role) => staffRoles.includes(role)) || false;
+    // Fetch both staff and collaborator roles to determine job management access
+    Promise.all([
+      fetch("/api/config/staff-roles").then((res) => res.json()),
+      fetch("/api/config/collaborator-roles").then((res) => res.json()).catch(() => ({ roles: [] }))
+    ])
+      .then(([staffData, collabData]) => {
+        const staffRoles = staffData.roles || [];
+        const collabRoles = collabData.roles || [];
+        const userRoles = session?.user?.roles || [];
+        const hasRole = userRoles.some((role) =>
+          staffRoles.includes(role) || collabRoles.includes(role)
+        );
         setHasJobManagementRole(hasRole);
       })
       .catch(() => setHasJobManagementRole(false));
@@ -67,16 +74,31 @@ export function Navbar() {
     }
 
     const hasRecentActivation = validateRecentActivation(profile?.profileActivatedAt);
-    fetch("/api/config/allowed-roles")
-      .then((res) => res.json())
-      .then((data) => {
-        const backRoles = data.roles || [];
-        const hasRole = session?.user?.roles?.some((role) => backRoles.includes(role)) || false;
-        const isServerMember = (session?.user?.roles?.length ?? 0) > 0;
-        const hasAllowedRole = isServerMember && hasRole;
+
+    // Fetch allowed roles and collaborator roles
+    Promise.all([
+      fetch("/api/config/allowed-roles").then((res) => res.json()),
+      fetch("/api/config/collaborator-roles").then((res) => res.json()).catch(() => ({ roles: [] })),
+      fetch("/api/config/staff-roles").then((res) => res.json()).catch(() => ({ roles: [] }))
+    ])
+      .then(([allowedData, collabData, staffData]) => {
+        const backRoles = allowedData.roles || [];
+        const collabRoles = collabData.roles || [];
+        const staffRoles = staffData.roles || [];
+        const userRoles = session?.user?.roles || [];
+
+        const hasAllowedRole = userRoles.some((role) => backRoles.includes(role));
+        const hasCollaboratorRole = userRoles.some((role) => collabRoles.includes(role));
+        const hasStaffRole = userRoles.some((role) => staffRoles.includes(role));
+        const isServerMember = userRoles.length > 0;
+
         const canApplyTrialPeriod = isServerMember && !hasAllowedRole && !profile?.profileActivatedAt;
-        const canMakePublic = hasAllowedRole || hasRecentActivation || canApplyTrialPeriod;
-        setEnableJobs(canMakePublic);
+
+        // User can view jobs if they have allowed role, staff role, collaborator role, 
+        // recent activation, or can apply trial period
+        const canViewJobs = hasAllowedRole || hasStaffRole || hasCollaboratorRole ||
+          hasRecentActivation || canApplyTrialPeriod;
+        setEnableJobs(canViewJobs);
       })
       .catch(() => setEnableJobs(false));
   }, [session, status, profile]);

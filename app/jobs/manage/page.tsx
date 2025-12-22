@@ -200,7 +200,7 @@ const JobCardPreview = memo(function JobCardPreview({
           {title || "Untitled Post"}
         </h3>
         <Chip size="sm" variant="flat" color="default" className="text-xs font-medium flex-shrink-0">
-          Preview
+          {t.jobManage.form.preview}
         </Chip>
       </CardHeader>
       <CardBody className="p-0 flex flex-col justify-center items-center overflow-hidden bg-default-50">

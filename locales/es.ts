@@ -251,6 +251,8 @@ export const es = {
       openInLinkedIn: "Abrir en LinkedIn",
       openInTwitter: "Abrir en Twitter",
       openInSite: "Abrir sitio",
+      externalContent: "Contenido externo",
+      linkedInPost: "Publicación de LinkedIn",
     },
   },
   jobManage: {

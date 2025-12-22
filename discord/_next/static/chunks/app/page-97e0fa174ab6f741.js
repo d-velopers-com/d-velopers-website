@@ -31,7 +31,7 @@
                 className:
                   "aspect-w-16 aspect-h-9 w-full max-w-4xl mx-auto rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,224,255,0.15)] border-2 border-[#00E0FF]/30",
                 children: (0, r.jsx)(a.A, {
-                  videoId: "QOYRF1Jv3mg",
+                  videoId: "8eecM6r9i6U",
                   opts: {
                     width: "100%",
                     playerVars: { autoplay: 0, rel: 0, modestbranding: 1 },
@@ -58,14 +58,14 @@
         u = s(1493),
         h = s(6766);
       let x = {
-          src: "./_next/static/media/twitch-subscribe-step.75fcc331.webp",
-          height: 655,
-          width: 1366,
-          blurDataURL:
-            "data:image/webp;base64,UklGRjAAAABXRUJQVlA4ICQAAACQAQCdASoIAAQAAkA4JZwAAudGFyYA/vzpLd3Xl1CHiy7T/AA=",
-          blurWidth: 8,
-          blurHeight: 4,
-        },
+        src: "./_next/static/media/twitch-subscribe-step.75fcc331.webp",
+        height: 655,
+        width: 1366,
+        blurDataURL:
+          "data:image/webp;base64,UklGRjAAAABXRUJQVlA4ICQAAACQAQCdASoIAAQAAkA4JZwAAudGFyYA/vzpLd3Xl1CHiy7T/AA=",
+        blurWidth: 8,
+        blurHeight: 4,
+      },
         m = { src: "./_next/static/media/secondStep1.39c4f29e.webp" },
         p = { src: "./_next/static/media/secondStep2.3c3fb1b6.webp" },
         f = { src: "./_next/static/media/secondStep3.6baf67ff.webp" },
@@ -432,7 +432,7 @@
                               t.stopPropagation();
                               let r =
                                 null ==
-                                (s = t.currentTarget.closest(".relative"))
+                                  (s = t.currentTarget.closest(".relative"))
                                   ? void 0
                                   : s.querySelector(".carousel-container");
                               r &&
@@ -674,10 +674,10 @@
                                   1 === e.touches.length &&
                                     s > 1 &&
                                     (w(!0),
-                                    y({
-                                      x: e.touches[0].clientX,
-                                      y: e.touches[0].clientY,
-                                    }));
+                                      y({
+                                        x: e.touches[0].clientX,
+                                        y: e.touches[0].clientY,
+                                      }));
                               },
                               onTouchMove: (e) => {
                                 if (2 === e.touches.length && null !== k) {
@@ -695,10 +695,10 @@
                                   1 === e.touches.length &&
                                     v &&
                                     (e.preventDefault(),
-                                    S(
-                                      e.touches[0].clientX,
-                                      e.touches[0].clientY,
-                                    ));
+                                      S(
+                                        e.touches[0].clientX,
+                                        e.touches[0].clientY,
+                                      ));
                               },
                               onTouchEnd: () => {
                                 w(!1), M(null);
@@ -799,8 +799,8 @@
         });
       }
       let v = {
-          src: "./_next/static/media/youtube-subscribe-step.c3ef71ae.webp",
-        },
+        src: "./_next/static/media/youtube-subscribe-step.c3ef71ae.webp",
+      },
         w = { src: "./_next/static/media/secondYoutubeStep3.d985c0c4.webp" };
       function N() {
         let [e, t] = (0, o.useState)(null),
@@ -1164,7 +1164,7 @@
                                 t.stopPropagation();
                                 let r =
                                   null ==
-                                  (s = t.currentTarget.closest(".relative"))
+                                    (s = t.currentTarget.closest(".relative"))
                                     ? void 0
                                     : s.querySelector(".carousel-container");
                                 r &&
@@ -1410,10 +1410,10 @@
                                     1 === e.touches.length &&
                                       s > 1 &&
                                       (j(!0),
-                                      y({
-                                        x: e.touches[0].clientX,
-                                        y: e.touches[0].clientY,
-                                      }));
+                                        y({
+                                          x: e.touches[0].clientX,
+                                          y: e.touches[0].clientY,
+                                        }));
                                 },
                                 onTouchMove: (e) => {
                                   if (2 === e.touches.length && null !== k) {
@@ -1431,10 +1431,10 @@
                                     1 === e.touches.length &&
                                       f &&
                                       (e.preventDefault(),
-                                      S(
-                                        e.touches[0].clientX,
-                                        e.touches[0].clientY,
-                                      ));
+                                        S(
+                                          e.touches[0].clientX,
+                                          e.touches[0].clientY,
+                                        ));
                                 },
                                 onTouchEnd: () => {
                                   j(!1), M(null);
@@ -1458,7 +1458,7 @@
                                   onClick: () => {
                                     if (
                                       (a((e) => Math.min(e + 0.25, 3)),
-                                      A.current)
+                                        A.current)
                                     ) {
                                       let { maxX: e, maxY: t } = C();
                                       x((s) => ({

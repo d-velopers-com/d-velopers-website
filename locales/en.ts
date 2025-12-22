@@ -249,6 +249,8 @@ export const en = {
       openInLinkedIn: "Open in LinkedIn",
       openInTwitter: "Open in Twitter",
       openInSite: "Open site",
+      externalContent: "External Content",
+      linkedInPost: "LinkedIn Post",
     },
   },
   jobManage: {
