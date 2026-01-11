@@ -14,7 +14,6 @@ export const es = {
     openMenu: "Abrir menú",
     profileActions: "Acciones del Perfil",
     theme: "Tema",
-    snow: "Nieve",
     jobs: "Trabajos",
     manageJobs: "Administrar trabajos",
   },

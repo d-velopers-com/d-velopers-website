@@ -14,7 +14,6 @@ export const en = {
     openMenu: "Open menu",
     profileActions: "Profile Actions",
     theme: "Theme",
-    snow: "Snow",
     jobs: "Jobs",
     manageJobs: "Manage Jobs",
   },

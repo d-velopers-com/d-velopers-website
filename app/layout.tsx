@@ -8,7 +8,7 @@ import { Providers } from "./providers";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/toaster";
-import Snowfall from "@/components/snowfall";
+
 import { siteConfig } from "@/config/site";
 import { fontSans, fontMono } from "@/config/fonts";
 
@@ -80,7 +80,7 @@ export default function RootLayout({
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <Snowfall />
+
           <div className="flex flex-col min-h-screen">
             <Navbar />
             <main className="flex-grow">{children}</main>
