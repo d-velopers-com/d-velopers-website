@@ -159,17 +159,6 @@ export function Navbar() {
 
       <NavbarContent justify="end">
         <NavbarItem className="hidden sm:flex">
-          <Button
-            as={Link}
-            className="bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium rounded-full"
-            href="/discord"
-            size="md"
-            startContent={<DiscordIcon size={20} />}
-          >
-            {t.nav.joinDiscord}
-          </Button>
-        </NavbarItem>
-        <NavbarItem className="hidden sm:flex">
           <ThemeSwitch />
         </NavbarItem>
 
@@ -228,40 +217,31 @@ export function Navbar() {
             <NavbarItem className="hidden sm:flex">
               <Button
                 as={Link}
-                variant="light"
                 href="/login"
                 size="md"
+                variant="light"
               >
                 {t.nav.signIn}
               </Button>
             </NavbarItem>
             <NavbarItem className="hidden sm:flex">
-              <Button
-                as={Link}
-                className="bg-[#5865F2] hover:bg-[#4752C4] font-medium"
-                href="/discord"
-                size="md"
-              >
-                {t.nav.signUp}
-              </Button>
+              <NavbarItem className="hidden sm:flex">
+                <Button
+                  as={Link}
+                  className="bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium rounded-full"
+                  href="/discord"
+                  size="sm"
+                  startContent={<DiscordIcon size={20} />}
+                >
+                  {t.nav.joinDiscord}
+                </Button>
+              </NavbarItem>
             </NavbarItem>
           </>
         )}
       </NavbarContent>
 
       <NavbarMenu>
-        <NavbarMenuItem>
-          <Button
-            as={Link}
-            className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium rounded-full"
-            href="/discord"
-            size="md"
-            startContent={<DiscordIcon size={20} />}
-            onPress={() => setIsMenuOpen(false)}
-          >
-            {t.nav.joinDiscord}
-          </Button>
-        </NavbarMenuItem>
         {status === "authenticated" && session?.user && (
           <>
             <NavbarMenuItem>
@@ -412,7 +392,7 @@ export function Navbar() {
             <NavbarMenuItem>
               <Button
                 as={Link}
-                className={`w-full justify-start ${focusStates.button}`}
+                className={`w-full ${focusStates.button}`}
                 href="/login"
                 variant="light"
                 onPress={() => setIsMenuOpen(false)}
@@ -423,11 +403,13 @@ export function Navbar() {
             <NavbarMenuItem>
               <Button
                 as={Link}
-                className="bg-[#5865F2] hover:bg-[#4752C4] font-medium"
+                className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium rounded-full"
                 href="/discord"
+                size="md"
+                startContent={<DiscordIcon size={20} />}
                 onPress={() => setIsMenuOpen(false)}
               >
-                {t.nav.signUp}
+                {t.nav.joinDiscord}
               </Button>
             </NavbarMenuItem>
           </>
