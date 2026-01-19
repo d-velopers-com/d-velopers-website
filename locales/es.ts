@@ -16,6 +16,8 @@ export const es = {
     theme: "Tema",
     jobs: "Trabajos",
     manageJobs: "Administrar trabajos",
+    signIn: "Iniciar sesión",
+    signUp: "Registrarse",
   },
   home: {
     title: "D-velopers",

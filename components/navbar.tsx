@@ -180,52 +180,72 @@ export function Navbar() {
           <NavbarItem>
             <div className="w-8 h-8 rounded-full bg-default-200 animate-pulse" />
           </NavbarItem>
+        ) : status === "authenticated" && session?.user ? (
+          <>
+            <NavbarItem className="hidden sm:flex">
+              <Button
+                variant="light"
+                className="data-[hover=true]:bg-transparent"
+                as={Link}
+                href="/jobs"
+                size="md"
+              >
+                {t.nav.jobs}
+              </Button>
+            </NavbarItem>
+            <NavbarItem className="hidden sm:flex">
+              <Dropdown placement="bottom-end">
+                <DropdownTrigger>
+                  <Avatar
+                    as="button"
+                    className="transition-transform cursor-pointer"
+                    size="sm"
+                    src={avatarUrl}
+                  />
+                </DropdownTrigger>
+                <DropdownMenu aria-label={t.nav.profileActions} variant="flat">
+                  <DropdownItem key="dashboard" href="/dashboard">
+                    {t.nav.profile}
+                  </DropdownItem>
+                  {hasJobManagementRole ? (
+                    <DropdownItem key="manageJobs" href="/jobs/manage">
+                      {t.nav.manageJobs}
+                    </DropdownItem>
+                  ) : null}
+                  <DropdownItem
+                    key="logout"
+                    color="danger"
+                    onPress={() => signOut()}
+                  >
+                    {t.common.logout}
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </NavbarItem>
+          </>
         ) : (
-          status === "authenticated" &&
-          session?.user && (
-            <>
-              <NavbarItem className="hidden sm:flex">
-                <Button
-                  variant="light"
-                  className="data-[hover=true]:bg-transparent"
-                  as={Link}
-                  href="/jobs"
-                  size="md"
-                >
-                  {t.nav.jobs}
-                </Button>
-              </NavbarItem>
-              <NavbarItem className="hidden sm:flex">
-                <Dropdown placement="bottom-end">
-                  <DropdownTrigger>
-                    <Avatar
-                      as="button"
-                      className="transition-transform cursor-pointer"
-                      size="sm"
-                      src={avatarUrl}
-                    />
-                  </DropdownTrigger>
-                  <DropdownMenu aria-label={t.nav.profileActions} variant="flat">
-                    <DropdownItem key="dashboard" href="/dashboard">
-                      {t.nav.profile}
-                    </DropdownItem>
-                    {hasJobManagementRole ? (
-                      <DropdownItem key="manageJobs" href="/jobs/manage">
-                        {t.nav.manageJobs}
-                      </DropdownItem>
-                    ) : null}
-                    <DropdownItem
-                      key="logout"
-                      color="danger"
-                      onPress={() => signOut()}
-                    >
-                      {t.common.logout}
-                    </DropdownItem>
-                  </DropdownMenu>
-                </Dropdown>
-              </NavbarItem>
-            </>
-          )
+          <>
+            <NavbarItem className="hidden sm:flex">
+              <Button
+                as={Link}
+                variant="light"
+                href="/login"
+                size="md"
+              >
+                {t.nav.signIn}
+              </Button>
+            </NavbarItem>
+            <NavbarItem className="hidden sm:flex">
+              <Button
+                as={Link}
+                className="bg-[#5865F2] hover:bg-[#4752C4] font-medium"
+                href="/discord"
+                size="md"
+              >
+                {t.nav.signUp}
+              </Button>
+            </NavbarItem>
+          </>
         )}
       </NavbarContent>
 
@@ -335,7 +355,7 @@ export function Navbar() {
           </div>
         </NavbarMenuItem>
 
-        {status === "authenticated" && (
+        {status === "authenticated" ? (
           <>
             {enableJobs ? (
               <NavbarMenuItem>
@@ -381,6 +401,33 @@ export function Navbar() {
                 }}
               >
                 {t.common.logout}
+              </Button>
+            </NavbarMenuItem>
+          </>
+        ) : (
+          <>
+            <NavbarMenuItem>
+              <div className="border-t border-default-200 dark:border-default-100 my-2" />
+            </NavbarMenuItem>
+            <NavbarMenuItem>
+              <Button
+                as={Link}
+                className={`w-full justify-start ${focusStates.button}`}
+                href="/login"
+                variant="light"
+                onPress={() => setIsMenuOpen(false)}
+              >
+                {t.nav.signIn}
+              </Button>
+            </NavbarMenuItem>
+            <NavbarMenuItem>
+              <Button
+                as={Link}
+                className="bg-[#5865F2] hover:bg-[#4752C4] font-medium"
+                href="/discord"
+                onPress={() => setIsMenuOpen(false)}
+              >
+                {t.nav.signUp}
               </Button>
             </NavbarMenuItem>
           </>

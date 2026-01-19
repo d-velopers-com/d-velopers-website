@@ -16,6 +16,8 @@ export const en = {
     theme: "Theme",
     jobs: "Jobs",
     manageJobs: "Manage Jobs",
+    signIn: "Sign In",
+    signUp: "Sign Up",
   },
   home: {
     title: "D-velopers",

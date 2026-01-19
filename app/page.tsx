@@ -316,26 +316,6 @@ export default function Home() {
               </AnimatePresence>
             </div>
           </div>
-
-          {status === "unauthenticated" && (
-            <motion.div
-              className="mt-8 flex justify-center"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
-            >
-              <Button
-                as={Link}
-                className={`${typography.buttonLg} px-8 py-6 ${focusStates.button}`}
-                color="primary"
-                href="/login"
-                size="lg"
-                variant="shadow"
-              >
-                {t.home.joinCommunity}
-              </Button>
-            </motion.div>
-          )}
         </motion.div>
 
         {loading ? (
