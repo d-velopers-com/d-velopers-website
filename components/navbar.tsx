@@ -225,17 +225,15 @@ export function Navbar() {
               </Button>
             </NavbarItem>
             <NavbarItem className="hidden sm:flex">
-              <NavbarItem className="hidden sm:flex">
-                <Button
-                  as={Link}
-                  className="bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium rounded-full"
-                  href="/discord"
-                  size="sm"
-                  startContent={<DiscordIcon size={20} />}
-                >
-                  {t.nav.joinDiscord}
-                </Button>
-              </NavbarItem>
+              <Button
+                as={Link}
+                className="bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium rounded-full"
+                href="/discord"
+                size="sm"
+                startContent={<DiscordIcon size={20} />}
+              >
+                {t.nav.joinDiscord}
+              </Button>
             </NavbarItem>
           </>
         )}
