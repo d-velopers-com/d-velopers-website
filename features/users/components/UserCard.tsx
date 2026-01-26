@@ -40,7 +40,7 @@ export const UserCard = memo(function UserCard({
                             <p className="text-sm text-default-500 truncate leading-tight">
                                 {user.title || "\u00A0"}
                             </p>
-                            {user.yoe && user.yoe > 0 && (
+                            {user.yoe !== null && user.yoe > 0 && (
                                 <p className="text-xs text-default-400 leading-tight">
                                     {user.yoe}+ {yearsLabel}
                                 </p>

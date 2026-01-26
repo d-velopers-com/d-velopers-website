@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getPublicUsers } from "@/lib/user";
-import {SearchFilters} from "@/types";
-import {Availability} from "@/lib/constants";
+import { SearchFilters } from "@/types";
+import { Availability } from "@/lib/constants";
 import { getCountryByCode } from "@/lib/countries";
 
 function getRolePriority(userRoles: string[], allowedRoles: string[]): number {
@@ -22,7 +22,7 @@ const MAX_SEARCH_QUERY_LENGTH = 200;
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    
+
     let searchQuery = searchParams.get("searchQuery");
     if (searchQuery) {
       searchQuery = searchQuery.trim();
