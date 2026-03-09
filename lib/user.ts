@@ -13,6 +13,76 @@ interface CreateUserData {
   isMember?: boolean; // Si es true, el usuario está confirmado en el servidor
 }
 
+type PublicUserRow = {
+  roles: string[];
+  joinedServerAt?: Date | string | null;
+};
+
+function getAllowedRoles(): string[] {
+  return (process.env.ALLOWED_ROLES || "")
+    .split(",")
+    .map((role) => role.trim())
+    .filter((role) => role.length > 0);
+}
+
+function getRolePriority(userRoles: string[], allowedRoles: string[]): number {
+  for (let i = 0; i < allowedRoles.length; i++) {
+    if (userRoles.includes(allowedRoles[i])) {
+      return i;
+    }
+  }
+
+  return allowedRoles.length;
+}
+
+function getJoinedServerAtTimestamp(value: Date | string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+
+  return new Date(value).getTime();
+}
+
+export function sortPublicUsersByPriority<T extends PublicUserRow>(users: T[]): T[] {
+  const allowedRoles = getAllowedRoles();
+
+  return [...users].sort((a, b) => {
+    const aPriority = getRolePriority(
+      Array.isArray(a.roles) ? a.roles : [],
+      allowedRoles,
+    );
+    const bPriority = getRolePriority(
+      Array.isArray(b.roles) ? b.roles : [],
+      allowedRoles,
+    );
+
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+
+    const aJoinedAt = getJoinedServerAtTimestamp(a.joinedServerAt);
+    const bJoinedAt = getJoinedServerAtTimestamp(b.joinedServerAt);
+
+    if (aJoinedAt !== null && bJoinedAt !== null) {
+      return aJoinedAt - bJoinedAt;
+    }
+
+    if (aJoinedAt !== null) {
+      return -1;
+    }
+
+    if (bJoinedAt !== null) {
+      return 1;
+    }
+
+    return 0;
+  });
+}
+
 function generateHandler(username: string): string {
   return username.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
@@ -254,7 +324,7 @@ export async function getPublicUsers(filters?: SearchFilters) {
     conditions.push(Prisma.sql`country = ${filters.country}`);
   }
   const whereClause = Prisma.join(conditions, " AND ");
-  return await prisma.$queryRaw<any[]>`
+  const users = await prisma.$queryRaw<any[]>`
     SELECT
       handler,
       username,
@@ -280,4 +350,6 @@ export async function getPublicUsers(filters?: SearchFilters) {
     WHERE ${whereClause}
     ORDER BY "createdAt" DESC
   `;
+
+  return sortPublicUsersByPriority(users);
 }

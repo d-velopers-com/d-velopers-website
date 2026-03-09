@@ -5,16 +5,6 @@ import { SearchFilters } from "@/types";
 import { Availability } from "@/lib/constants";
 import { getCountryByCode } from "@/lib/countries";
 
-function getRolePriority(userRoles: string[], allowedRoles: string[]): number {
-  for (let i = 0; i < allowedRoles.length; i++) {
-    if (userRoles.includes(allowedRoles[i])) {
-      return i;
-    }
-  }
-
-  return allowedRoles.length;
-}
-
 const VALID_ENGLISH_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
 const VALID_AVAILABILITY = Object.values(Availability);
 const MAX_SEARCH_QUERY_LENGTH = 200;
@@ -87,34 +77,7 @@ export async function GET(request: NextRequest) {
       contactLinks: Array.isArray(user.contactLinks) ? user.contactLinks : [],
     }));
 
-    const allowedRolesEnv = process.env.ALLOWED_ROLES || "";
-    const allowedRoles = allowedRolesEnv
-      .split(",")
-      .map((role) => role.trim())
-      .filter((role) => role.length > 0);
-
-    const sortedUsers = normalizedUsers.sort((a, b) => {
-      const aPriority = getRolePriority(a.roles, allowedRoles);
-      const bPriority = getRolePriority(b.roles, allowedRoles);
-
-      if (aPriority !== bPriority) {
-        return aPriority - bPriority;
-      }
-
-      if (a.joinedServerAt && b.joinedServerAt) {
-        return (
-          new Date(a.joinedServerAt).getTime() -
-          new Date(b.joinedServerAt).getTime()
-        );
-      }
-
-      if (a.joinedServerAt) return -1;
-      if (b.joinedServerAt) return 1;
-
-      return 0;
-    });
-
-    return NextResponse.json({ users: sortedUsers });
+    return NextResponse.json({ users: normalizedUsers });
   } catch (error) {
     console.error("Error fetching public users:", error);
     return NextResponse.json(
