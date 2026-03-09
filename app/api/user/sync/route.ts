@@ -1,14 +1,24 @@
 import { NextResponse } from "next/server";
 
-import { getSession, createSession } from "@/lib/session";
+import { createSession, resolveSession } from "@/lib/session";
 import { getDiscordUser, getGuildMember } from "@/lib/discord-oauth";
 import { upsertUser } from "@/lib/user";
 
 export async function POST() {
-  const session = await getSession();
+  const { session, discordReauthRequired } = await resolveSession();
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (discordReauthRequired || !session.accessToken) {
+    return NextResponse.json(
+      {
+        error: "Discord authorization expired. Please sign in with Discord again.",
+        reauthRequired: true,
+      },
+      { status: 401 },
+    );
   }
 
   try {
@@ -45,6 +55,7 @@ export async function POST() {
       email: discordUser.email || null,
       roles: memberData.roles,
       accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
       expiresAt: session.expiresAt,
     });
 
@@ -60,7 +71,10 @@ export async function POST() {
     
     if (errorMessage.includes("Failed to fetch Discord")) {
       return NextResponse.json(
-        { error: "Discord token expired. Please log out and log in again." },
+        {
+          error: "Discord authorization expired. Please sign in with Discord again.",
+          reauthRequired: true,
+        },
         { status: 401 },
       );
     }

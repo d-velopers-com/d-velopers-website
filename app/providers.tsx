@@ -8,11 +8,14 @@ import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 import { LanguageProvider } from "@/contexts/language-context";
+import { SessionProvider } from "@/contexts/session-context";
+import type { SessionState } from "@/lib/viewer";
 
 
 export interface ProvidersProps {
   children: React.ReactNode;
   themeProps?: ThemeProviderProps;
+  initialSession: SessionState;
 }
 
 declare module "@react-types/shared" {
@@ -23,15 +26,21 @@ declare module "@react-types/shared" {
   }
 }
 
-export function Providers({ children, themeProps }: ProvidersProps) {
+export function Providers({
+  children,
+  themeProps,
+  initialSession,
+}: ProvidersProps) {
   const router = useRouter();
 
   return (
     <HeroUIProvider navigate={router.push}>
       <NextThemesProvider {...themeProps}>
-        <LanguageProvider>
-          {children}
-        </LanguageProvider>
+        <SessionProvider initialSession={initialSession}>
+          <LanguageProvider>
+            {children}
+          </LanguageProvider>
+        </SessionProvider>
       </NextThemesProvider>
     </HeroUIProvider>
   );

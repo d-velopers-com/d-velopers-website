@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handler } = await params;
   const user = await getUserByHandler(handler);
 
-  if (!user) {
+  if (!user || !user.isPublic) {
     return {
       title: en.notFound.title,
       description: en.notFound.description,

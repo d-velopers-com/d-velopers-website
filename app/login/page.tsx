@@ -48,7 +48,7 @@ function LoginContent() {
     window.location.href = "/api/auth/login";
   };
 
-  if (status === "loading" || status === "authenticated") {
+  if (status === "authenticated") {
     return null;
   }
 

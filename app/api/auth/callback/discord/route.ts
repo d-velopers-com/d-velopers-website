@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
       email: user.email || null,
       roles,
       accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token,
       expiresAt: Date.now() + tokenData.expires_in * 1000,
     });
 

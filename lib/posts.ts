@@ -21,12 +21,26 @@ export interface PostData {
   updatedAt: Date;
 }
 
+export type PostSearchCondition = Array<{
+  title: { contains: string; mode: "insensitive" };
+}>;
+
 const authorSelect = {
   id: true,
   discordId: true,
   username: true,
   avatar: true,
 };
+
+export function buildPostSearchConditions(search: string): PostSearchCondition {
+  return search
+    .trim()
+    .split(/\s+/)
+    .filter((term) => term.length > 0)
+    .map((term) => ({
+      title: { contains: term, mode: "insensitive" as const },
+    }));
+}
 
 export async function createPost(
   title: string,
@@ -66,7 +80,7 @@ export async function getPost(id: string): Promise<PostData | null> {
 export async function getPosts(
   limit: number = 10,
   offset: number = 0,
-  orConditions: Array<{ title: { contains: string, mode: 'insensitive' } }> = [],
+  orConditions: PostSearchCondition = [],
   createdById?: string,
   status?: PostStatus | null,
 ): Promise<PostData[]> {
@@ -97,7 +111,7 @@ export async function getPosts(
 }
 
 export async function getPostsCount(
-  orConditions: Array<{ title: { contains: string, mode: 'insensitive' } }> = [],
+  orConditions: PostSearchCondition = [],
   createdById?: string,
   status?: PostStatus | null,
 ): Promise<number> {

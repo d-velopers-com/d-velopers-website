@@ -25,83 +25,28 @@ import { useTheme } from "next-themes";
 import { ThemeSwitch } from "@/components/theme-switch";
 
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { useSession, signOut } from "@/hooks/useSession";
+import { signOut } from "@/hooks/useSession";
 import { useLanguage } from "@/contexts/language-context";
 import { DiscordIcon } from "@/components/icons";
 import { typography, focusStates } from "@/lib/ui-constants";
-import { useProfile } from "@/hooks/useProfile";
-import { validateRecentActivation } from "@/lib/utils";
 import { getDiscordAvatarUrl } from "@/shared/lib";
+import type { SessionState, ViewerPermissions } from "@/lib/viewer";
 
-export function Navbar() {
+interface NavbarProps {
+  permissions: ViewerPermissions;
+  session: SessionState;
+}
+
+export function Navbar({ permissions, session }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [hasJobManagementRole, setHasJobManagementRole] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [enableJobs, setEnableJobs] = useState<boolean | undefined>(undefined);
-  const { profile } = useProfile();
-  const { data: session, status } = useSession();
   const { t } = useLanguage();
   const { theme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (status === "unauthenticated" || !session?.user?.roles) {
-      return;
-    }
-    // Fetch both staff and collaborator roles to determine job management access
-    Promise.all([
-      fetch("/api/config/staff-roles").then((res) => res.json()),
-      fetch("/api/config/collaborator-roles").then((res) => res.json()).catch(() => ({ roles: [] }))
-    ])
-      .then(([staffData, collabData]) => {
-        const staffRoles = staffData.roles || [];
-        const collabRoles = collabData.roles || [];
-        const userRoles = session?.user?.roles || [];
-        const hasRole = userRoles.some((role) =>
-          staffRoles.includes(role) || collabRoles.includes(role)
-        );
-        setHasJobManagementRole(hasRole);
-      })
-      .catch(() => setHasJobManagementRole(false));
-  }, [session, status]);
-
-  useEffect(() => {
-    if (status !== "authenticated" || !session?.user?.roles) {
-      return;
-    }
-
-    const hasRecentActivation = validateRecentActivation(profile?.profileActivatedAt);
-
-    // Fetch allowed roles and collaborator roles
-    Promise.all([
-      fetch("/api/config/allowed-roles").then((res) => res.json()),
-      fetch("/api/config/collaborator-roles").then((res) => res.json()).catch(() => ({ roles: [] })),
-      fetch("/api/config/staff-roles").then((res) => res.json()).catch(() => ({ roles: [] }))
-    ])
-      .then(([allowedData, collabData, staffData]) => {
-        const backRoles = allowedData.roles || [];
-        const collabRoles = collabData.roles || [];
-        const staffRoles = staffData.roles || [];
-        const userRoles = session?.user?.roles || [];
-
-        const hasAllowedRole = userRoles.some((role) => backRoles.includes(role));
-        const hasCollaboratorRole = userRoles.some((role) => collabRoles.includes(role));
-        const hasStaffRole = userRoles.some((role) => staffRoles.includes(role));
-        const isServerMember = userRoles.length > 0;
-
-        const canApplyTrialPeriod = isServerMember && !hasAllowedRole && !profile?.profileActivatedAt;
-
-        // User can view jobs if they have allowed role, staff role, collaborator role, 
-        // recent activation, or can apply trial period
-        const canViewJobs = hasAllowedRole || hasStaffRole || hasCollaboratorRole ||
-          hasRecentActivation || canApplyTrialPeriod;
-        setEnableJobs(canViewJobs);
-      })
-      .catch(() => setEnableJobs(false));
-  }, [session, status, profile]);
+  const status = session.user ? "authenticated" : "unauthenticated";
 
   const avatarUrl = session?.user
     ? getDiscordAvatarUrl(session.user.id, session.user.avatar, session.user.discriminator)
@@ -165,23 +110,21 @@ export function Navbar() {
         <NavbarItem className="hidden sm:flex">
           <LanguageSwitcher />
         </NavbarItem>
-        {status === "loading" ? (
-          <NavbarItem>
-            <div className="w-8 h-8 rounded-full bg-default-200 animate-pulse" />
-          </NavbarItem>
-        ) : status === "authenticated" && session?.user ? (
+        {status === "authenticated" && session?.user ? (
           <>
-            <NavbarItem className="hidden sm:flex">
-              <Button
-                variant="light"
-                className="data-[hover=true]:bg-transparent"
-                as={Link}
-                href="/jobs"
-                size="md"
-              >
-                {t.nav.jobs}
-              </Button>
-            </NavbarItem>
+            {permissions.canViewJobs ? (
+              <NavbarItem className="hidden sm:flex">
+                <Button
+                  as={Link}
+                  className="data-[hover=true]:bg-transparent"
+                  href="/jobs"
+                  size="md"
+                  variant="light"
+                >
+                  {t.nav.jobs}
+                </Button>
+              </NavbarItem>
+            ) : null}
             <NavbarItem className="hidden sm:flex">
               <Dropdown placement="bottom-end">
                 <DropdownTrigger>
@@ -196,7 +139,7 @@ export function Navbar() {
                   <DropdownItem key="dashboard" href="/dashboard">
                     {t.nav.profile}
                   </DropdownItem>
-                  {hasJobManagementRole ? (
+                  {permissions.hasJobManagementRole ? (
                     <DropdownItem key="manageJobs" href="/jobs/manage">
                       {t.nav.manageJobs}
                     </DropdownItem>
@@ -335,7 +278,7 @@ export function Navbar() {
 
         {status === "authenticated" ? (
           <>
-            {enableJobs ? (
+            {permissions.canViewJobs ? (
               <NavbarMenuItem>
                 <Button
                   as={Link}
@@ -350,7 +293,7 @@ export function Navbar() {
                 </Button>
               </NavbarMenuItem>
             ) : null}
-            {hasJobManagementRole ? (
+            {permissions.hasJobManagementRole ? (
               <NavbarMenuItem>
                 <Button
                   as={Link}

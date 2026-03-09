@@ -11,6 +11,7 @@ import { Toaster } from "@/components/toaster";
 
 import { siteConfig } from "@/config/site";
 import { fontSans, fontMono } from "@/config/fonts";
+import { getViewerContext } from "@/lib/viewer";
 
 export const metadata: Metadata = {
   title: {
@@ -64,11 +65,13 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const viewer = await getViewerContext();
+
   return (
     <html suppressHydrationWarning lang="en">
       <head />
@@ -79,10 +82,13 @@ export default function RootLayout({
           fontMono.variable,
         )}
       >
-        <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+        <Providers
+          initialSession={viewer.session}
+          themeProps={{ attribute: "class", defaultTheme: "dark" }}
+        >
 
           <div className="flex flex-col min-h-screen">
-            <Navbar />
+            <Navbar permissions={viewer.permissions} session={viewer.session} />
             <main className="flex-grow">{children}</main>
             <Footer />
           </div>

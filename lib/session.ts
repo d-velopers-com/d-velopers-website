@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 
+import { refreshDiscordToken } from "@/lib/discord-oauth";
+
 export interface SessionData {
   discordId: string;
   username: string;
@@ -8,8 +10,14 @@ export interface SessionData {
   avatar: string | null;
   email: string | null;
   roles: string[];
-  accessToken: string;
-  expiresAt: number;
+  accessToken?: string;
+  refreshToken?: string | null;
+  expiresAt?: number;
+}
+
+export interface SessionResolution {
+  session: SessionData | null;
+  discordReauthRequired: boolean;
 }
 
 const SECRET_KEY = new TextEncoder().encode(
@@ -53,8 +61,56 @@ export async function deleteSession(): Promise<void> {
   (await cookies()).delete("session");
 }
 
-export function isDiscordTokenExpired(expiresAt: number): boolean {
+export function isDiscordTokenExpired(expiresAt?: number): boolean {
+  if (!expiresAt) {
+    return true;
+  }
+
   // Add 5 minute buffer to avoid edge cases
   const bufferMs = 5 * 60 * 1000;
   return Date.now() >= (expiresAt - bufferMs);
+}
+
+export async function refreshDiscordSession(
+  session: SessionData,
+): Promise<SessionData | null> {
+  if (!session.refreshToken) {
+    return null;
+  }
+
+  try {
+    const tokenData = await refreshDiscordToken(session.refreshToken);
+    const refreshedSession: SessionData = {
+      ...session,
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token || session.refreshToken,
+      expiresAt: Date.now() + tokenData.expires_in * 1000,
+    };
+
+    await createSession(refreshedSession);
+
+    return refreshedSession;
+  } catch {
+    return null;
+  }
+}
+
+export async function resolveSession(): Promise<SessionResolution> {
+  const session = await getSession();
+
+  if (!session) {
+    return { session: null, discordReauthRequired: false };
+  }
+
+  if (!isDiscordTokenExpired(session.expiresAt)) {
+    return { session, discordReauthRequired: false };
+  }
+
+  const refreshedSession = await refreshDiscordSession(session);
+
+  if (refreshedSession) {
+    return { session: refreshedSession, discordReauthRequired: false };
+  }
+
+  return { session, discordReauthRequired: true };
 }

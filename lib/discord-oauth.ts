@@ -13,7 +13,7 @@ interface DiscordGuildMember {
   nick?: string | null;
 }
 
-interface TokenResponse {
+export interface TokenResponse {
   access_token: string;
   token_type: string;
   expires_in: number;
@@ -52,6 +52,40 @@ export async function exchangeCodeForToken(
 
   if (!response.ok) {
     throw new Error("Failed to exchange code for token");
+  }
+
+  return response.json();
+}
+
+export async function refreshDiscordToken(
+  refreshToken: string,
+): Promise<TokenResponse> {
+  const clientId = process.env.DISCORD_CLIENT_ID;
+  const clientSecret = process.env.DISCORD_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    throw new Error(
+      "Missing Discord OAuth configuration. Check DISCORD_CLIENT_ID and DISCORD_CLIENT_SECRET environment variables.",
+    );
+  }
+
+  const params = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+  });
+
+  const response = await fetch("https://discord.com/api/v10/oauth2/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: params.toString(),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to refresh Discord token");
   }
 
   return response.json();

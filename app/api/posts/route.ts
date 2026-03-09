@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createPost, getPosts, getPostsCount } from "@/lib/posts";
+import {
+  buildPostSearchConditions,
+  createPost,
+  getPosts,
+  getPostsCount,
+} from "@/lib/posts";
 import { PostStatus } from "@prisma/client";
 import { withStaffRole } from "@/middlewares/auth";
 import { isValidHtmlString } from "@/lib/validations";
@@ -84,11 +89,7 @@ export async function GET(request: NextRequest) {
     const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
     const offset = (page - 1) * limit;
     const search = searchParams.get("search") || "";
-    const orConditions = search
-      .trim()
-      .split(/\s+/)
-      .filter(term => term.length > 0)
-      .map((term) => ({ title: { contains: term, mode: 'insensitive' as const } }));
+    const orConditions = buildPostSearchConditions(search);
 
     const posts = await getPosts(limit, offset, orConditions, undefined, PostStatus.APPROVED);
     const total = await getPostsCount(orConditions, undefined, PostStatus.APPROVED);

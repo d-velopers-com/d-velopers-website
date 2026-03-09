@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPosts, getPostsCount } from "@/lib/posts";
+import {
+  buildPostSearchConditions,
+  getPosts,
+  getPostsCount,
+} from "@/lib/posts";
 import { PostStatus } from "@prisma/client";
 import { withStaffRole } from "@/middlewares/auth";
 import { getUserByDiscordId } from "@/lib/user";
@@ -21,11 +25,7 @@ export const GET = withStaffRole(async (request: NextRequest, _context, session)
         const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
         const offset = (page - 1) * limit;
         const search = searchParams.get("search") || "";
-        const orConditions = search
-            .trim()
-            .split(/\s+/)
-            .filter(term => term.length > 0)
-            .map((term) => ({ title: { contains: term, mode: 'insensitive' as const } }));
+        const orConditions = buildPostSearchConditions(search);
 
         const statusParam = searchParams.get("status");
         const status = statusParam ? (statusParam as PostStatus) : undefined;

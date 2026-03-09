@@ -31,5 +31,8 @@ export const validateRecentActivation = (profileActivatedAt: string | null | und
   if (!profileActivatedAt) {
     return false;
   }
-  return profileActivatedAt && new Date(profileActivatedAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000;
+  return (
+    new Date(profileActivatedAt).getTime() >
+    Date.now() - 30 * 24 * 60 * 60 * 1000
+  );
 };
