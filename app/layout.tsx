@@ -11,7 +11,7 @@ import { Toaster } from "@/components/toaster";
 
 import { siteConfig } from "@/config/site";
 import { fontSans, fontMono } from "@/config/fonts";
-import { getViewerContext } from "@/lib/viewer";
+import { getNavbarViewerContext } from "@/lib/viewer";
 
 export const metadata: Metadata = {
   title: {
@@ -70,7 +70,9 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const viewer = await getViewerContext();
+  const viewer = await getNavbarViewerContext();
+  const shouldRenderAnalytics =
+    process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV);
 
   return (
     <html suppressHydrationWarning lang="en">
@@ -86,7 +88,6 @@ export default async function RootLayout({
           initialSession={viewer.session}
           themeProps={{ attribute: "class", defaultTheme: "dark" }}
         >
-
           <div className="flex flex-col min-h-screen">
             <Navbar permissions={viewer.permissions} session={viewer.session} />
             <main className="flex-grow">{children}</main>
@@ -94,7 +95,7 @@ export default async function RootLayout({
           </div>
           <Toaster />
         </Providers>
-        <Analytics />
+        {shouldRenderAnalytics ? <Analytics /> : null}
       </body>
     </html>
   );

@@ -2,7 +2,7 @@ import { cache } from "react";
 
 import { accessByRole } from "@/config/access-by-role";
 import { resolveSession, type SessionData } from "@/lib/session";
-import { getUserByDiscordId } from "@/lib/user";
+import { getUserAccessStateByDiscordId, getUserByDiscordId } from "@/lib/user";
 import { validateRecentActivation } from "@/lib/utils";
 
 export interface SessionUser {
@@ -56,6 +56,8 @@ export interface ViewerContext {
   permissions: ViewerPermissions;
 }
 
+type PermissionProfileState = Pick<ViewerProfile, "profileActivatedAt">;
+
 export function getAllowedRoles(): string[] {
   return (process.env.ALLOWED_ROLES || "")
     .split(",")
@@ -94,9 +96,21 @@ function serializeProfile(user: NonNullable<Awaited<ReturnType<typeof getUserByD
   };
 }
 
+function serializePermissionProfile(
+  user: Awaited<ReturnType<typeof getUserAccessStateByDiscordId>>,
+): PermissionProfileState | null {
+  if (!user) {
+    return null;
+  }
+
+  return {
+    profileActivatedAt: user.profileActivatedAt?.toISOString() ?? null,
+  };
+}
+
 function createPermissions(
   sessionUser: SessionUser | null,
-  profile: ViewerProfile | null,
+  profile: PermissionProfileState | null,
 ): ViewerPermissions {
   const allowedRoles = getAllowedRoles();
   const userRoles = sessionUser?.roles || [];
@@ -143,18 +157,43 @@ function createPermissions(
   };
 }
 
-export const getViewerContext = cache(async (): Promise<ViewerContext> => {
+export const getSessionState = cache(async (): Promise<SessionState> => {
   const { session, discordReauthRequired } = await resolveSession();
   const sessionUser = session ? createSessionUser(session) : null;
-  const user = session ? await getUserByDiscordId(session.discordId) : null;
-  const profile = user ? serializeProfile(user) : null;
-  const permissions = createPermissions(sessionUser, profile);
 
   return {
-    session: {
-      user: sessionUser,
-      discordReauthRequired,
-    },
+    user: sessionUser,
+    discordReauthRequired,
+  };
+});
+
+export const getNavbarViewerContext = cache(async () => {
+  const session = await getSessionState();
+  const accessState = session.user
+    ? await getUserAccessStateByDiscordId(session.user.id)
+    : null;
+  const permissions = createPermissions(
+    session.user,
+    serializePermissionProfile(accessState),
+  );
+
+  return {
+    session,
+    permissions,
+  };
+});
+
+export const getViewerContext = cache(async (): Promise<ViewerContext> => {
+  const session = await getSessionState();
+  const user = session.user ? await getUserByDiscordId(session.user.id) : null;
+  const profile = user ? serializeProfile(user) : null;
+  const permissions = createPermissions(
+    session.user,
+    profile ? { profileActivatedAt: profile.profileActivatedAt } : null,
+  );
+
+  return {
+    session,
     profile,
     permissions,
   };

@@ -37,22 +37,33 @@ export function parsePublicUserFilters(
   };
 }
 
+function parsePageValue(value: SearchParamValue) {
+  const pageValue = Number.parseInt(getFirstValue(value) || "1", 10);
+
+  return Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1;
+}
+
+export function parsePublicUserSearchParams(searchParams: SearchParamRecord) {
+  return {
+    filters: parsePublicUserFilters(searchParams),
+    page: parsePageValue(searchParams.page),
+  };
+}
+
 export function parseJobsSearchParams(searchParams: SearchParamRecord) {
-  const pageValue = Number.parseInt(getFirstValue(searchParams.page) || "1", 10);
   const search = getFirstValue(searchParams.search)?.trim() || "";
 
   return {
-    page: Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1,
+    page: parsePageValue(searchParams.page),
     search: search.slice(0, 200),
   };
 }
 
 export function parseManagePostsSearchParams(searchParams: SearchParamRecord) {
-  const pageValue = Number.parseInt(getFirstValue(searchParams.page) || "1", 10);
   const statusParam = getFirstValue(searchParams.status)?.trim().toUpperCase();
 
   return {
-    page: Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1,
+    page: parsePageValue(searchParams.page),
     status:
       statusParam && Object.values(PostStatus).includes(statusParam as PostStatus)
         ? (statusParam as PostStatus)

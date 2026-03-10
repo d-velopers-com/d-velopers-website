@@ -1,21 +1,22 @@
 import HomeClient from "./home-client";
 
-import { getViewerContext } from "@/lib/viewer";
-import { getPublicUsers } from "@/lib/user";
+import { UserCard } from "@/features/users/components/UserCard";
 import { serializePublicUsers } from "@/lib/serializers";
-import { parsePublicUserFilters } from "@/lib/search-params";
+import { parsePublicUserSearchParams } from "@/lib/search-params";
+import { getPublicUsersPage, PUBLIC_USERS_PAGE_SIZE } from "@/lib/user";
 
 type HomePageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function HomePage({ searchParams }: HomePageProps) {
-  const [viewer, rawSearchParams] = await Promise.all([
-    getViewerContext(),
-    searchParams,
-  ]);
-  const filters = parsePublicUserFilters(rawSearchParams);
-  const users = serializePublicUsers(await getPublicUsers(filters));
+  const rawSearchParams = await searchParams;
+  const { filters, page } = parsePublicUserSearchParams(rawSearchParams);
+  const usersPage = await getPublicUsersPage(filters, {
+    page,
+    limit: PUBLIC_USERS_PAGE_SIZE,
+  });
+  const users = serializePublicUsers(usersPage.users);
 
   return (
     <HomeClient
@@ -25,8 +26,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         english: filters.english || "",
         country: filters.country || "",
       }}
-      initialUsers={users}
-      isAuthenticated={!!viewer.session.user}
-    />
+      initialPage={usersPage.page}
+      totalPages={usersPage.totalPages}
+      totalUsers={usersPage.total}
+    >
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {users.map((user) => (
+          <UserCard key={user.handler} user={user} />
+        ))}
+      </div>
+    </HomeClient>
   );
 }

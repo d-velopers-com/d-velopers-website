@@ -48,3 +48,25 @@ export function getDiscordAvatarUrlNew(
     const defaultIndex = (BigInt(userId) >> BigInt(22)) % BigInt(6);
     return `${DISCORD_CDN}/embed/avatars/${defaultIndex}.png${sizeParam}`;
 }
+
+export function getDiscordAvatarProxyUrl(
+    discordId: string,
+    avatar: string | null,
+    discriminator: string,
+    size?: number
+): string {
+    const params = new URLSearchParams({
+        discordId,
+        discriminator,
+    });
+
+    if (avatar) {
+        params.set("avatar", avatar);
+    }
+
+    if (size) {
+        params.set("size", String(size));
+    }
+
+    return `/api/discord-avatar?${params.toString()}`;
+}

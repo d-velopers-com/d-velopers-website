@@ -1,67 +1,89 @@
-"use client";
+import Image from "next/image";
 
-import { memo } from "react";
-import { Avatar } from "@heroui/avatar";
 import { getCountryFlagUrl, getCountryName } from "@/lib/countries";
-import { getDiscordAvatarUrl } from "@/shared/lib";
+import { getDiscordAvatarProxyUrl } from "@/shared/lib";
 
 export interface UserAvatarProps {
-    avatar: string | null;
-    discordId: string;
-    discriminator: string;
-    country?: string | null;
-    size?: "sm" | "md" | "lg";
-    className?: string;
+  avatar: string | null;
+  discordId: string;
+  discriminator: string;
+  country?: string | null;
+  size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
 const SIZE_CLASSES = {
-    sm: "w-8 h-8",
-    md: "w-12 h-12",
-    lg: "w-16 h-16",
+  sm: "h-8 w-8",
+  md: "h-12 w-12",
+  lg: "h-16 w-16",
 } as const;
 
 const FLAG_SIZE_CLASSES = {
-    sm: "w-3 h-3",
-    md: "w-4 h-4",
-    lg: "w-5 h-5",
+  sm: "h-3 w-3",
+  md: "h-4 w-4",
+  lg: "h-5 w-5",
 } as const;
 
-/**
- * User avatar component with optional country flag overlay
- */
-export const UserAvatar = memo(function UserAvatar({
-    avatar,
-    discordId,
-    discriminator,
-    country,
-    size = "md",
-    className = "",
+const IMAGE_SIZES = {
+  sm: 32,
+  md: 48,
+  lg: 64,
+} as const;
+
+const FLAG_SIZES = {
+  sm: 12,
+  md: 16,
+  lg: 20,
+} as const;
+
+export function UserAvatar({
+  avatar,
+  discordId,
+  discriminator,
+  country,
+  size = "md",
+  className = "",
 }: UserAvatarProps) {
-    const avatarUrl = getDiscordAvatarUrl(discordId, avatar, discriminator);
+  const avatarSize = IMAGE_SIZES[size];
+  const flagSize = FLAG_SIZES[size];
+  const avatarUrl = getDiscordAvatarProxyUrl(
+    discordId,
+    avatar,
+    discriminator,
+    avatarSize * 2,
+  );
+  const flagUrl = country ? getCountryFlagUrl(country, "24") : null;
+  const countryName = country ? getCountryName(country) : null;
 
-    const flagUrl = country ? getCountryFlagUrl(country, "24") : null;
-    const countryName = country ? getCountryName(country) : null;
-
-    return (
-        <div className={`relative ${SIZE_CLASSES[size]} flex-shrink-0 ${className}`}>
-            <Avatar
-                className={`${SIZE_CLASSES[size]} ring-2 ring-background`}
-                src={avatarUrl}
-            />
-            {flagUrl && countryName && (
-                <div
-                    className={`absolute -bottom-0.5 -right-0.5 ${FLAG_SIZE_CLASSES[size]} rounded-full border-2 border-background bg-background flex items-center justify-center overflow-hidden shadow-sm`}
-                >
-                    <img
-                        alt={countryName}
-                        className="w-full h-full object-cover rounded-full"
-                        src={flagUrl}
-                        onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                        }}
-                    />
-                </div>
-            )}
+  return (
+    <div className={`relative flex-shrink-0 ${SIZE_CLASSES[size]} ${className}`}>
+      <div
+        className={`${SIZE_CLASSES[size]} overflow-hidden rounded-full bg-default-100 ring-2 ring-background`}
+      >
+        <Image
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full object-cover"
+          height={avatarSize}
+          sizes={`${avatarSize}px`}
+          src={avatarUrl}
+          width={avatarSize}
+        />
+      </div>
+      {flagUrl && countryName ? (
+        <div
+          className={`absolute -bottom-0.5 -right-0.5 ${FLAG_SIZE_CLASSES[size]} overflow-hidden rounded-full border-2 border-background bg-background shadow-sm`}
+        >
+          <Image
+            alt={countryName}
+            className="h-full w-full object-cover"
+            height={flagSize}
+            sizes={`${flagSize}px`}
+            src={flagUrl}
+            width={flagSize}
+          />
         </div>
-    );
-});
+      ) : null}
+    </div>
+  );
+}

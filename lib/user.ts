@@ -18,6 +18,8 @@ type PublicUserRow = {
   joinedServerAt?: Date | string | null;
 };
 
+export const PUBLIC_USERS_PAGE_SIZE = 12;
+
 function getAllowedRoles(): string[] {
   return (process.env.ALLOWED_ROLES || "")
     .split(",")
@@ -188,6 +190,15 @@ export async function getUserByDiscordId(discordId: string) {
   });
 }
 
+export async function getUserAccessStateByDiscordId(discordId: string) {
+  return await prisma.user.findUnique({
+    where: { discordId },
+    select: {
+      profileActivatedAt: true,
+    },
+  });
+}
+
 export async function getUserByHandler(handler: string) {
   return await prisma.user.findUnique({
     where: { handler },
@@ -286,7 +297,7 @@ export async function updateUserProfile(
   });
 }
 
-export async function getPublicUsers(filters?: SearchFilters) {
+function buildPublicUserConditions(filters?: SearchFilters) {
   const conditions: Prisma.Sql[] = [Prisma.sql`"isPublic" = true`];
 
   if (filters?.searchQuery) {
@@ -323,8 +334,75 @@ export async function getPublicUsers(filters?: SearchFilters) {
   if (filters?.country) {
     conditions.push(Prisma.sql`country = ${filters.country}`);
   }
-  const whereClause = Prisma.join(conditions, " AND ");
-  const users = await prisma.$queryRaw<any[]>`
+
+  return conditions;
+}
+
+function buildPublicUserOrderClause() {
+  const allowedRoles = getAllowedRoles();
+
+  if (allowedRoles.length === 0) {
+    return Prisma.sql`"joinedServerAt" ASC NULLS LAST, "createdAt" DESC`;
+  }
+
+  const rolePriority = Prisma.sql`
+    CASE
+      ${Prisma.join(
+        allowedRoles.map((role, index) => Prisma.sql`
+          WHEN ${role} = ANY(roles) THEN ${index}
+        `),
+        " ",
+      )}
+      ELSE ${allowedRoles.length}
+    END
+  `;
+
+  return Prisma.sql`
+    ${rolePriority} ASC,
+    "joinedServerAt" ASC NULLS LAST,
+    "createdAt" DESC
+  `;
+}
+
+async function queryPublicUsers(
+  filters?: SearchFilters,
+  pagination?: { limit: number; offset: number },
+) {
+  const whereClause = Prisma.join(buildPublicUserConditions(filters), " AND ");
+  const orderClause = buildPublicUserOrderClause();
+
+  if (pagination) {
+    return prisma.$queryRaw<any[]>`
+      SELECT
+        handler,
+        username,
+        discriminator,
+        avatar,
+        "discordId",
+        description,
+        link,
+        "contactLinks",
+        "contactEmail",
+        country,
+        name,
+        title,
+        tags,
+        "englishLevel",
+        availability,
+        "yoe",
+        roles,
+        "joinedServerAt",
+        "profileActivatedAt",
+        "createdAt"
+      FROM "User"
+      WHERE ${whereClause}
+      ORDER BY ${orderClause}
+      LIMIT ${pagination.limit}
+      OFFSET ${pagination.offset}
+    `;
+  }
+
+  return prisma.$queryRaw<any[]>`
     SELECT
       handler,
       username,
@@ -348,8 +426,48 @@ export async function getPublicUsers(filters?: SearchFilters) {
       "createdAt"
     FROM "User"
     WHERE ${whereClause}
-    ORDER BY "createdAt" DESC
+    ORDER BY ${orderClause}
+  `;
+}
+
+export async function getPublicUsers(filters?: SearchFilters) {
+  return queryPublicUsers(filters);
+}
+
+export async function getPublicUsersPage(
+  filters?: SearchFilters,
+  options?: { page?: number; limit?: number },
+) {
+  const limit =
+    options?.limit && Number.isFinite(options.limit) && options.limit > 0
+      ? Math.min(Math.floor(options.limit), 100)
+      : PUBLIC_USERS_PAGE_SIZE;
+
+  const whereClause = Prisma.join(buildPublicUserConditions(filters), " AND ");
+  const countResult = await prisma.$queryRaw<Array<{ count: number }>>`
+    SELECT COUNT(*)::int AS count
+    FROM "User"
+    WHERE ${whereClause}
   `;
 
-  return sortPublicUsersByPriority(users);
+  const total = Number(countResult[0]?.count ?? 0);
+  const totalPages = total > 0 ? Math.ceil(total / limit) : 1;
+  const requestedPage =
+    options?.page && Number.isFinite(options.page) && options.page > 0
+      ? Math.floor(options.page)
+      : 1;
+  const page = Math.min(requestedPage, totalPages);
+  const offset = (page - 1) * limit;
+  const users =
+    total > 0
+      ? await queryPublicUsers(filters, { limit, offset })
+      : [];
+
+  return {
+    users,
+    total,
+    page,
+    totalPages,
+    limit,
+  };
 }

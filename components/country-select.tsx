@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
-import { countries, getCountryFlagUrl, getCountryName } from "@/lib/countries";
+
+import { countries, getCountryFlagUrl } from "@/lib/countries";
 
 interface CountrySelectProps {
   value: string;
@@ -11,6 +13,7 @@ interface CountrySelectProps {
   variant?: "bordered" | "flat" | "faded" | "underlined";
   label?: string;
   ariaLabel?: string;
+  clearButtonLabel?: string;
   classNames?: {
     base?: string;
     selectorButton?: string;
@@ -27,6 +30,7 @@ export function CountrySelect({
   variant = "bordered",
   label,
   ariaLabel,
+  clearButtonLabel,
   classNames,
   isDisabled = false,
 }: CountrySelectProps) {
@@ -45,6 +49,13 @@ export function CountrySelect({
     <Autocomplete
       aria-label={ariaLabel}
       classNames={classNames}
+      clearButtonProps={
+        clearButtonLabel
+          ? {
+              "aria-label": clearButtonLabel,
+            }
+          : undefined
+      }
       inputValue={
         searchValue ||
         (value ? countries.find((c) => c.code === value)?.name || "" : "")
@@ -56,10 +67,12 @@ export function CountrySelect({
       selectedKey={value || undefined}
       startContent={
         value && !searchValue ? (
-          <img
-            alt={getCountryName(value)}
+          <Image
+            alt=""
             className="w-5 h-4 rounded object-cover"
+            height={15}
             src={getCountryFlagUrl(value, "24")}
+            width={20}
           />
         ) : null
       }
@@ -91,10 +104,12 @@ export function CountrySelect({
         <AutocompleteItem
           key={country.code}
           startContent={
-            <img
-              alt={country.name}
+            <Image
+              alt=""
               className="w-5 h-4 rounded object-cover"
+              height={15}
               src={getCountryFlagUrl(country.code, "24")}
+              width={20}
             />
           }
           textValue={country.name}

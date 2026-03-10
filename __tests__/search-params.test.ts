@@ -7,6 +7,7 @@ import {
   parseJobsSearchParams,
   parseManagePostsSearchParams,
   parsePublicUserFilters,
+  parsePublicUserSearchParams,
 } from "@/lib/search-params";
 
 describe("search param parsing", () => {
@@ -37,6 +38,41 @@ describe("search param parsing", () => {
       country: undefined,
       english: undefined,
       searchQuery: undefined,
+    });
+  });
+
+  it("uses URL params as the source of truth for public directory pagination", () => {
+    expect(
+      parsePublicUserSearchParams({
+        availability: Availability.FULL_TIME,
+        country: "ni",
+        english: "B2",
+        page: "3",
+        searchQuery: "  react developer  ",
+      }),
+    ).toEqual({
+      filters: {
+        availability: Availability.FULL_TIME,
+        country: "NI",
+        english: "B2",
+        searchQuery: "react developer",
+      },
+      page: 3,
+    });
+
+    expect(
+      parsePublicUserSearchParams({
+        page: "-9",
+        searchQuery: "x".repeat(250),
+      }),
+    ).toEqual({
+      filters: {
+        availability: undefined,
+        country: undefined,
+        english: undefined,
+        searchQuery: undefined,
+      },
+      page: 1,
     });
   });
 
