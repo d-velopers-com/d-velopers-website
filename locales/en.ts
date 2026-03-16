@@ -250,7 +250,8 @@ export const en = {
   },
   jobs: {
     title: "Job Opportunities",
-    subtitle: "Explore job postings from our community",
+    subtitle:
+      "Explore high-quality job postings from our global developer community.",
     noPosts: "No job posts available at the moment. Check back later!",
     postedBy: "Posted by",
     searcher: "Search for posting",

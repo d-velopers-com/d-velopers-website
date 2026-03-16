@@ -334,11 +334,7 @@ export default function JobsClient({
     <div className="flex flex-col items-center min-h-screen px-4 sm:px-6 lg:px-8 py-8">
       <div className="max-w-7xl w-full space-y-6">
         {/* Header */}
-        <PageHeader
-          subtitle={t.jobs.subtitle}
-          title={t.jobs.title}
-          totalPosts={totalPosts}
-        />
+        <PageHeader />
 
         {/* Search Bar */}
         <div className="relative">
