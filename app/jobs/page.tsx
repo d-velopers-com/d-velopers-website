@@ -1,5 +1,4 @@
 import { PostStatus } from "@prisma/client";
-import { redirect } from "next/navigation";
 
 import JobsClient from "./jobs-client";
 
@@ -23,14 +22,6 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     getViewerContext(),
     searchParams,
   ]);
-
-  if (!viewer.session.user) {
-    redirect("/login");
-  }
-
-  if (!viewer.permissions.canViewJobs) {
-    redirect("/");
-  }
 
   const { page, search } = parseJobsSearchParams(rawSearchParams);
   const searchConditions = buildPostSearchConditions(search);

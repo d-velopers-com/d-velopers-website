@@ -131,21 +131,19 @@ export function Navbar({ permissions, session }: NavbarProps) {
             <li>
               <LanguageSwitcher />
             </li>
+            <li>
+              <Button
+                as={Link}
+                className="data-[hover=true]:bg-transparent"
+                href="/jobs"
+                size="md"
+                variant="light"
+              >
+                {t.nav.jobs}
+              </Button>
+            </li>
             {status === "authenticated" && session?.user ? (
               <>
-                {permissions.canViewJobs ? (
-                  <li>
-                    <Button
-                      as={Link}
-                      className="data-[hover=true]:bg-transparent"
-                      href="/jobs"
-                      size="md"
-                      variant="light"
-                    >
-                      {t.nav.jobs}
-                    </Button>
-                  </li>
-                ) : null}
                 <li>
                   <Dropdown placement="bottom-end">
                     <DropdownTrigger>
@@ -252,22 +250,20 @@ export function Navbar({ permissions, session }: NavbarProps) {
                 <ThemeSwitch />
               </div>
             </li>
+            <li>
+              <Button
+                as={Link}
+                className={`w-full justify-start ${focusStates.button}`}
+                href="/jobs"
+                variant="light"
+                onPress={() => setIsMenuOpen(false)}
+              >
+                {t.nav.jobs}
+              </Button>
+            </li>
 
             {status === "authenticated" ? (
               <>
-                {permissions.canViewJobs ? (
-                  <li>
-                    <Button
-                      as={Link}
-                      className={`w-full justify-start ${focusStates.button}`}
-                      href="/jobs"
-                      variant="light"
-                      onPress={() => setIsMenuOpen(false)}
-                    >
-                      {t.nav.jobs}
-                    </Button>
-                  </li>
-                ) : null}
                 {permissions.hasJobManagementRole ? (
                   <li>
                     <Button
