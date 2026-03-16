@@ -1,41 +1,42 @@
-import {memo} from "react";
-import {Card, CardBody} from "@heroui/card";
-import {cardStyles} from "@/lib/ui-constants";
-import {Chip} from "@heroui/chip";
+import { memo } from "react";
+import { Button } from "@heroui/button";
+import Link from "next/link";
+
+import { DiscordIcon } from "@/components/icons";
+import { useLanguage } from "@/contexts/language-context";
 
 /**
  * Page header component
  */
-export const PageHeader = memo(function PageHeader(
-  {
-    title,
-    subtitle,
-    totalPosts
-  }: {
-    title: string;
-    subtitle: string;
-    totalPosts?: number;
-  }) {
+export const PageHeader = memo(function PageHeader() {
+  const { t } = useLanguage();
+
   return (
-    <Card className={cardStyles.base}>
-      <CardBody className="text-center py-8 px-6">
-        <h1 className="text-3xl font-bold text-foreground">
-          {title}
+    <div
+      className="relative rounded-2xl overflow-hidden bg-cover bg-center"
+      style={{
+        backgroundImage:
+          "linear-gradient(rgba(18, 16, 34, 0.7) 0%, rgba(86, 65, 223, 0.5) 100%), url('/job-header-bg.jpg')",
+      }}
+    >
+      <div className="absolute inset-0 backdrop-blur-[2px]" />
+      <div className="relative z-10 flex flex-col items-center text-center py-10 px-6">
+        <h1 className="text-4xl font-bold text-white">
+          {t.jobs.title}
         </h1>
-        <p className="text-default-500 mt-2 max-w-lg mx-auto">
-          {subtitle}
+        <p className="text-white mt-3 max-w-lg mx-auto opacity-90">
+          {t.jobs.subtitle}
         </p>
-        {totalPosts !== undefined && totalPosts > 0 && (
-          <Chip
-            size="sm"
-            variant="flat"
-            color="default"
-            className="mt-4"
-          >
-            {totalPosts} opportunities
-          </Chip>
-        )}
-      </CardBody>
-    </Card>
+        <Button
+          as={Link}
+          className="mt-6 bg-[#5865F2] font-medium text-white hover:bg-[#4752C4]"
+          href="/discord"
+          size="md"
+          startContent={<DiscordIcon size={20} />}
+        >
+          {t.nav.joinDiscord}
+        </Button>
+      </div>
+    </div>
   );
 });
