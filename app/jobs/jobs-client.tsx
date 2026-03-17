@@ -217,7 +217,7 @@ const JobCard = memo(function JobCard(
     <Card className={`overflow-hidden ${cardStyles.base}`}>
       <CardHeader className="flex flex-row items-center justify-between gap-4 px-5 py-4 border-b border-default-200">
         <h3
-          className={`${typography.label} text-foreground font-semibold truncate flex-1`}
+          className={`${typography.label} text-foreground font-semibold flex-1`}
         >
           {post.title}
         </h3>
