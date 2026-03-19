@@ -1,9 +1,9 @@
 "use client";
 
-import {memo} from "react";
-import {Skeleton} from "@heroui/skeleton";
+import { memo, useState } from "react";
+import { Skeleton } from "@heroui/skeleton";
 
-import {useLinkPreview} from "@/hooks/useLinkPreview";
+import { useLinkPreview } from "@/hooks/useLinkPreview";
 
 interface LinkPreviewCardProps {
   sourceUrl: string;
@@ -30,8 +30,7 @@ function getPlatformInfo(url: string) {
           fill="currentColor"
           viewBox="0 0 24 24"
         >
-          <path
-            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
         </svg>
       ),
     };
@@ -47,8 +46,7 @@ function getPlatformInfo(url: string) {
           fill="currentColor"
           viewBox="0 0 24 24"
         >
-          <path
-            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
         </svg>
       ),
     };
@@ -63,6 +61,7 @@ export const LinkPreviewCard = memo(function LinkPreviewCard({
   translations,
 }: LinkPreviewCardProps) {
   const { ogData, isLoading } = useLinkPreview(sourceUrl);
+  const [imgError, setImgError] = useState(false);
 
   let hostname: string;
 
@@ -85,28 +84,40 @@ export const LinkPreviewCard = memo(function LinkPreviewCard({
       >
         {/* OG Image */}
         {isLoading ? (
-          <Skeleton className="w-full h-48"/>
-        ) : ogData?.image ? (
+          <Skeleton className="w-full h-48" />
+        ) : ogData?.image && !imgError ? (
           <div className="w-full h-48 overflow-hidden">
             <img
               src={ogData.image}
               alt={ogData.title || postTitle || "Preview"}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
+              onError={() => setImgError(true)}
             />
           </div>
         ) : (
-          <div className="w-full h-48 overflow-hidden">
-            <img
-              src="https://static.licdn.com/aero-v1/sc/h/c45fy346jw096z9pbphyyhdz7"
-              alt="LinkedIn"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
+          <div className="w-full h-48 bg-default-100 flex items-center justify-center">
+            {platform.icon ? (
+              <span
+                style={{ color: platform.color ?? undefined }}
+                className="opacity-30 scale-[3]"
+              >
+                {platform.icon}
+              </span>
+            ) : (
+              <svg
+                className="w-12 h-12 text-default-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.474a4.5 4.5 0 00-6.364-6.364L4.5 8.25l4.5 4.5"
+                />
+              </svg>
+            )}
           </div>
         )}
 
@@ -114,8 +125,8 @@ export const LinkPreviewCard = memo(function LinkPreviewCard({
         <div className="p-4 min-h-[7.5rem]">
           {isLoading ? (
             <>
-              <Skeleton className="h-5 w-3/4 mb-2 rounded"/>
-              <Skeleton className="h-4 w-full rounded"/>
+              <Skeleton className="h-5 w-3/4 mb-2 rounded" />
+              <Skeleton className="h-4 w-full rounded" />
             </>
           ) : (
             <>
@@ -129,11 +140,22 @@ export const LinkPreviewCard = memo(function LinkPreviewCard({
               )}
               <div className="flex items-center gap-2 mt-3 text-xs text-default-400">
                 {platform.icon ? (
-                  <span style={{color: platform.color ?? undefined}}>{platform.icon}</span>
+                  <span style={{ color: platform.color ?? undefined }}>
+                    {platform.icon}
+                  </span>
                 ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
                   </svg>
                 )}
                 <span>{ogData?.siteName || platform.name || hostname}</span>
