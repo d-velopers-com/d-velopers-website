@@ -13,12 +13,15 @@ import { Pagination } from "@heroui/pagination";
 import { Input } from "@heroui/input";
 import { Chip } from "@heroui/chip";
 import { Button } from "@heroui/button";
+import { Tooltip } from "@heroui/tooltip";
 import { usePathname, useRouter } from "next/navigation";
+
 import { useLanguage } from "@/contexts/language-context";
 import { debounce } from "@/lib/utils";
 import { typography, cardStyles } from "@/lib/ui-constants";
 import { SearchIcon } from "@/components/icons";
 import { GenericEmbed } from "@/app/jobs/genericEmbed";
+import { LinkPreviewCard } from "@/components/LinkPreviewCard";
 import { JobCardSkeleton } from "@/app/jobs/jobCardSkeleton";
 import { EmptyState } from "@/app/jobs/emptyState";
 import { PageHeader } from "@/app/jobs/pageHeader";
@@ -193,6 +196,8 @@ const JobCard = memo(function JobCard(
       linkedInPost: string;
     };
   }) {
+  const [showEmbed, setShowEmbed] = useState(false);
+
   // Use static date format to avoid hydration mismatch
   const formattedDate = useMemo(() => {
     const date = new Date(post.createdAt);
@@ -213,6 +218,8 @@ const JobCard = memo(function JobCard(
     return "unknown";
   }, [post.sourceUrl]);
 
+  const canToggleEmbed = post.sourceUrl && post.embeddable;
+
   return (
     <Card className={`overflow-hidden ${cardStyles.base}`}>
       <CardHeader className="flex flex-row items-center justify-between gap-4 px-5 py-4 border-b border-default-200">
@@ -221,37 +228,73 @@ const JobCard = memo(function JobCard(
         >
           {post.title}
         </h3>
-        <Chip
-          className="text-xs font-medium flex-shrink-0"
-          color="default"
-          size="sm"
-          variant="flat"
-        >
-          {formattedDate}
-        </Chip>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {canToggleEmbed && (
+            <Tooltip content={showEmbed ? "Show preview" : "Show embed"}>
+              <Button
+                isIconOnly
+                size="sm"
+                variant="light"
+                className="min-w-6 w-6 h-6"
+                onPress={() => setShowEmbed((v) => !v)}
+                aria-label={showEmbed ? "Show preview" : "Show embed"}
+              >
+                {showEmbed ? (
+                  <svg className="w-4 h-4 text-default-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4 text-default-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                )}
+              </Button>
+            </Tooltip>
+          )}
+          <Chip
+            className="text-xs font-medium"
+            color="default"
+            size="sm"
+            variant="flat"
+          >
+            {formattedDate}
+          </Chip>
+        </div>
       </CardHeader>
       <CardBody className="p-0 flex flex-col justify-center items-center overflow-hidden bg-default-50">
-        {platform === "linkedin" && post.sourceUrl ? (
-          <LinkedInEmbed
-            iframeHtml={post.iframe}
+        {post.sourceUrl && !showEmbed ? (
+          <LinkPreviewCard
             sourceUrl={post.sourceUrl}
+            postTitle={post.title}
             translations={{
-              cannotBeEmbedded: embedTranslations.cannotBeEmbedded,
-              openInLinkedIn: embedTranslations.openInLinkedIn,
-              linkedInPost: embedTranslations.linkedInPost,
-            }}
-          />
-        ) : post.sourceUrl ? (
-          <GenericEmbed
-            embeddable={post.embeddable}
-            iframeHtml={post.iframe}
-            sourceUrl={post.sourceUrl}
-            translations={{
-              cannotBeEmbedded: embedTranslations.cannotBeEmbedded,
-              openInSite: embedTranslations.openInSite,
               externalContent: embedTranslations.externalContent,
             }}
           />
+        ) : showEmbed && post.sourceUrl ? (
+          platform === "linkedin" ? (
+            <LinkedInEmbed
+              iframeHtml={post.iframe}
+              sourceUrl={post.sourceUrl}
+              translations={{
+                cannotBeEmbedded: embedTranslations.cannotBeEmbedded,
+                openInLinkedIn: embedTranslations.openInLinkedIn,
+                linkedInPost: embedTranslations.linkedInPost,
+              }}
+            />
+          ) : (
+            <GenericEmbed
+              embeddable={post.embeddable}
+              iframeHtml={post.iframe}
+              sourceUrl={post.sourceUrl}
+              translations={{
+                cannotBeEmbedded: embedTranslations.cannotBeEmbedded,
+                openInSite: embedTranslations.openInSite,
+                externalContent: embedTranslations.externalContent,
+              }}
+            />
+          )
         ) : (
           <div
             dangerouslySetInnerHTML={{ __html: post.iframe }}

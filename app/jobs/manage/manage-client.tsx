@@ -33,6 +33,7 @@ import { generateEmbed, isUrl, detectPlatform, type SupportedPlatform } from "@/
 import { Avatar } from "@heroui/avatar";
 import { getDiscordAvatarUrl } from "@/shared/lib";
 import type { SessionState } from "@/lib/viewer";
+import {OGMetadata} from "@/types/og-metadata";
 
 interface PostAuthor {
   id: string;
@@ -65,13 +66,6 @@ interface ManageClientProps {
   initialStatusFilter: "all" | Post["status"];
   isStaff: boolean;
   session: SessionState;
-}
-
-interface OGMetadata {
-  title?: string;
-  description?: string;
-  image?: string;
-  siteName?: string;
 }
 
 /**
