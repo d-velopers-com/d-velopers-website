@@ -4,6 +4,18 @@ const LINKEDIN_FALLBACK_IMAGE =
   "https://static.licdn.com/aero-v1/sc/h/c45fy346jw096z9pbphyyhdz7";
 
 /**
+ * Decode HTML entities in a string (e.g. &amp; → &)
+ */
+function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+/**
  * Extract meta tag content by property name
  * Checks og: prefix, twitter: prefix, and both attribute orderings
  */
@@ -16,7 +28,7 @@ function getMetaContent(html: string, property: string): string | undefined {
     ),
   );
 
-  if (ogMatch) return ogMatch[1];
+  if (ogMatch) return decodeHtmlEntities(ogMatch[1]);
 
   // Try reverse order (content before property)
   const ogMatchReverse = html.match(
@@ -26,7 +38,7 @@ function getMetaContent(html: string, property: string): string | undefined {
     ),
   );
 
-  if (ogMatchReverse) return ogMatchReverse[1];
+  if (ogMatchReverse) return decodeHtmlEntities(ogMatchReverse[1]);
 
   // Try twitter: prefix
   const twitterMatch = html.match(
@@ -36,7 +48,7 @@ function getMetaContent(html: string, property: string): string | undefined {
     ),
   );
 
-  if (twitterMatch) return twitterMatch[1];
+  if (twitterMatch) return decodeHtmlEntities(twitterMatch[1]);
 
   // Try reverse for twitter
   const twitterMatchReverse = html.match(
@@ -46,7 +58,7 @@ function getMetaContent(html: string, property: string): string | undefined {
     ),
   );
 
-  if (twitterMatchReverse) return twitterMatchReverse[1];
+  if (twitterMatchReverse) return decodeHtmlEntities(twitterMatchReverse[1]);
 
   return undefined;
 }
