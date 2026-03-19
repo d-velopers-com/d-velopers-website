@@ -96,17 +96,9 @@ export function parseOGMetadata(html: string, originalUrl: string): OGMetadata {
     }
   }
 
-  // LinkedIn post/feed URLs return signed image URLs that expire quickly,
-  // making them unreliable. Discard them and use the fallback instead.
-  // Profile and company pages have stable OG images, so keep those.
-  if (originalUrl.includes("linkedin.com")) {
-    const isPostUrl = /linkedin\.com\/(posts|feed\/update)\//i.test(
-      originalUrl,
-    );
-
-    if (isPostUrl || !metadata.image) {
-      metadata.image = LINKEDIN_FALLBACK_IMAGE;
-    }
+  // Use LinkedIn fallback only when no image was found
+  if (originalUrl.includes("linkedin.com") && !metadata.image) {
+    metadata.image = LINKEDIN_FALLBACK_IMAGE;
   }
 
   return metadata;
