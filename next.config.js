@@ -8,6 +8,9 @@ const nextConfig = {
       {
         pathname: "/api/discord-avatar",
       },
+      {
+        pathname: "/discord/**",
+      },
     ],
     remotePatterns: [
       {
