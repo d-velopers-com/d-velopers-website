@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { SHOW_DISCORD_GUIDE_HINT_EVENT } from "@/lib/client-events";
 
 type GuideImage = {
   src: string;
@@ -388,26 +390,54 @@ function YouTubeGuide() {
 
 export function DiscordGuide() {
   const [showScrollHint, setShowScrollHint] = useState(false);
+  const hideTimerRef = useRef<number | null>(null);
+
+  const hideScrollHint = useCallback(() => {
+    if (hideTimerRef.current !== null) {
+      window.clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+
+    setShowScrollHint(false);
+  }, []);
+
+  const revealScrollHint = useCallback(() => {
+    if (hideTimerRef.current !== null) {
+      window.clearTimeout(hideTimerRef.current);
+    }
+
+    setShowScrollHint(true);
+    hideTimerRef.current = window.setTimeout(() => {
+      setShowScrollHint(false);
+      hideTimerRef.current = null;
+    }, 12000);
+  }, []);
 
   useEffect(() => {
-    const showTimer = window.setTimeout(() => setShowScrollHint(true), 500);
-    const hideTimer = window.setTimeout(() => setShowScrollHint(false), 12000);
+    const showTimer = window.setTimeout(revealScrollHint, 500);
 
     const hideAfterScrolling = () => {
-      if (window.scrollY > 420) setShowScrollHint(false);
+      if (window.scrollY > 420) hideScrollHint();
     };
 
+    window.addEventListener(SHOW_DISCORD_GUIDE_HINT_EVENT, revealScrollHint);
     window.addEventListener("scroll", hideAfterScrolling, { passive: true });
 
     return () => {
       window.clearTimeout(showTimer);
-      window.clearTimeout(hideTimer);
+      if (hideTimerRef.current !== null) {
+        window.clearTimeout(hideTimerRef.current);
+      }
+      window.removeEventListener(
+        SHOW_DISCORD_GUIDE_HINT_EVENT,
+        revealScrollHint,
+      );
       window.removeEventListener("scroll", hideAfterScrolling);
     };
-  }, []);
+  }, [hideScrollHint, revealScrollHint]);
 
   const goToInstructions = () => {
-    setShowScrollHint(false);
+    hideScrollHint();
     document
       .getElementById("como-acceder")
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -549,7 +579,7 @@ export function DiscordGuide() {
             aria-label="Cerrar aviso"
             className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-lg text-white/45 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             type="button"
-            onClick={() => setShowScrollHint(false)}
+            onClick={hideScrollHint}
           >
             ×
           </button>

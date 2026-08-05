@@ -1,5 +1,7 @@
 "use client";
 
+import type { SessionState, ViewerPermissions } from "@/lib/viewer";
+
 import { Button } from "@heroui/button";
 import {
   Dropdown,
@@ -16,9 +18,9 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { signOut } from "@/hooks/useSession";
 import { useLanguage } from "@/contexts/language-context";
 import { DiscordIcon } from "@/components/icons";
+import { SHOW_DISCORD_GUIDE_HINT_EVENT } from "@/lib/client-events";
 import { focusStates, typography } from "@/lib/ui-constants";
 import { getDiscordAvatarProxyUrl } from "@/shared/lib";
-import type { SessionState, ViewerPermissions } from "@/lib/viewer";
 
 interface NavbarProps {
   permissions: ViewerPermissions;
@@ -66,6 +68,10 @@ export function Navbar({ permissions, session }: NavbarProps) {
         80,
       )
     : undefined;
+
+  const showDiscordGuideHint = () => {
+    window.dispatchEvent(new Event(SHOW_DISCORD_GUIDE_HINT_EVENT));
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-default-200/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
@@ -159,7 +165,10 @@ export function Navbar({ permissions, session }: NavbarProps) {
                         />
                       </Button>
                     </DropdownTrigger>
-                    <DropdownMenu aria-label={t.nav.profileActions} variant="flat">
+                    <DropdownMenu
+                      aria-label={t.nav.profileActions}
+                      variant="flat"
+                    >
                       <DropdownItem key="dashboard" href="/dashboard">
                         {t.nav.profile}
                       </DropdownItem>
@@ -193,6 +202,7 @@ export function Navbar({ permissions, session }: NavbarProps) {
                     href="/discord"
                     size="sm"
                     startContent={<DiscordIcon size={20} />}
+                    onPress={showDiscordGuideHint}
                   >
                     {t.nav.joinDiscord}
                   </Button>
@@ -310,7 +320,10 @@ export function Navbar({ permissions, session }: NavbarProps) {
                     href="/discord"
                     size="md"
                     startContent={<DiscordIcon size={20} />}
-                    onPress={() => setIsMenuOpen(false)}
+                    onPress={() => {
+                      setIsMenuOpen(false);
+                      showDiscordGuideHint();
+                    }}
                   >
                     {t.nav.joinDiscord}
                   </Button>
