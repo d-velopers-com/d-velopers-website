@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
-import { motion } from "framer-motion";
-import { Card, CardBody } from "@heroui/card";
 import { Button } from "@heroui/button";
+import { Card, CardBody } from "@heroui/card";
+import { motion } from "framer-motion";
+import { useEffect } from "react";
+
 import { useLanguage } from "@/contexts/language-context";
 import { typography, spacing, focusStates } from "@/lib/ui-constants";
 
@@ -18,7 +19,7 @@ export default function Error({
 
   useEffect(() => {
     // Log the error to an error reporting service
-    /* eslint-disable no-console */
+
     console.error(error);
   }, [error]);
 

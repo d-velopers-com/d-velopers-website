@@ -59,6 +59,9 @@ model Post {
   updatedAt DateTime @updatedAt
 
   status    PostStatus @default(PENDING)
+
+  @@index([status, createdAt])
+  @@index([createdById, status, createdAt])
 }
 
 enum PostStatus {

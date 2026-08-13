@@ -1,6 +1,7 @@
 import { Metadata } from "next";
-import { getUserByHandler } from "@/lib/user";
+
 import { siteConfig } from "@/config/site";
+import { getUserByHandler } from "@/lib/user";
 import { en } from "@/locales/en";
 import { getDiscordAvatarUrl } from "@/shared/lib";
 
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lastName = nameParts.slice(1).join(" ") || "";
 
   return {
-    title,
+    title: { absolute: title },
     description,
     openGraph: {
       type: "profile",

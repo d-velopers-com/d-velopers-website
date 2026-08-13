@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 
-import ManageJobsClient from "./manage-client";
-
 import { getPosts, getPostsCount } from "@/lib/posts";
 import { parseManagePostsSearchParams } from "@/lib/search-params";
 import { serializePosts } from "@/lib/serializers";
 import { shouldAutoApproveBotPosts } from "@/lib/system-config";
 import { getUserByDiscordId } from "@/lib/user";
 import { getViewerContext } from "@/lib/viewer";
+
+import ManageJobsClient from "./manage-client";
 
 const POSTS_PER_PAGE = 10;
 

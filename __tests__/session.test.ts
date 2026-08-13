@@ -99,7 +99,7 @@ describe("session resolution", () => {
     expect(cookieStore.set).not.toHaveBeenCalled();
   });
 
-  it("refreshes the Discord token when the OAuth token expired but refresh token is valid", async () => {
+  it("keeps the local session without mutating cookies when Discord auth expired", async () => {
     const expiredSession = {
       discordId: "123",
       username: "diego",
@@ -123,30 +123,14 @@ describe("session resolution", () => {
     const { resolveSession } = await import("@/lib/session");
     const result = await resolveSession();
 
-    expect(result.discordReauthRequired).toBe(false);
+    expect(result.discordReauthRequired).toBe(true);
     expect(result.session).toMatchObject({
       discordId: "123",
-      accessToken: "new-access",
-      refreshToken: "new-refresh",
+      accessToken: "old-access",
+      refreshToken: "refresh-token",
     });
-    expect(refreshDiscordTokenMock).toHaveBeenCalledWith("refresh-token");
-    expect(cookieStore.set).toHaveBeenCalledWith(
-      "session",
-      "signed-session-token",
-      expect.objectContaining({
-        httpOnly: true,
-        maxAge: 60 * 60 * 24 * 30,
-        path: "/",
-        sameSite: "lax",
-      }),
-    );
-    expect(signPayloads).toContainEqual(
-      expect.objectContaining({
-        discordId: "123",
-        accessToken: "new-access",
-        refreshToken: "new-refresh",
-      }),
-    );
+    expect(refreshDiscordTokenMock).not.toHaveBeenCalled();
+    expect(cookieStore.set).not.toHaveBeenCalled();
   });
 
   it("keeps the app session but marks Discord reauth as required when refresh fails", async () => {

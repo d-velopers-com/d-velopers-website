@@ -1,5 +1,12 @@
 "use client";
 
+import { Button } from "@heroui/button";
+import { Card, CardHeader, CardBody } from "@heroui/card";
+import { Chip } from "@heroui/chip";
+import { Input } from "@heroui/input";
+import { Pagination } from "@heroui/pagination";
+import { Tooltip } from "@heroui/tooltip";
+import { usePathname, useRouter } from "next/navigation";
 import {
   useEffect,
   useState,
@@ -8,24 +15,17 @@ import {
   memo,
   useTransition,
 } from "react";
-import { Card, CardHeader, CardBody } from "@heroui/card";
-import { Pagination } from "@heroui/pagination";
-import { Input } from "@heroui/input";
-import { Chip } from "@heroui/chip";
-import { Button } from "@heroui/button";
-import { Tooltip } from "@heroui/tooltip";
-import { usePathname, useRouter } from "next/navigation";
 
-import { useLanguage } from "@/contexts/language-context";
-import { debounce } from "@/lib/utils";
-import { typography, cardStyles } from "@/lib/ui-constants";
-import { SearchIcon } from "@/components/icons";
-import { GenericEmbed } from "@/app/jobs/genericEmbed";
-import { LinkPreviewCard } from "@/components/LinkPreviewCard";
-import { JobCardSkeleton } from "@/app/jobs/jobCardSkeleton";
 import { EmptyState } from "@/app/jobs/emptyState";
+import { GenericEmbed } from "@/app/jobs/genericEmbed";
+import { JobCardSkeleton } from "@/app/jobs/jobCardSkeleton";
 import { PageHeader } from "@/app/jobs/pageHeader";
+import { SearchIcon } from "@/components/icons";
+import { LinkPreviewCard } from "@/components/LinkPreviewCard";
+import { useLanguage } from "@/contexts/language-context";
 import { generateEmbed } from "@/lib/embed-generator";
+import { typography, cardStyles } from "@/lib/ui-constants";
+import { debounce } from "@/lib/utils";
 
 interface Post {
   id: string;
@@ -49,20 +49,19 @@ const POSTS_PER_PAGE = 6;
 /**
  * LinkedIn Embed component - shows embed or fallback based on server-side embeddable check
  */
-const LinkedInEmbed = memo(function LinkedInEmbed(
-  {
-    iframeHtml,
-    sourceUrl,
-    translations,
-  }: {
-    iframeHtml: string;
-    sourceUrl: string;
-    translations: {
-      cannotBeEmbedded: string;
-      openInLinkedIn: string;
-      linkedInPost: string;
-    };
-  }) {
+const LinkedInEmbed = memo(function LinkedInEmbed({
+  iframeHtml,
+  sourceUrl,
+  translations,
+}: {
+  iframeHtml: string;
+  sourceUrl: string;
+  translations: {
+    cannotBeEmbedded: string;
+    openInLinkedIn: string;
+    linkedInPost: string;
+  };
+}) {
   const [iframeError, setIframeError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -77,7 +76,12 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
     }
 
     // If src is not an embed URL, try to transform it using generateEmbed
-    if (src && (src.includes("linkedin.com") && !src.includes("linkedin.com/embed")) && src !== "about:blank") {
+    if (
+      src &&
+      src.includes("linkedin.com") &&
+      !src.includes("linkedin.com/embed") &&
+      src !== "about:blank"
+    ) {
       const result = generateEmbed(src);
       if (result.success && result.embeddable && result.iframe) {
         // Extract the src from the generated iframe
@@ -127,8 +131,7 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
               fill="currentColor"
               viewBox="0 0 24 24"
             >
-              <path
-                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
             </svg>
           </div>
           <p className="text-default-500 text-sm text-center">
@@ -146,8 +149,7 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
               fill="currentColor"
               viewBox="0 0 24 24"
             >
-              <path
-                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
             </svg>
             {translations.openInLinkedIn}
           </a>
@@ -167,8 +169,10 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
       <iframe
         allowFullScreen
         className="max-w-full"
-        frameBorder="0"
         height="600"
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin"
         src={iframeSrc}
         title={translations.linkedInPost}
         width="504"
@@ -182,20 +186,19 @@ const LinkedInEmbed = memo(function LinkedInEmbed(
 /**
  * Individual job post card with embed fallback
  */
-const JobCard = memo(function JobCard(
-  {
-    post,
-    embedTranslations,
-  }: {
-    post: Post;
-    embedTranslations: {
-      cannotBeEmbedded: string;
-      openInLinkedIn: string;
-      openInSite: string;
-      externalContent: string;
-      linkedInPost: string;
-    };
-  }) {
+const JobCard = memo(function JobCard({
+  post,
+  embedTranslations,
+}: {
+  post: Post;
+  embedTranslations: {
+    cannotBeEmbedded: string;
+    openInLinkedIn: string;
+    openInSite: string;
+    externalContent: string;
+    linkedInPost: string;
+  };
+}) {
   const [showEmbed, setShowEmbed] = useState(false);
 
   // Use static date format to avoid hydration mismatch
@@ -240,14 +243,32 @@ const JobCard = memo(function JobCard(
                 aria-label={showEmbed ? "Show preview" : "Show embed"}
               >
                 {showEmbed ? (
-                  <svg className="w-4 h-4 text-default-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  <svg
+                    className="w-4 h-4 text-default-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                    />
                   </svg>
                 ) : (
-                  <svg className="w-4 h-4 text-default-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  <svg
+                    className="w-4 h-4 text-default-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                    />
                   </svg>
                 )}
               </Button>
@@ -296,16 +317,21 @@ const JobCard = memo(function JobCard(
             />
           )
         ) : (
-          <div
-            dangerouslySetInnerHTML={{ __html: post.iframe }}
-            className="w-full flex justify-center [&>iframe]:max-w-full [&>iframe]:rounded-none"
+          <GenericEmbed
+            embeddable={post.embeddable}
+            iframeHtml={post.iframe}
+            sourceUrl={post.sourceUrl || ""}
+            translations={{
+              cannotBeEmbedded: embedTranslations.cannotBeEmbedded,
+              openInSite: embedTranslations.openInSite,
+              externalContent: embedTranslations.externalContent,
+            }}
           />
         )}
       </CardBody>
     </Card>
   );
 });
-
 
 // ============================================================================
 // Main Component
@@ -316,7 +342,7 @@ export default function JobsClient({
   initialPosts,
   initialSearch,
   totalPages,
-  totalPosts,
+  totalPosts: _totalPosts,
 }: JobsClientProps) {
   const [search, setSearch] = useState(initialSearch);
   const [isPending, startTransition] = useTransition();
@@ -356,11 +382,16 @@ export default function JobsClient({
     [navigate],
   );
 
+  useEffect(() => () => debouncedNavigate.cancel(), [debouncedNavigate]);
+
   // Handle page change
-  const handlePageChange = useCallback((page: number) => {
-    navigate(page, search);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [navigate, search]);
+  const handlePageChange = useCallback(
+    (page: number) => {
+      navigate(page, search);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    [navigate, search],
+  );
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -369,9 +400,10 @@ export default function JobsClient({
 
   // Clear search
   const handleClearSearch = useCallback(() => {
+    debouncedNavigate.cancel();
     setSearch("");
     navigate(1, "");
-  }, [navigate]);
+  }, [debouncedNavigate, navigate]);
 
   return (
     <div className="flex flex-col items-center min-h-screen px-4 sm:px-6 lg:px-8 py-8">
@@ -385,13 +417,15 @@ export default function JobsClient({
             aria-label={t.jobs.searcher}
             classNames={{
               base: "w-full",
-              inputWrapper: `bg-default-100/50 dark:bg-default-50/50 backdrop-blur-md border border-default-200 h-14 rounded-2xl shadow-sm hover:shadow-md transition-shadow ${search ? "pr-10" : ""
-                }`,
+              inputWrapper: `bg-default-100/50 dark:bg-default-50/50 backdrop-blur-md border border-default-200 h-14 rounded-2xl shadow-sm hover:shadow-md transition-shadow ${
+                search ? "pr-10" : ""
+              }`,
               input: "text-base placeholder:text-default-400",
             }}
             endContent={
               search && (
                 <Button
+                  aria-label={t.home.searcher.clearFilters}
                   isIconOnly
                   className="absolute right-2"
                   size="sm"
@@ -449,7 +483,8 @@ export default function JobsClient({
                     openInLinkedIn:
                       t.jobs.embed?.openInLinkedIn || "Open in LinkedIn",
                     openInSite: t.jobs.embed?.openInSite || "Open site",
-                    externalContent: t.jobs.embed?.externalContent || "External Content",
+                    externalContent:
+                      t.jobs.embed?.externalContent || "External Content",
                     linkedInPost: t.jobs.embed?.linkedInPost || "LinkedIn Post",
                   }}
                   post={post}

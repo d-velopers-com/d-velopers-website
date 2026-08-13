@@ -1,5 +1,32 @@
 "use client";
 
+import type { SessionState } from "@/lib/viewer";
+
+import { Avatar } from "@heroui/avatar";
+import { Button } from "@heroui/button";
+import { Card, CardHeader, CardBody } from "@heroui/card";
+import { Chip } from "@heroui/chip";
+import { Input } from "@heroui/input";
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  useDisclosure,
+} from "@heroui/modal";
+import { Pagination } from "@heroui/pagination";
+import { Skeleton } from "@heroui/skeleton";
+import { Switch } from "@heroui/switch";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableColumn,
+  TableRow,
+  TableCell,
+} from "@heroui/table";
+import { Tab, Tabs } from "@heroui/tabs";
 import { usePathname, useRouter } from "next/navigation";
 import {
   useEffect,
@@ -9,31 +36,18 @@ import {
   useTransition,
   memo,
 } from "react";
-import { Card, CardHeader, CardBody } from "@heroui/card";
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
 import { toast } from "sonner";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableColumn,
-  TableRow,
-  TableCell,
-} from "@heroui/table";
-import { Pagination } from "@heroui/pagination";
-import { Chip } from "@heroui/chip";
-import { Skeleton } from "@heroui/skeleton";
-import { Switch } from "@heroui/switch";
-import { Tabs, Tab } from "@heroui/tabs";
-import { focusStates, stateColors, typography } from "@/lib/ui-constants";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@heroui/modal";
+
 import { useLanguage } from "@/contexts/language-context";
-import { generateEmbed, isUrl, detectPlatform, type SupportedPlatform } from "@/lib/embed-generator";
-import { Avatar } from "@heroui/avatar";
+import {
+  generateEmbed,
+  isUrl,
+  detectPlatform,
+  type SupportedPlatform,
+} from "@/lib/embed-generator";
+import { focusStates, typography } from "@/lib/ui-constants";
 import { getDiscordAvatarUrl } from "@/shared/lib";
-import type { SessionState } from "@/lib/viewer";
-import {OGMetadata} from "@/types/og-metadata";
+import { OGMetadata } from "@/types/og-metadata";
 
 interface PostAuthor {
   id: string;
@@ -75,7 +89,7 @@ const JobCardPreview = memo(function JobCardPreview({
   html,
   title,
   sourceUrl,
-  embeddable
+  embeddable,
 }: {
   html: string;
   title: string;
@@ -98,22 +112,23 @@ const JobCardPreview = memo(function JobCardPreview({
     if (platform !== "linkedin") return true;
     const srcMatch = html.match(/src=["']([^"']+)["']/);
     const src = srcMatch ? srcMatch[1] : null;
-    return src && src.includes('linkedin.com/embed');
+    return src && src.includes("linkedin.com/embed");
   }, [platform, html]);
 
   // Fetch OG data for non-embeddable content
   useEffect(() => {
-    const shouldFetchOG = !embeddable || (platform !== "linkedin" && platform !== "twitter");
+    const shouldFetchOG =
+      !embeddable || (platform !== "linkedin" && platform !== "twitter");
     if (shouldFetchOG && sourceUrl && !ogData) {
       setIsLoadingOG(true);
       fetch(`/api/og-metadata?url=${encodeURIComponent(sourceUrl)}`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           if (!data.error) {
             setOgData(data);
           }
         })
-        .catch(() => { })
+        .catch(() => {})
         .finally(() => setIsLoadingOG(false));
     }
   }, [embeddable, sourceUrl, ogData, platform]);
@@ -124,11 +139,17 @@ const JobCardPreview = memo(function JobCardPreview({
     <div className="w-full px-5 py-8">
       <div className="flex flex-col items-center gap-4">
         <div className="w-16 h-16 rounded-full bg-[#0A66C2]/10 flex items-center justify-center">
-          <svg className="w-8 h-8 text-[#0A66C2]" fill="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-8 h-8 text-[#0A66C2]"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
           </svg>
         </div>
-        <p className="text-default-500 text-sm text-center">{t.jobs.embed?.cannotBeEmbedded || "This post cannot be embedded"}</p>
+        <p className="text-default-500 text-sm text-center">
+          {t.jobs.embed?.cannotBeEmbedded || "This post cannot be embedded"}
+        </p>
         <span className="flex items-center gap-2 py-2 px-4 rounded-lg bg-[#0A66C2] text-white text-sm font-semibold">
           {t.jobs.embed?.openInLinkedIn || "Open in LinkedIn"}
         </span>
@@ -144,12 +165,26 @@ const JobCardPreview = memo(function JobCardPreview({
           <Skeleton className="w-full h-48" />
         ) : ogData?.image ? (
           <div className="w-full h-48 overflow-hidden">
-            <img src={ogData.image} alt={ogData.title || "Preview"} className="w-full h-full object-cover" />
+            <img
+              src={ogData.image}
+              alt={ogData.title || "Preview"}
+              className="w-full h-full object-cover"
+            />
           </div>
         ) : (
           <div className="w-full h-32 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-            <svg className="w-12 h-12 text-default-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            <svg
+              className="w-12 h-12 text-default-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+              />
             </svg>
           </div>
         )}
@@ -161,11 +196,27 @@ const JobCardPreview = memo(function JobCardPreview({
             </>
           ) : (
             <>
-              <h4 className="font-semibold text-foreground line-clamp-2 mb-1">{ogData?.title || sourceUrl}</h4>
-              {ogData?.description && <p className="text-sm text-default-500 line-clamp-2">{ogData.description}</p>}
+              <h4 className="font-semibold text-foreground line-clamp-2 mb-1">
+                {ogData?.title || sourceUrl}
+              </h4>
+              {ogData?.description && (
+                <p className="text-sm text-default-500 line-clamp-2">
+                  {ogData.description}
+                </p>
+              )}
               <div className="flex items-center gap-2 mt-3 text-xs text-default-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
                 </svg>
                 <span>{ogData?.siteName || new URL(sourceUrl).hostname}</span>
               </div>
@@ -182,12 +233,38 @@ const JobCardPreview = memo(function JobCardPreview({
       if (!embeddable || !isLinkedInEmbeddable) {
         return renderLinkedInFallback();
       }
-      return <div className="w-full flex justify-center p-4" dangerouslySetInnerHTML={{ __html: html }} />;
+      const src = html.match(/src=["']([^"']+)["']/i)?.[1];
+
+      return src ? (
+        <iframe
+          className="h-[500px] w-full max-w-[550px]"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin"
+          src={src}
+          title={title || "Job preview"}
+        />
+      ) : (
+        renderLinkedInFallback()
+      );
     }
 
     if (platform === "twitter") {
       // Twitter embeds work, show the iframe
-      return <div className="w-full flex justify-center p-4" dangerouslySetInnerHTML={{ __html: html }} />;
+      const src = html.match(/src=["']([^"']+)["']/i)?.[1];
+
+      return src ? (
+        <iframe
+          className="h-[500px] w-full max-w-[550px]"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin"
+          src={src}
+          title={title || "Job preview"}
+        />
+      ) : (
+        renderOGFallback()
+      );
     }
 
     // For unknown/generic URLs, always show OG fallback in preview
@@ -201,7 +278,12 @@ const JobCardPreview = memo(function JobCardPreview({
         <h3 className="text-sm font-semibold text-foreground truncate flex-1">
           {title || "Untitled Post"}
         </h3>
-        <Chip size="sm" variant="flat" color="default" className="text-xs font-medium flex-shrink-0">
+        <Chip
+          size="sm"
+          variant="flat"
+          color="default"
+          className="text-xs font-medium flex-shrink-0"
+        >
           {t.jobManage.form.preview}
         </Chip>
       </CardHeader>
@@ -234,11 +316,16 @@ export default function ManageJobsClient({
   const pagination = initialPagination;
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ title: "", iframe: "", embeddable: true });
+  const [formData, setFormData] = useState({
+    title: "",
+    iframe: "",
+    embeddable: true,
+  });
   const [urlInput, setUrlInput] = useState("");
   const [embedPreview, setEmbedPreview] = useState<string | null>(null);
   const [embedError, setEmbedError] = useState<string | null>(null);
-  const [detectedPlatform, setDetectedPlatform] = useState<SupportedPlatform | null>(null);
+  const [detectedPlatform, setDetectedPlatform] =
+    useState<SupportedPlatform | null>(null);
   const [idForDelete, setIdForDelete] = useState<string | null>(null);
   const [isTogglingAutoApprove, setIsTogglingAutoApprove] = useState(false);
 
@@ -293,11 +380,16 @@ export default function ManageJobsClient({
       setAutoApproveEnabled(enabled);
       toast.success(
         enabled
-          ? t.jobManage.autoApprove?.enabled || "Auto-approve enabled for bot posts"
-          : t.jobManage.autoApprove?.disabled || "Auto-approve disabled for bot posts"
+          ? t.jobManage.autoApprove?.enabled ||
+              "Auto-approve enabled for bot posts"
+          : t.jobManage.autoApprove?.disabled ||
+              "Auto-approve disabled for bot posts",
       );
-    } catch (err) {
-      toast.error(t.jobManage.autoApprove?.error || "Failed to update auto-approve setting");
+    } catch {
+      toast.error(
+        t.jobManage.autoApprove?.error ||
+          "Failed to update auto-approve setting",
+      );
     } finally {
       setIsTogglingAutoApprove(false);
     }
@@ -320,7 +412,7 @@ export default function ManageJobsClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          sourceUrl: urlInput, // Save original URL
+          sourceUrl: isUrl(urlInput) ? urlInput.trim() : null,
         }),
       });
 
@@ -329,7 +421,11 @@ export default function ManageJobsClient({
         throw new Error(errorData.error || t.jobManage.save.errorMessage);
       }
 
-      toast.success(editingId ? t.jobManage.save.updatedSuccessMessage : t.jobManage.save.saveSuccessMessage);
+      toast.success(
+        editingId
+          ? t.jobManage.save.updatedSuccessMessage
+          : t.jobManage.save.saveSuccessMessage,
+      );
       // Clear all form state
       setFormData({ title: "", iframe: "", embeddable: true });
       setUrlInput("");
@@ -340,12 +436,18 @@ export default function ManageJobsClient({
       setIsCreating(false);
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t.jobManage.save.errorMessage);
+      toast.error(
+        err instanceof Error ? err.message : t.jobManage.save.errorMessage,
+      );
     }
   };
 
   const handleEdit = (post: Post) => {
-    setFormData({ title: post.title, iframe: post.iframe, embeddable: post.embeddable ?? true });
+    setFormData({
+      title: post.title,
+      iframe: post.iframe,
+      embeddable: post.embeddable ?? true,
+    });
     // Show sourceUrl if available, otherwise show iframe
     setUrlInput(post.sourceUrl || post.iframe);
     setEmbedPreview(post.iframe);
@@ -364,7 +466,9 @@ export default function ManageJobsClient({
   const confirmDelete = async () => {
     onConfirmOpenChange();
     try {
-      const res = await fetch(`/api/posts/${idForDelete}`, { method: "DELETE" });
+      const res = await fetch(`/api/posts/${idForDelete}`, {
+        method: "DELETE",
+      });
       setIdForDelete(null);
       if (!res.ok) {
         throw new Error(t.jobManage.confirmDelete.errorMessage);
@@ -372,7 +476,11 @@ export default function ManageJobsClient({
       toast.success(t.jobManage.confirmDelete.successMessage);
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t.jobManage.confirmDelete.errorMessage);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : t.jobManage.confirmDelete.errorMessage,
+      );
     }
   };
 
@@ -390,7 +498,7 @@ export default function ManageJobsClient({
 
       toast.success(`Post ${newStatus.toLowerCase()} successfully`);
       router.refresh();
-    } catch (err) {
+    } catch {
       toast.error("Failed to update post status");
     }
   };
@@ -406,43 +514,46 @@ export default function ManageJobsClient({
   };
 
   // Handle URL input change and generate embed
-  const handleUrlChange = useCallback((value: string) => {
-    setUrlInput(value);
-    setEmbedError(null);
-
-    if (!value.trim()) {
-      setEmbedPreview(null);
-      setDetectedPlatform(null);
-      setFormData(prev => ({ ...prev, iframe: "" }));
-      return;
-    }
-
-    // Detect platform for visual feedback
-    if (isUrl(value)) {
-      setDetectedPlatform(detectPlatform(value));
-    } else {
-      setDetectedPlatform(null);
-    }
-
-    // Generate embed
-    const result = generateEmbed(value);
-
-    if (result.success && result.iframe) {
-      setEmbedPreview(result.iframe);
-      setFormData(prev => ({
-        ...prev,
-        iframe: result.iframe!,
-        embeddable: result.embeddable ?? true
-      }));
+  const handleUrlChange = useCallback(
+    (value: string) => {
+      setUrlInput(value);
       setEmbedError(null);
-    } else {
-      setEmbedPreview(null);
-      setFormData(prev => ({ ...prev, iframe: "", embeddable: true }));
-      if (value.trim()) {
-        setEmbedError(result.error || t.jobManage.form.urlField.invalidUrl);
+
+      if (!value.trim()) {
+        setEmbedPreview(null);
+        setDetectedPlatform(null);
+        setFormData((prev) => ({ ...prev, iframe: "" }));
+        return;
       }
-    }
-  }, [t]);
+
+      // Detect platform for visual feedback
+      if (isUrl(value)) {
+        setDetectedPlatform(detectPlatform(value));
+      } else {
+        setDetectedPlatform(null);
+      }
+
+      // Generate embed
+      const result = generateEmbed(value);
+
+      if (result.success && result.iframe) {
+        setEmbedPreview(result.iframe);
+        setFormData((prev) => ({
+          ...prev,
+          iframe: result.iframe!,
+          embeddable: result.embeddable ?? true,
+        }));
+        setEmbedError(null);
+      } else {
+        setEmbedPreview(null);
+        setFormData((prev) => ({ ...prev, iframe: "", embeddable: true }));
+        if (value.trim()) {
+          setEmbedError(result.error || t.jobManage.form.urlField.invalidUrl);
+        }
+      }
+    },
+    [t],
+  );
 
   const handlePageChange = (page: number) => {
     navigate(page, statusFilter);
@@ -450,15 +561,13 @@ export default function ManageJobsClient({
   };
 
   // Check if user can edit/delete a post
-  const canEditPost = useCallback((post: Post) => {
-    // Staff can edit/delete any post
+  const canEditPost = (post: Post) => {
     if (isStaff) return true;
-    // Collaborators can only edit their own posts
-    if (post.createdBy && session?.user?.id) {
+    if (post.createdBy && session.user?.id) {
       return post.createdBy.discordId === session.user.id;
     }
     return false;
-  }, [isStaff, session?.user?.id]);
+  };
 
   if (!session?.user) {
     return null;
@@ -479,6 +588,7 @@ export default function ManageJobsClient({
                   {t.jobManage.autoApprove?.label || "Auto-approve bot posts"}
                 </span>
                 <Switch
+                  aria-label={t.jobManage.autoApprove.label}
                   isSelected={autoApproveEnabled}
                   isDisabled={isTogglingAutoApprove || isPending}
                   onValueChange={handleAutoApproveToggle}
@@ -525,7 +635,11 @@ export default function ManageJobsClient({
         {isCreating && (
           <Card>
             <CardHeader>
-              <h2 className="text-xl font-bold">{editingId ? t.jobManage.form.titleEditPost : t.jobManage.form.titleNewPost}</h2>
+              <h2 className="text-xl font-bold">
+                {editingId
+                  ? t.jobManage.form.titleEditPost
+                  : t.jobManage.form.titleNewPost}
+              </h2>
             </CardHeader>
             <CardBody>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -533,7 +647,9 @@ export default function ManageJobsClient({
                   label={t.jobManage.form.titleField.title}
                   placeholder={t.jobManage.form.titleField.placeholder}
                   value={formData.title}
-                  onValueChange={(value) => setFormData({ ...formData, title: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, title: value })
+                  }
                   maxLength={50}
                 />
 
@@ -551,23 +667,33 @@ export default function ManageJobsClient({
                     }}
                   />
 
-                  {detectedPlatform && detectedPlatform !== 'unknown' && (
+                  {detectedPlatform && detectedPlatform !== "unknown" && (
                     <div className="flex items-center gap-2">
                       <Chip
                         size="sm"
-                        color={detectedPlatform === 'linkedin' ? 'primary' : 'secondary'}
+                        color={
+                          detectedPlatform === "linkedin"
+                            ? "primary"
+                            : "secondary"
+                        }
                         variant="flat"
                       >
-                        {detectedPlatform === 'linkedin' ? 'LinkedIn' : 'Twitter/X'}
+                        {detectedPlatform === "linkedin"
+                          ? "LinkedIn"
+                          : "Twitter/X"}
                       </Chip>
-                      <span className={typography.caption}>{t.jobManage.form.urlField.detected}</span>
+                      <span className={typography.caption}>
+                        {t.jobManage.form.urlField.detected}
+                      </span>
                     </div>
                   )}
                 </div>
 
                 {embedPreview && (
                   <div className="space-y-2">
-                    <span className={`${typography.label} text-default-600`}>{t.jobManage.form.preview}</span>
+                    <span className={`${typography.label} text-default-600`}>
+                      {t.jobManage.form.preview}
+                    </span>
                     <JobCardPreview
                       html={embedPreview}
                       title={formData.title}
@@ -585,7 +711,9 @@ export default function ManageJobsClient({
                     color="primary"
                     isDisabled={!formData.iframe}
                   >
-                    {editingId ? t.jobManage.form.updateButton : t.jobManage.form.createButton}
+                    {editingId
+                      ? t.jobManage.form.updateButton
+                      : t.jobManage.form.createButton}
                   </Button>
                   <Button
                     type="button"
@@ -603,7 +731,7 @@ export default function ManageJobsClient({
 
         <Card>
           <CardBody>
-            <Table aria-label="Posts table">
+            <Table aria-label={t.jobManage.title}>
               <TableHeader>
                 <TableColumn>{t.jobManage.table.head.title}</TableColumn>
                 <TableColumn>{t.jobManage.table.head.status}</TableColumn>
@@ -618,7 +746,12 @@ export default function ManageJobsClient({
                       <div className="flex flex-col">
                         <span className="font-medium">{post.title}</span>
                         {post.sourceUrl && (
-                          <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate max-w-[200px]">
+                          <a
+                            href={post.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline truncate max-w-[200px]"
+                          >
                             {post.sourceUrl}
                           </a>
                         )}
@@ -629,8 +762,11 @@ export default function ManageJobsClient({
                         size="sm"
                         variant="flat"
                         color={
-                          post.status === "APPROVED" ? "success" :
-                            post.status === "REJECTED" ? "danger" : "warning"
+                          post.status === "APPROVED"
+                            ? "success"
+                            : post.status === "REJECTED"
+                              ? "danger"
+                              : "warning"
                         }
                       >
                         {post.status || "PENDING"}
@@ -641,13 +777,20 @@ export default function ManageJobsClient({
                         <div className="flex items-center gap-2">
                           <Avatar
                             size="sm"
-                            src={post.createdBy.avatar
-                              ? getDiscordAvatarUrl(post.createdBy.discordId, post.createdBy.avatar, "0")
-                              : undefined
+                            src={
+                              post.createdBy.avatar
+                                ? getDiscordAvatarUrl(
+                                    post.createdBy.discordId,
+                                    post.createdBy.avatar,
+                                    "0",
+                                  )
+                                : undefined
                             }
                             name={post.createdBy.username}
                           />
-                          <span className="text-sm">{post.createdBy.username}</span>
+                          <span className="text-sm">
+                            {post.createdBy.username}
+                          </span>
                         </div>
                       ) : (
                         <span className="text-default-400">-</span>
@@ -664,28 +807,58 @@ export default function ManageJobsClient({
                             {post.status !== "APPROVED" && (
                               <Button
                                 isIconOnly
+                                aria-label={t.jobManage.actions.approve}
+                                className="min-h-11 min-w-11"
                                 size="sm"
                                 color="success"
                                 variant="flat"
                                 title={t.jobManage.actions.approve}
-                                onPress={() => handleStatusUpdate(post.id, "APPROVED")}
+                                onPress={() =>
+                                  handleStatusUpdate(post.id, "APPROVED")
+                                }
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  strokeWidth={1.5}
+                                  stroke="currentColor"
+                                  className="w-4 h-4"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M4.5 12.75l6 6 9-13.5"
+                                  />
                                 </svg>
                               </Button>
                             )}
                             {post.status !== "REJECTED" && (
                               <Button
                                 isIconOnly
+                                aria-label={t.jobManage.actions.reject}
+                                className="min-h-11 min-w-11"
                                 size="sm"
                                 color="danger"
                                 variant="flat"
                                 title={t.jobManage.actions.reject}
-                                onPress={() => handleStatusUpdate(post.id, "REJECTED")}
+                                onPress={() =>
+                                  handleStatusUpdate(post.id, "REJECTED")
+                                }
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  strokeWidth={1.5}
+                                  stroke="currentColor"
+                                  className="w-4 h-4"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M6 18L18 6M6 6l12 12"
+                                  />
                                 </svg>
                               </Button>
                             )}
@@ -706,13 +879,26 @@ export default function ManageJobsClient({
                             </Button>
                             <Button
                               isIconOnly
+                              aria-label={t.jobManage.table.body.delete}
+                              className="min-h-11 min-w-11"
                               size="sm"
                               color="danger"
                               variant="shadow"
                               onPress={() => handleDelete(post.id)}
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="w-4 h-4"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                                />
                               </svg>
                             </Button>
                           </>

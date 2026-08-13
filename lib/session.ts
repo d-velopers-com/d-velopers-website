@@ -1,5 +1,5 @@
-import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
+import { cookies } from "next/headers";
 
 import { refreshDiscordToken } from "@/lib/discord-oauth";
 
@@ -68,7 +68,7 @@ export function isDiscordTokenExpired(expiresAt?: number): boolean {
 
   // Add 5 minute buffer to avoid edge cases
   const bufferMs = 5 * 60 * 1000;
-  return Date.now() >= (expiresAt - bufferMs);
+  return Date.now() >= expiresAt - bufferMs;
 }
 
 export async function refreshDiscordSession(
@@ -106,11 +106,7 @@ export async function resolveSession(): Promise<SessionResolution> {
     return { session, discordReauthRequired: false };
   }
 
-  const refreshedSession = await refreshDiscordSession(session);
-
-  if (refreshedSession) {
-    return { session: refreshedSession, discordReauthRequired: false };
-  }
-
+  // Rendering a Server Component must not mutate cookies. Discord-dependent
+  // route handlers can refresh the token when the user requests that action.
   return { session, discordReauthRequired: true };
 }

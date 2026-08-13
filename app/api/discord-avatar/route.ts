@@ -75,7 +75,9 @@ function fetchImageBuffer(url: string) {
           resolve({
             body: concatUint8Arrays(chunks),
             contentType: getFirstHeaderValue(response.headers["content-type"]),
-            cacheControl: getFirstHeaderValue(response.headers["cache-control"]),
+            cacheControl: getFirstHeaderValue(
+              response.headers["cache-control"],
+            ),
           });
         });
       },
@@ -108,7 +110,7 @@ export async function GET(request: NextRequest) {
   try {
     const image = await fetchImageBuffer(avatarUrl);
 
-    return new NextResponse(image.body, {
+    return new NextResponse(Uint8Array.from(image.body), {
       headers: {
         "Cache-Control":
           image.cacheControl || "public, max-age=31536000, immutable",

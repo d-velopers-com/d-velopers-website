@@ -56,7 +56,9 @@ export function UserAvatar({
   const countryName = country ? getCountryName(country) : null;
 
   return (
-    <div className={`relative flex-shrink-0 ${SIZE_CLASSES[size]} ${className}`}>
+    <div
+      className={`relative flex-shrink-0 ${SIZE_CLASSES[size]} ${className}`}
+    >
       <div
         className={`${SIZE_CLASSES[size]} overflow-hidden rounded-full bg-default-100 ring-2 ring-background`}
       >

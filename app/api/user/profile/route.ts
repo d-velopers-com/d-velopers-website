@@ -1,17 +1,9 @@
 import { NextResponse } from "next/server";
 
+import { getCountryByCode } from "@/lib/countries";
 import { getSession } from "@/lib/session";
 import { updateUserProfile, getUserByDiscordId } from "@/lib/user";
-
-function isValidUrl(url: string): boolean {
-  try {
-    new URL(url);
-
-    return true;
-  } catch {
-    return false;
-  }
-}
+import { isSafeExternalUrl } from "@/lib/validations";
 
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,9 +11,15 @@ function isValidEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
-function isValidYOE(year: string) {
+function isValidYOE(year: unknown) {
   const yearsNumber = Number(year);
-  return yearsNumber >= 0;
+
+  return (
+    Number.isFinite(yearsNumber) &&
+    Number.isInteger(yearsNumber) &&
+    yearsNumber >= 0 &&
+    yearsNumber <= 80
+  );
 }
 
 export async function GET() {
@@ -177,7 +175,7 @@ export async function PATCH(request: Request) {
     if (link === null || link === "") {
       updateData.link = null;
     } else if (typeof link === "string") {
-      if (!isValidUrl(link)) {
+      if (!isSafeExternalUrl(link) || link.length > 2048) {
         return NextResponse.json(
           { error: "Invalid URL format" },
           { status: 400 },
@@ -207,7 +205,7 @@ export async function PATCH(request: Request) {
           { status: 400 },
         );
       }
-      if (url.trim() !== "" && !isValidUrl(url)) {
+      if (url.trim() !== "" && (!isSafeExternalUrl(url) || url.length > 2048)) {
         return NextResponse.json(
           { error: `Invalid URL format: ${url}` },
           { status: 400 },
@@ -251,13 +249,14 @@ export async function PATCH(request: Request) {
     if (country === null || country === "") {
       updateData.country = null;
     } else if (typeof country === "string") {
-      if (country.length !== 2) {
+      const normalizedCountry = country.toUpperCase().trim();
+      if (!getCountryByCode(normalizedCountry)) {
         return NextResponse.json(
-          { error: "Country code must be 2 characters (ISO 3166-1 alpha-2)" },
+          { error: "Country must be a supported ISO 3166-1 alpha-2 code" },
           { status: 400 },
         );
       }
-      updateData.country = country.toUpperCase().trim();
+      updateData.country = normalizedCountry;
     } else {
       return NextResponse.json(
         { error: "Invalid country value" },

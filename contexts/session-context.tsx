@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext } from "react";
-
 import type { SessionState } from "@/lib/viewer";
+
+import { createContext, useContext } from "react";
 
 const defaultSessionState: SessionState = {
   user: null,

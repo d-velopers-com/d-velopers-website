@@ -1,6 +1,7 @@
-import {NextRequest, NextResponse} from "next/server";
-import {getSession} from "@/lib/session";
-import {accessByRole} from "@/config/access-by-role";
+import { NextRequest, NextResponse } from "next/server";
+
+import { accessByRole } from "@/config/access-by-role";
+import { getSession } from "@/lib/session";
 
 export type Session = {
   discordId: string;
@@ -14,14 +15,12 @@ export type AuthenticatedHandler<T = any> = (
   session: Session,
 ) => Promise<NextResponse>;
 
-export function withAuth<T = any>(
-  handler: AuthenticatedHandler<T>
-) {
+export function withAuth<T = any>(handler: AuthenticatedHandler<T>) {
   return async (request: NextRequest, context: T) => {
     const session = await getSession();
 
     if (!session) {
-      return NextResponse.json({error: "Unauthorized"}, {status: 401});
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     return handler(request, context, session as Session);
@@ -30,17 +29,27 @@ export function withAuth<T = any>(
 
 export function withRole<T = any>(
   allowedRoles: string[],
-  handler: AuthenticatedHandler<T>
+  handler: AuthenticatedHandler<T>,
 ) {
-  return withAuth(async (request: NextRequest, context: T, session: Session) => {
-    const hasRequiredRole = session.roles?.some((role) => allowedRoles.includes(role));
-    if (!hasRequiredRole) {
-      return NextResponse.json({error: "Forbidden"}, {status: 403});
-    }
-    return handler(request, context, session);
-  });
+  return withAuth(
+    async (request: NextRequest, context: T, session: Session) => {
+      const hasRequiredRole = session.roles?.some((role) =>
+        allowedRoles.includes(role),
+      );
+      if (!hasRequiredRole) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      return handler(request, context, session);
+    },
+  );
+}
+
+export function withJobManagementRole<T = any>(
+  handler: AuthenticatedHandler<T>,
+) {
+  return withRole(accessByRole["jobs_management"], handler);
 }
 
 export function withStaffRole<T = any>(handler: AuthenticatedHandler<T>) {
-  return withRole(accessByRole["jobs_management"], handler);
+  return withRole(accessByRole.staff, handler);
 }

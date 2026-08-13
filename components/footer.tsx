@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+
 import {
   GithubIcon,
   TwitterIcon,
@@ -15,6 +16,8 @@ import { typography } from "@/lib/ui-constants";
 export function Footer() {
   const { t } = useLanguage();
   const currentYear = new Date().getFullYear();
+  const socialLinkClass =
+    "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-default-500 transition-colors hover:bg-default-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
   return (
     <footer className="w-full border-t border-default-200 dark:border-default-100 bg-background">
@@ -26,7 +29,7 @@ export function Footer() {
               href="https://x.com/diegoveloper"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-default-400 hover:text-foreground transition-colors"
+              className={socialLinkClass}
               aria-label={t.footer.twitter}
             >
               <TwitterIcon size={24} />
@@ -35,7 +38,7 @@ export function Footer() {
               href="https://www.linkedin.com/in/diegoveloper/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-default-400 hover:text-foreground transition-colors"
+              className={socialLinkClass}
               aria-label={t.footer.linkedin}
             >
               <LinkedInIcon size={24} />
@@ -44,7 +47,7 @@ export function Footer() {
               href="https://www.youtube.com/user/diegoveloper"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-default-400 hover:text-foreground transition-colors"
+              className={socialLinkClass}
               aria-label={t.footer.youtube}
             >
               <YouTubeIcon size={24} />
@@ -53,16 +56,16 @@ export function Footer() {
               href="https://www.instagram.com/diegoveloper"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-default-400 hover:text-foreground transition-colors"
+              className={socialLinkClass}
               aria-label={t.footer.instagram}
             >
               <InstagramIcon size={24} />
             </Link>
             <Link
-              href="http://www.github.com/diegoveloper"
+              href="https://www.github.com/diegoveloper"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-default-400 hover:text-foreground transition-colors"
+              className={socialLinkClass}
               aria-label={t.footer.github}
             >
               <GithubIcon size={24} />
@@ -71,7 +74,7 @@ export function Footer() {
               href="https://www.d-velopers.com/discord"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-default-400 hover:text-foreground transition-colors"
+              className={socialLinkClass}
               aria-label={t.footer.discord}
             >
               <DiscordIcon size={24} />

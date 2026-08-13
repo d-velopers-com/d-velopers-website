@@ -1,5 +1,6 @@
-import { prisma } from "./prisma";
 import { PostStatus, Prisma } from "@prisma/client";
+
+import { prisma } from "./prisma";
 
 export interface PostAuthor {
   id: string;
@@ -46,7 +47,7 @@ export async function createPost(
   title: string,
   iframe: string,
   userId: string,
-  sourceUrl?: string,
+  sourceUrl?: string | null,
   status: PostStatus = PostStatus.PENDING,
   embeddable: boolean = true,
 ): Promise<PostData> {
@@ -84,7 +85,7 @@ export async function getPosts(
   createdById?: string,
   status?: PostStatus | null,
 ): Promise<PostData[]> {
-  const where: any = {};
+  const where: Prisma.PostWhereInput = {};
 
   if (orConditions.length > 0) {
     where.OR = orConditions;
@@ -137,7 +138,7 @@ export async function updatePost(
   title: string,
   iframe: string,
   userId: string,
-  sourceUrl?: string,
+  sourceUrl?: string | null,
   status?: PostStatus,
   embeddable?: boolean,
 ): Promise<PostData> {

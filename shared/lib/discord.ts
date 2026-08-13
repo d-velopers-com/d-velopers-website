@@ -11,20 +11,20 @@ const DISCORD_CDN = "https://cdn.discordapp.com";
  * @param size - Image size (default: undefined for original size)
  */
 export function getDiscordAvatarUrl(
-    discordId: string,
-    avatar: string | null,
-    discriminator: string,
-    size?: number
+  discordId: string,
+  avatar: string | null,
+  discriminator: string,
+  size?: number,
 ): string {
-    const sizeParam = size ? `?size=${size}` : "";
+  const sizeParam = size ? `?size=${size}` : "";
 
-    if (avatar) {
-        return `${DISCORD_CDN}/avatars/${discordId}/${avatar}.png${sizeParam}`;
-    }
+  if (avatar) {
+    return `${DISCORD_CDN}/avatars/${discordId}/${avatar}.png${sizeParam}`;
+  }
 
-    // Default avatar based on discriminator
-    const defaultIndex = parseInt(discriminator) % 5;
-    return `${DISCORD_CDN}/embed/avatars/${defaultIndex}.png${sizeParam}`;
+  // Default avatar based on discriminator
+  const defaultIndex = parseInt(discriminator) % 5;
+  return `${DISCORD_CDN}/embed/avatars/${defaultIndex}.png${sizeParam}`;
 }
 
 /**
@@ -34,39 +34,39 @@ export function getDiscordAvatarUrl(
  * @param size - Image size
  */
 export function getDiscordAvatarUrlNew(
-    userId: string,
-    avatar: string | null,
-    size?: number
+  userId: string,
+  avatar: string | null,
+  size?: number,
 ): string {
-    const sizeParam = size ? `?size=${size}` : "";
+  const sizeParam = size ? `?size=${size}` : "";
 
-    if (avatar) {
-        return `${DISCORD_CDN}/avatars/${userId}/${avatar}.png${sizeParam}`;
-    }
+  if (avatar) {
+    return `${DISCORD_CDN}/avatars/${userId}/${avatar}.png${sizeParam}`;
+  }
 
-    // For new username system, use (user_id >> 22) % 6
-    const defaultIndex = (BigInt(userId) >> BigInt(22)) % BigInt(6);
-    return `${DISCORD_CDN}/embed/avatars/${defaultIndex}.png${sizeParam}`;
+  // For new username system, use (user_id >> 22) % 6
+  const defaultIndex = (BigInt(userId) >> BigInt(22)) % BigInt(6);
+  return `${DISCORD_CDN}/embed/avatars/${defaultIndex}.png${sizeParam}`;
 }
 
 export function getDiscordAvatarProxyUrl(
-    discordId: string,
-    avatar: string | null,
-    discriminator: string,
-    size?: number
+  discordId: string,
+  avatar: string | null,
+  discriminator: string,
+  size?: number,
 ): string {
-    const params = new URLSearchParams({
-        discordId,
-        discriminator,
-    });
+  const params = new URLSearchParams({
+    discordId,
+    discriminator,
+  });
 
-    if (avatar) {
-        params.set("avatar", avatar);
-    }
+  if (avatar) {
+    params.set("avatar", avatar);
+  }
 
-    if (size) {
-        params.set("size", String(size));
-    }
+  if (size) {
+    params.set("size", String(size));
+  }
 
-    return `/api/discord-avatar?${params.toString()}`;
+  return `/api/discord-avatar?${params.toString()}`;
 }

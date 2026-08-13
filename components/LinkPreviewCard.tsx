@@ -1,7 +1,7 @@
 "use client";
 
-import { memo, useState } from "react";
 import { Skeleton } from "@heroui/skeleton";
+import { memo, useState } from "react";
 
 import { useLinkPreview } from "@/hooks/useLinkPreview";
 
@@ -88,6 +88,8 @@ export const LinkPreviewCard = memo(function LinkPreviewCard({
         ) : ogData?.image && !imgError ? (
           <div className="w-full h-48 overflow-hidden">
             <img
+              loading="lazy"
+              referrerPolicy="no-referrer"
               src={ogData.image}
               alt={ogData.title || postTitle || "Preview"}
               className="w-full h-full object-cover"

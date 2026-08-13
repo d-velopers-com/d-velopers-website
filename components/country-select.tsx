@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Image from "next/image";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
+import Image from "next/image";
+import { useMemo, useState } from "react";
 
 import { countries, getCountryFlagUrl } from "@/lib/countries";
 

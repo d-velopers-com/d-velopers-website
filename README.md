@@ -1,6 +1,6 @@
 # D-VELOPERS Community Platform
 
-A modern community platform built with Next.js 15, featuring Discord OAuth integration, public user profiles, and role-based permissions.
+A modern community platform built with Next.js 16, featuring Discord OAuth integration, public user profiles, and role-based permissions.
 
 ## ✨ Features
 
@@ -15,7 +15,7 @@ A modern community platform built with Next.js 15, featuring Discord OAuth integ
 
 ## 🛠️ Tech Stack
 
-- **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
+- **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
 - **UI Library:** [HeroUI v2](https://heroui.dev/)
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
 - **Database:** PostgreSQL with [Prisma ORM](https://www.prisma.io/)
@@ -27,8 +27,8 @@ A modern community platform built with Next.js 15, featuring Discord OAuth integ
 
 Before you begin, ensure you have the following installed:
 
-- **Node.js** 18.x or higher
-- **pnpm** 8.x or higher
+- **Node.js** 24.x
+- **pnpm** 9.12 or higher
 - **PostgreSQL** database
 - **Discord Application** (for OAuth)
 
@@ -67,7 +67,7 @@ ALLOWED_ROLES=role_id_1,role_id_2,role_id_3
 DATABASE_URL=postgresql://user:password@localhost:5432/database_name
 
 # Security
-JWT_SECRET=your_random_secret_key_here
+NEXTAUTH_SECRET=your_random_secret_key_here
 ```
 
 4. **Generate Prisma Client:**
@@ -76,7 +76,7 @@ JWT_SECRET=your_random_secret_key_here
 pnpm exec prisma generate
 ```
 
-@ 5. **Run database migrations:**
+5. **Run database migrations:**
 
 ```bash
 pnpm exec prisma migrate dev
@@ -176,7 +176,7 @@ d-velopers-website/
 | `DISCORD_GUILD_ID`      | Your Discord server ID                                 | ✅ Yes   |
 | `ALLOWED_ROLES`         | Comma-separated role IDs that can make profiles public | ❌ No    |
 | `DATABASE_URL`          | PostgreSQL connection string                           | ✅ Yes   |
-| `JWT_SECRET`            | Secret key for JWT token encryption                    | ✅ Yes   |
+| `NEXTAUTH_SECRET`       | Secret key used to sign the session JWT                | ✅ Yes   |
 
 ## 📝 Available Scripts
 
@@ -249,7 +249,6 @@ Ensure you:
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
 
 ## 💬 Support
 

@@ -1,6 +1,8 @@
-import { prisma } from "./prisma";
 import { Prisma } from "@prisma/client";
+
 import { SearchFilters } from "@/types";
+
+import { prisma } from "./prisma";
 
 interface CreateUserData {
   discordId: string;
@@ -49,7 +51,9 @@ function getJoinedServerAtTimestamp(value: Date | string | null | undefined) {
   return new Date(value).getTime();
 }
 
-export function sortPublicUsersByPriority<T extends PublicUserRow>(users: T[]): T[] {
+export function sortPublicUsersByPriority<T extends PublicUserRow>(
+  users: T[],
+): T[] {
   const allowedRoles = getAllowedRoles();
 
   return [...users].sort((a, b) => {
@@ -301,7 +305,10 @@ function buildPublicUserConditions(filters?: SearchFilters) {
   const conditions: Prisma.Sql[] = [Prisma.sql`"isPublic" = true`];
 
   if (filters?.searchQuery) {
-    const searchTerms = filters.searchQuery.trim().split(/\s+/).filter(term => term.length > 0);
+    const searchTerms = filters.searchQuery
+      .trim()
+      .split(/\s+/)
+      .filter((term) => term.length > 0);
     const searchConditions: Prisma.Sql[] = [];
 
     for (const term of searchTerms) {
@@ -348,9 +355,11 @@ function buildPublicUserOrderClause() {
   const rolePriority = Prisma.sql`
     CASE
       ${Prisma.join(
-        allowedRoles.map((role, index) => Prisma.sql`
+        allowedRoles.map(
+          (role, index) => Prisma.sql`
           WHEN ${role} = ANY(roles) THEN ${index}
-        `),
+        `,
+        ),
         " ",
       )}
       ELSE ${allowedRoles.length}
@@ -459,9 +468,7 @@ export async function getPublicUsersPage(
   const page = Math.min(requestedPage, totalPages);
   const offset = (page - 1) * limit;
   const users =
-    total > 0
-      ? await queryPublicUsers(filters, { limit, offset })
-      : [];
+    total > 0 ? await queryPublicUsers(filters, { limit, offset }) : [];
 
   return {
     users,

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useLanguage } from "@/contexts/language-context";
 import { SHOW_DISCORD_GUIDE_HINT_EVENT } from "@/lib/client-events";
 
 type GuideImage = {
@@ -11,36 +12,16 @@ type GuideImage = {
   alt: string;
 };
 
-const youtubeContent = {
+const youtubeMedia = {
   name: "YouTube",
   accent: "red",
   subscribeImage: "/discord/youtube-subscribe-step.webp",
-  subscribeAlt:
-    "Pantalla de suscripción en YouTube con el botón Suscribirse resaltado",
-  subscribeTitle: "Hazte miembro en YouTube",
-  subscribeDetails: [
-    'Busca el botón "Unirme" en el canal',
-    "Selecciona el nivel Developer o uno superior",
-  ],
   subscribeUrl: "https://www.youtube.com/channel/UCFKZxStYsOVrzdN_FCZ0NGg/join",
-  accountNote: "Requiere una cuenta de YouTube",
-  connectionImages: [
-    {
-      src: "/discord/secondStep1.webp",
-      alt: "Paso 1: abrir los ajustes de usuario de Discord",
-    },
-    {
-      src: "/discord/secondStep2.webp",
-      alt: "Paso 2: seleccionar Conexiones en Discord",
-    },
-    {
-      src: "/discord/secondYoutubeStep3.webp",
-      alt: "Paso 3: seleccionar YouTube entre las conexiones",
-    },
-    {
-      src: "/discord/secondStep4.webp",
-      alt: "Paso 4: autorizar la conexión con YouTube",
-    },
+  connectionSources: [
+    "/discord/secondStep1.webp",
+    "/discord/secondStep2.webp",
+    "/discord/secondYoutubeStep3.webp",
+    "/discord/secondStep4.webp",
   ],
 } as const;
 
@@ -116,9 +97,11 @@ function ImageButton({
   ringClass: string;
   onOpen: (image: GuideImage) => void;
 }) {
+  const { t } = useLanguage();
+
   return (
     <button
-      aria-label={`Ampliar: ${image.alt}`}
+      aria-label={`${t.discord.enlargeImage}: ${image.alt}`}
       className={`group relative aspect-video w-full overflow-hidden rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#131118] ${ringClass}`}
       type="button"
       onClick={() => onOpen(image)}
@@ -159,6 +142,7 @@ function ImageCarousel({
   accent: keyof typeof accentClasses;
   onOpen: (image: GuideImage) => void;
 }) {
+  const { t } = useLanguage();
   const [current, setCurrent] = useState(0);
   const colors = accentClasses[accent];
   const image = images[current];
@@ -172,16 +156,16 @@ function ImageCarousel({
       <div className="relative">
         <ImageButton image={image} ringClass={colors.ring} onOpen={onOpen} />
         <button
-          aria-label="Captura anterior"
-          className="absolute left-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/65 text-xl text-white transition hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          aria-label={t.discord.previousImage}
+          className="absolute left-2 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-black/65 text-xl text-white transition hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           type="button"
           onClick={() => move(-1)}
         >
           ‹
         </button>
         <button
-          aria-label="Siguiente captura"
-          className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/65 text-xl text-white transition hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          aria-label={t.discord.nextImage}
+          className="absolute right-2 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-black/65 text-xl text-white transition hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           type="button"
           onClick={() => move(1)}
         >
@@ -189,14 +173,14 @@ function ImageCarousel({
         </button>
       </div>
       <div
-        aria-label="Capturas de conexión"
+        aria-label={t.discord.imageGroup}
         className="mt-3 flex justify-center gap-2"
         role="group"
       >
         {images.map((item, index) => (
           <button
             key={item.src}
-            aria-label={`Mostrar captura ${index + 1}`}
+            aria-label={`${t.discord.showImage} ${index + 1}`}
             aria-pressed={current === index}
             className={`h-2.5 rounded-full transition-all ${
               current === index
@@ -209,7 +193,9 @@ function ImageCarousel({
         ))}
       </div>
       <p aria-live="polite" className="mt-2 text-center text-xs text-white/45">
-        Captura {current + 1} de {images.length}
+        {t.discord.imageCount
+          .replace("{current}", String(current + 1))
+          .replace("{total}", String(images.length))}
       </p>
     </div>
   );
@@ -222,6 +208,7 @@ function Lightbox({
   image: GuideImage | null;
   onClose: () => void;
 }) {
+  const { t } = useLanguage();
   useEffect(() => {
     if (!image) return;
 
@@ -238,13 +225,13 @@ function Lightbox({
 
   return (
     <div
-      aria-label="Vista ampliada"
+      aria-label={t.discord.enlargedView}
       aria-modal="true"
       className="fixed inset-0 z-[100] grid place-items-center p-4"
       role="dialog"
     >
       <button
-        aria-label="Cerrar vista ampliada"
+        aria-label={t.discord.closeEnlargedView}
         className="absolute inset-0 h-full w-full cursor-default bg-black/85 backdrop-blur-sm"
         type="button"
         onClick={onClose}
@@ -259,8 +246,8 @@ function Lightbox({
           src={image.src}
         />
         <button
-          aria-label="Cerrar imagen ampliada"
-          className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-black/70 text-2xl text-white transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          aria-label={t.discord.closeImage}
+          className="absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-full bg-black/70 text-2xl text-white transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           type="button"
           onClick={onClose}
         >
@@ -272,9 +259,14 @@ function Lightbox({
 }
 
 function YouTubeGuide() {
+  const { t } = useLanguage();
   const [lightboxImage, setLightboxImage] = useState<GuideImage | null>(null);
-  const content = youtubeContent;
+  const content = youtubeMedia;
   const colors = accentClasses[content.accent];
+  const connectionImages = content.connectionSources.map((src, index) => ({
+    src,
+    alt: t.discord.connectionImageAlts[index],
+  }));
   const cardClasses = `flex flex-col items-center gap-5 rounded-xl border bg-gradient-to-br from-[#131118] to-[#1e1b2a] p-4 sm:p-5 md:flex-row ${colors.border} ${colors.shadow}`;
 
   return (
@@ -283,15 +275,15 @@ function YouTubeGuide() {
         <h3
           className={`mb-1.5 bg-gradient-to-r bg-clip-text text-2xl font-bold text-transparent ${colors.button}`}
         >
-          Cómo unirte al Discord con {content.name}
+          {t.discord.guideTitle}
         </h3>
-        <p className="text-white/60">Sigue estos pasos para obtener acceso</p>
+        <p className="text-white/60">{t.discord.guideSubtitle}</p>
       </div>
 
       <article className={cardClasses}>
         <div className="w-full md:w-2/5">
           <ImageButton
-            image={{ src: content.subscribeImage, alt: content.subscribeAlt }}
+            image={{ src: content.subscribeImage, alt: t.discord.subscribeAlt }}
             ringClass={colors.ring}
             onOpen={setLightboxImage}
           />
@@ -300,14 +292,16 @@ function YouTubeGuide() {
           <StepHeading
             gradient={colors.badge}
             number={1}
-            title={content.subscribeTitle}
+            title={t.discord.subscribeTitle}
           />
           <ul className="mb-5 space-y-2">
-            {content.subscribeDetails.map((detail) => (
-              <CheckItem key={detail} color={colors.text}>
-                {detail}
-              </CheckItem>
-            ))}
+            {[t.discord.subscribeDetailOne, t.discord.subscribeDetailTwo].map(
+              (detail) => (
+                <CheckItem key={detail} color={colors.text}>
+                  {detail}
+                </CheckItem>
+              ),
+            )}
           </ul>
           <Link
             className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-5 py-2.5 font-semibold text-white shadow-lg transition ${colors.button} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white`}
@@ -316,9 +310,9 @@ function YouTubeGuide() {
             target="_blank"
           >
             <YouTubeIcon />
-            Suscribirme ahora
+            {t.discord.subscribeNow}
           </Link>
-          <p className="mt-2 text-xs text-white/45">{content.accountNote}</p>
+          <p className="mt-2 text-xs text-white/45">{t.discord.accountNote}</p>
         </div>
       </article>
 
@@ -326,7 +320,7 @@ function YouTubeGuide() {
         <div className="w-full md:w-2/5">
           <ImageCarousel
             accent={content.accent}
-            images={content.connectionImages}
+            images={connectionImages}
             onOpen={setLightboxImage}
           />
         </div>
@@ -334,21 +328,17 @@ function YouTubeGuide() {
           <StepHeading
             gradient={colors.badge}
             number={2}
-            title="Vincula tus cuentas"
+            title={t.discord.connectAccounts}
           />
           <ul className="space-y-2">
             <CheckItem color={colors.text}>
-              En Discord, ve a{" "}
-              <span className="font-mono text-blue-300">
-                Ajustes de usuario → Conexiones
-              </span>
+              {t.discord.openConnections}
             </CheckItem>
             <CheckItem color={colors.text}>
-              Selecciona YouTube y pulsa{" "}
-              <strong className="text-white">Autorizar</strong>
+              {t.discord.authorizeYoutube}
             </CheckItem>
             <CheckItem color={colors.text}>
-              Acepta los permisos necesarios
+              {t.discord.acceptPermissions}
             </CheckItem>
           </ul>
         </div>
@@ -359,7 +349,7 @@ function YouTubeGuide() {
           <ImageButton
             image={{
               src: "/discord/server.webp",
-              alt: "Notificación de acceso al servidor privado de Discord",
+              alt: t.discord.serverAlt,
             }}
             ringClass={colors.ring}
             onOpen={setLightboxImage}
@@ -369,17 +359,14 @@ function YouTubeGuide() {
           <StepHeading
             gradient={colors.badge}
             number={3}
-            title="Obtén acceso a Discord"
+            title={t.discord.getAccess}
           />
           <ul className="mb-3 space-y-2">
             <CheckItem color={colors.text}>
-              Recibirás acceso automático al servidor privado
+              {t.discord.automaticAccess}
             </CheckItem>
           </ul>
-          <p className="text-sm text-white/45">
-            El acceso suele activarse durante los primeros cinco minutos después
-            de vincular tus cuentas.
-          </p>
+          <p className="text-sm text-white/45">{t.discord.accessTiming}</p>
         </div>
       </article>
 
@@ -389,6 +376,7 @@ function YouTubeGuide() {
 }
 
 export function DiscordGuide() {
+  const { t } = useLanguage();
   const [showScrollHint, setShowScrollHint] = useState(false);
   const hideTimerRef = useRef<number | null>(null);
 
@@ -450,7 +438,7 @@ export function DiscordGuide() {
           <Image
             fill
             priority
-            alt="Comunidad D-velopers"
+            alt={t.discord.communityAlt}
             className="object-cover"
             sizes="100vw"
             src="/discord/background-image.jpg"
@@ -465,22 +453,21 @@ export function DiscordGuide() {
               src="/discord/png_logo.png"
               width={400}
             />
-            <p className="mt-6 text-xl font-bold drop-shadow-lg sm:text-2xl">
+            <h1 className="mt-6 text-xl font-bold drop-shadow-lg sm:text-2xl">
               <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                Beneficios exclusivos
+                {t.discord.exclusiveBenefits}
               </span>{" "}
-              para miembros
-            </p>
+              {t.discord.forMembers}
+            </h1>
             <p className="mt-3 max-w-xl text-sm text-white/75 sm:text-lg">
-              Conéctate con la comunidad, accede a contenido premium y participa
-              en eventos privados.
+              {t.discord.heroDescription}
             </p>
             <button
               className="mt-6 rounded-full bg-gradient-to-r from-purple-600 to-blue-500 px-6 py-2.5 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:from-purple-700 hover:to-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:text-base"
               type="button"
               onClick={goToInstructions}
             >
-              Ver cómo unirme
+              {t.discord.howToJoin}
             </button>
           </div>
         </div>
@@ -496,9 +483,9 @@ export function DiscordGuide() {
             id="community-video-title"
           >
             <span className="bg-gradient-to-r from-[#00e0ff] to-[#b45cff] bg-clip-text text-transparent">
-              Descubre el poder
+              {t.discord.discoverPower}
             </span>{" "}
-            de la comunidad
+            {t.discord.ofCommunity}
           </h2>
           <div className="aspect-video overflow-hidden rounded-xl border border-cyan-400/30 shadow-[0_10px_32px_rgba(0,224,255,0.1)] sm:h-[390px] sm:aspect-auto">
             <iframe
@@ -507,7 +494,7 @@ export function DiscordGuide() {
               className="h-full w-full"
               loading="lazy"
               src="https://www.youtube-nocookie.com/embed/8eecM6r9i6U?rel=0"
-              title="Conoce la comunidad D-velopers"
+              title={t.discord.videoTitle}
             />
           </div>
         </div>
@@ -520,11 +507,10 @@ export function DiscordGuide() {
         <div className="mx-auto max-w-5xl">
           <div className="mb-10 text-center sm:mb-12">
             <h2 className="mb-3 bg-gradient-to-r from-[#00e0ff] to-[#b45cff] bg-clip-text text-3xl font-bold text-transparent sm:text-4xl">
-              Accede al Discord exclusivo
+              {t.discord.exclusiveAccess}
             </h2>
             <p className="mx-auto max-w-2xl text-base text-white/65 sm:text-lg">
-              Sigue estos pasos para unirte a nuestra comunidad privada de
-              desarrolladores.
+              {t.discord.accessDescription}
             </p>
           </div>
 
@@ -559,10 +545,10 @@ export function DiscordGuide() {
 
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-white">
-              ¿Quieres entrar al Discord?
+              {t.discord.wantsAccess}
             </p>
             <p className="mt-0.5 text-xs leading-5 text-white/60 sm:text-sm">
-              Baja para ver la guía paso a paso.
+              {t.discord.scrollHint}
             </p>
           </div>
 
@@ -571,13 +557,15 @@ export function DiscordGuide() {
             type="button"
             onClick={goToInstructions}
           >
-            <span className="sm:hidden">Ver guía</span>
-            <span className="hidden sm:inline">Ver instrucciones</span>
+            <span className="sm:hidden">{t.discord.viewGuide}</span>
+            <span className="hidden sm:inline">
+              {t.discord.viewInstructions}
+            </span>
           </button>
 
           <button
-            aria-label="Cerrar aviso"
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-lg text-white/45 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            aria-label={t.discord.closeNotice}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-lg text-white/60 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             type="button"
             onClick={hideScrollHint}
           >

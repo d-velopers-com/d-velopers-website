@@ -8,9 +8,9 @@ import {
   useEffect,
 } from "react";
 
-import { Locale } from "@/types/i18n";
 import { en } from "@/locales/en";
 import { es } from "@/locales/es";
+import { Locale } from "@/types/i18n";
 
 interface LanguageContextType {
   locale: Locale;
@@ -39,13 +39,20 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         setLocaleState(detectedLocale);
         localStorage.setItem("locale", detectedLocale);
       }
-    } catch (error) {}
+    } catch {
+      // Storage can be unavailable in strict privacy modes; English remains
+      // the deterministic server/client fallback.
+    }
   }, []);
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
     localStorage.setItem("locale", newLocale);
   };
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   return (
     <LanguageContext.Provider

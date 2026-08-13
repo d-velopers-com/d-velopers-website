@@ -1,12 +1,13 @@
 "use client";
 
-import { FC, useState, useEffect } from "react";
-import { VisuallyHidden } from "@react-aria/visually-hidden";
 import { SwitchProps, useSwitch } from "@heroui/switch";
-import { useTheme } from "next-themes";
+import { VisuallyHidden } from "@react-aria/visually-hidden";
 import clsx from "clsx";
+import { useTheme } from "next-themes";
+import { FC, useState, useEffect } from "react";
 
 import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
+import { useLanguage } from "@/contexts/language-context";
 
 export interface ThemeSwitchProps {
   className?: string;
@@ -18,6 +19,7 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
   classNames,
 }) => {
   const { theme, setTheme } = useTheme();
+  const { t } = useLanguage();
   const [mounted, setMounted] = useState(false);
 
   // Only render after mount to avoid hydration mismatch
@@ -26,7 +28,7 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
   }, []);
 
   const onChange = () => {
-    theme === "light" ? setTheme("dark") : setTheme("light");
+    setTheme(theme === "light" ? "dark" : "light");
   };
 
   const {
@@ -38,7 +40,10 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
     getWrapperProps,
   } = useSwitch({
     isSelected: theme === "light",
-    "aria-label": `Switch to ${theme === "light" ? "dark" : "light"} mode`,
+    "aria-label":
+      theme === "light"
+        ? t.common.switchToDarkMode
+        : t.common.switchToLightMode,
     onChange,
   });
 

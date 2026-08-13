@@ -150,9 +150,9 @@ src/
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -175,12 +175,12 @@ src/
 
 ```tsx
 // features/users/components/UserCard.tsx
-import { memo } from 'react';
-import Link from 'next/link';
-import { Card, CardBody } from '@heroui/card';
-import { UserAvatar } from './UserAvatar';
-import { TagList } from './TagList';
-import type { PublicUser } from '../types';
+import { memo } from "react";
+import Link from "next/link";
+import { Card, CardBody } from "@heroui/card";
+import { UserAvatar } from "./UserAvatar";
+import { TagList } from "./TagList";
+import type { PublicUser } from "../types";
 
 interface UserCardProps {
   user: PublicUser;
@@ -188,7 +188,7 @@ interface UserCardProps {
 
 export const UserCard = memo(function UserCard({ user }: UserCardProps) {
   const profileUrl = `/users/${user.handler}`;
-  
+
   return (
     <Card className="group hover:scale-[1.02] transition-transform">
       <CardBody className="p-0">
@@ -205,9 +205,7 @@ export const UserCard = memo(function UserCard({ user }: UserCardProps) {
               <h3 className="font-semibold truncate">
                 {user.name || user.username}
               </h3>
-              <p className="text-sm text-default-500 truncate">
-                {user.title}
-              </p>
+              <p className="text-sm text-default-500 truncate">{user.title}</p>
               {user.yoe && user.yoe > 0 && (
                 <p className="text-xs text-default-400">
                   {user.yoe}+ años de experiencia
@@ -227,56 +225,55 @@ export const UserCard = memo(function UserCard({ user }: UserCardProps) {
 
 ```typescript
 // features/search/hooks/useSearchFilters.ts
-import { useState, useCallback, useMemo, useRef } from 'react';
-import { useDebounce } from './useDebounce';
-import type { SearchFilters } from '../types';
+import { useState, useCallback, useMemo, useRef } from "react";
+import { useDebounce } from "./useDebounce";
+import type { SearchFilters } from "../types";
 
 const INITIAL_FILTERS: SearchFilters = {
-  searchQuery: '',
+  searchQuery: "",
   availability: null,
-  english: '',
-  country: '',
+  english: "",
+  country: "",
 };
 
-export function useSearchFilters(onFiltersChange: (filters: SearchFilters) => void) {
+export function useSearchFilters(
+  onFiltersChange: (filters: SearchFilters) => void,
+) {
   const [filters, setFilters] = useState<SearchFilters>(INITIAL_FILTERS);
-  const [searchInput, setSearchInput] = useState('');
-  
+  const [searchInput, setSearchInput] = useState("");
+
   // Debounce only the search query
   const debouncedSearch = useDebounce(searchInput, 500);
-  
+
   // Update parent when debounced search changes
   useEffect(() => {
     onFiltersChange({ ...filters, searchQuery: debouncedSearch });
   }, [debouncedSearch, filters, onFiltersChange]);
 
-  const updateFilter = useCallback(<K extends keyof SearchFilters>(
-    key: K, 
-    value: SearchFilters[K]
-  ) => {
-    if (key === 'searchQuery') {
-      setSearchInput(value as string);
-    } else {
-      setFilters(prev => {
-        const next = { ...prev, [key]: value };
-        onFiltersChange({ ...next, searchQuery: debouncedSearch });
-        return next;
-      });
-    }
-  }, [debouncedSearch, onFiltersChange]);
+  const updateFilter = useCallback(
+    <K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) => {
+      if (key === "searchQuery") {
+        setSearchInput(value as string);
+      } else {
+        setFilters((prev) => {
+          const next = { ...prev, [key]: value };
+          onFiltersChange({ ...next, searchQuery: debouncedSearch });
+          return next;
+        });
+      }
+    },
+    [debouncedSearch, onFiltersChange],
+  );
 
   const clearFilters = useCallback(() => {
     setFilters(INITIAL_FILTERS);
-    setSearchInput('');
+    setSearchInput("");
     onFiltersChange(INITIAL_FILTERS);
   }, [onFiltersChange]);
 
   const hasActiveFilters = useMemo(() => {
     return Boolean(
-      searchInput || 
-      filters.availability || 
-      filters.english || 
-      filters.country
+      searchInput || filters.availability || filters.english || filters.country,
     );
   }, [searchInput, filters]);
 
@@ -293,7 +290,7 @@ export function useSearchFilters(onFiltersChange: (filters: SearchFilters) => vo
 
 ```typescript
 // shared/hooks/useDebounce.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -313,18 +310,29 @@ export function useDebounce<T>(value: T, delay: number): T {
 
 ```typescript
 // features/users/schemas/user.schema.ts
-import { z } from 'zod';
+import { z } from "zod";
 
 export const userProfileSchema = z.object({
   name: z.string().max(100).optional().nullable(),
   title: z.string().max(200).optional().nullable(),
   description: z.string().max(2000).optional().nullable(),
   country: z.string().length(2).optional().nullable(),
-  englishLevel: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'NATIVE']).optional().nullable(),
+  englishLevel: z
+    .enum(["A1", "A2", "B1", "B2", "C1", "C2", "NATIVE"])
+    .optional()
+    .nullable(),
   tags: z.array(z.string().max(50)).max(10).default([]),
-  availability: z.array(z.enum([
-    'FREELANCE', 'PART_TIME', 'FULL_TIME', 'CONSULTING', 'NOT_AVAILABLE'
-  ])).default([]),
+  availability: z
+    .array(
+      z.enum([
+        "FREELANCE",
+        "PART_TIME",
+        "FULL_TIME",
+        "CONSULTING",
+        "NOT_AVAILABLE",
+      ]),
+    )
+    .default([]),
   yoe: z.number().int().min(0).max(50).optional().nullable(),
   contactEmail: z.string().email().optional().nullable(),
   contactLinks: z.array(z.string().url()).max(5).default([]),
@@ -333,11 +341,18 @@ export const userProfileSchema = z.object({
 });
 
 export const searchFiltersSchema = z.object({
-  searchQuery: z.string().max(200).default(''),
+  searchQuery: z.string().max(200).default(""),
   english: z.string().optional(),
-  availability: z.enum([
-    'FREELANCE', 'PART_TIME', 'FULL_TIME', 'CONSULTING', 'NOT_AVAILABLE'
-  ]).optional().nullable(),
+  availability: z
+    .enum([
+      "FREELANCE",
+      "PART_TIME",
+      "FULL_TIME",
+      "CONSULTING",
+      "NOT_AVAILABLE",
+    ])
+    .optional()
+    .nullable(),
   country: z.string().length(2).optional(),
 });
 
@@ -351,8 +366,8 @@ export type SearchFiltersInput = z.infer<typeof searchFiltersSchema>;
 
 ```typescript
 // features/users/services/user.repository.ts
-import { prisma } from '@/shared/lib/prisma';
-import type { Prisma } from '@prisma/client';
+import { prisma } from "@/shared/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 const USER_SELECT = {
   id: true,
@@ -384,7 +399,7 @@ export const userRepository = {
 
   findPublic: (filters?: SearchFiltersInput) => {
     const where: Prisma.UserWhereInput = { isPublic: true };
-    
+
     if (filters?.country) where.country = filters.country;
     if (filters?.english) where.englishLevel = filters.english;
     if (filters?.availability) {
@@ -392,8 +407,8 @@ export const userRepository = {
     }
     if (filters?.searchQuery) {
       where.OR = [
-        { name: { contains: filters.searchQuery, mode: 'insensitive' } },
-        { title: { contains: filters.searchQuery, mode: 'insensitive' } },
+        { name: { contains: filters.searchQuery, mode: "insensitive" } },
+        { title: { contains: filters.searchQuery, mode: "insensitive" } },
         { tags: { hasSome: [filters.searchQuery] } },
       ];
     }
@@ -401,7 +416,7 @@ export const userRepository = {
     return prisma.user.findMany({
       where,
       select: USER_SELECT,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   },
 
@@ -419,27 +434,27 @@ export const userRepository = {
 
 ```typescript
 // features/users/hooks/useUsers.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { SearchFilters, PublicUser } from '../types';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { SearchFilters, PublicUser } from "../types";
 
-const USERS_KEY = ['users'] as const;
+const USERS_KEY = ["users"] as const;
 
 async function fetchPublicUsers(filters: SearchFilters): Promise<PublicUser[]> {
   const params = new URLSearchParams();
-  if (filters.searchQuery) params.set('q', filters.searchQuery);
-  if (filters.country) params.set('country', filters.country);
-  if (filters.english) params.set('english', filters.english);
-  if (filters.availability) params.set('availability', filters.availability);
-  
+  if (filters.searchQuery) params.set("q", filters.searchQuery);
+  if (filters.country) params.set("country", filters.country);
+  if (filters.english) params.set("english", filters.english);
+  if (filters.availability) params.set("availability", filters.availability);
+
   const res = await fetch(`/api/users/public?${params}`);
-  if (!res.ok) throw new Error('Failed to fetch users');
+  if (!res.ok) throw new Error("Failed to fetch users");
   const data = await res.json();
   return data.users;
 }
 
 export function usePublicUsers(filters: SearchFilters) {
   return useQuery({
-    queryKey: [...USERS_KEY, 'public', filters],
+    queryKey: [...USERS_KEY, "public", filters],
     queryFn: () => fetchPublicUsers(filters),
     staleTime: 30_000, // 30 seconds
     gcTime: 5 * 60_000, // 5 minutes
@@ -448,10 +463,10 @@ export function usePublicUsers(filters: SearchFilters) {
 
 export function useUserProfile(handler: string) {
   return useQuery({
-    queryKey: [...USERS_KEY, 'profile', handler],
+    queryKey: [...USERS_KEY, "profile", handler],
     queryFn: async () => {
       const res = await fetch(`/api/users/${handler}`);
-      if (!res.ok) throw new Error('User not found');
+      if (!res.ok) throw new Error("User not found");
       return res.json();
     },
     enabled: Boolean(handler),
@@ -465,10 +480,10 @@ export function useUserProfile(handler: string) {
 
 ```tsx
 // app/(public)/page.tsx - Server Component (orquestación)
-import { Suspense } from 'react';
-import { UsersSection } from '@/features/users';
-import { HeroSection } from './components/HeroSection';
-import { UsersSkeleton } from '@/features/users';
+import { Suspense } from "react";
+import { UsersSection } from "@/features/users";
+import { HeroSection } from "./components/HeroSection";
+import { UsersSkeleton } from "@/features/users";
 
 export default function HomePage() {
   return (
@@ -482,12 +497,12 @@ export default function HomePage() {
 }
 
 // features/users/components/UsersSection.tsx - Client Component
-'use client';
+("use client");
 
-import { usePublicUsers } from '../hooks/useUsers';
-import { useSearchFilters } from '@/features/search';
-import { UserGrid } from './UserGrid';
-import { SearchPanel } from '@/features/search';
+import { usePublicUsers } from "../hooks/useUsers";
+import { useSearchFilters } from "@/features/search";
+import { UserGrid } from "./UserGrid";
+import { SearchPanel } from "@/features/search";
 
 export function UsersSection() {
   const { filters, updateFilter, clearFilters } = useSearchFilters();
@@ -512,10 +527,10 @@ export function UsersSection() {
 
 ```tsx
 // shared/components/feedback/ErrorBoundary.tsx
-'use client';
+"use client";
 
-import { Component, ReactNode } from 'react';
-import { ErrorState } from './ErrorState';
+import { Component, ReactNode } from "react";
+import { ErrorState } from "./ErrorState";
 
 interface Props {
   children: ReactNode;
@@ -536,11 +551,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      return this.props.fallback ?? (
-        <ErrorState 
-          message="Algo salió mal"
-          onRetry={() => this.setState({ hasError: false })}
-        />
+      return (
+        this.props.fallback ?? (
+          <ErrorState
+            message="Algo salió mal"
+            onRetry={() => this.setState({ hasError: false })}
+          />
+        )
       );
     }
     return this.props.children;
@@ -548,10 +565,10 @@ export class ErrorBoundary extends Component<Props, State> {
 }
 
 // app/error.tsx - Next.js Error Boundary
-'use client';
+("use client");
 
-import { useEffect } from 'react';
-import { Button } from '@heroui/button';
+import { useEffect } from "react";
+import { Button } from "@heroui/button";
 
 export default function Error({
   error,
@@ -582,39 +599,42 @@ export default function Error({
 
 ```typescript
 // app/api/users/public/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { searchFiltersSchema } from '@/features/users/schemas';
-import { userRepository } from '@/features/users/services';
+import { NextRequest, NextResponse } from "next/server";
+import { searchFiltersSchema } from "@/features/users/schemas";
+import { userRepository } from "@/features/users/services";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    
+
     // Validar con Zod
     const filters = searchFiltersSchema.parse({
-      searchQuery: searchParams.get('q') ?? '',
-      english: searchParams.get('english') ?? undefined,
-      availability: searchParams.get('availability') ?? undefined,
-      country: searchParams.get('country') ?? undefined,
+      searchQuery: searchParams.get("q") ?? "",
+      english: searchParams.get("english") ?? undefined,
+      availability: searchParams.get("availability") ?? undefined,
+      country: searchParams.get("country") ?? undefined,
     });
 
     const users = await userRepository.findPublic(filters);
-    
-    return NextResponse.json({ users }, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+
+    return NextResponse.json(
+      { users },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+        },
       },
-    });
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid parameters', details: error.errors },
-        { status: 400 }
+        { error: "Invalid parameters", details: error.errors },
+        { status: 400 },
       );
     }
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -657,20 +677,20 @@ import { mockUser } from '@/__mocks__/user';
 describe('UserCard', () => {
   it('renders user name and title', () => {
     render(<UserCard user={mockUser} />);
-    
+
     expect(screen.getByText(mockUser.name)).toBeInTheDocument();
     expect(screen.getByText(mockUser.title)).toBeInTheDocument();
   });
 
   it('shows username when name is not provided', () => {
     render(<UserCard user={{ ...mockUser, name: null }} />);
-    
+
     expect(screen.getByText(mockUser.username)).toBeInTheDocument();
   });
 
   it('displays country flag when country is set', () => {
     render(<UserCard user={{ ...mockUser, country: 'MX' }} />);
-    
+
     expect(screen.getByAltText('Mexico')).toBeInTheDocument();
   });
 });
@@ -687,12 +707,12 @@ describe('UserCard', () => {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    optimizePackageImports: ['@heroui/react', 'framer-motion'],
+    optimizePackageImports: ["@heroui/react", "framer-motion"],
   },
   images: {
     remotePatterns: [
-      { hostname: 'cdn.discordapp.com' },
-      { hostname: 'flagcdn.com' },
+      { hostname: "cdn.discordapp.com" },
+      { hostname: "flagcdn.com" },
     ],
   },
   logging: {
@@ -707,14 +727,14 @@ module.exports = nextConfig;
 
 ```tsx
 // Lazy load heavy components
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
 const FilterPanel = dynamic(
-  () => import('@/features/search').then(mod => mod.FilterPanel),
-  { 
+  () => import("@/features/search").then((mod) => mod.FilterPanel),
+  {
     loading: () => <Skeleton className="h-12 w-full" />,
-    ssr: false 
-  }
+    ssr: false,
+  },
 );
 ```
 
@@ -773,6 +793,7 @@ pnpm build
 ### Por qué Next.js 16
 
 Next.js 16 incluye soporte nativo para **MCP (Model Context Protocol)**, lo que permite integración directa con herramientas AI para:
+
 - Debugging en tiempo real
 - Inspección de rutas y componentes
 - Diagnóstico de errores
@@ -799,10 +820,10 @@ export default function Page({ params }: { params: { id: string } }) {
 }
 
 // Después (Next.js 16)
-export default async function Page({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
 }
@@ -812,12 +833,12 @@ export default async function Page({
 
 ```typescript
 // Antes
-import { cookies, headers } from 'next/headers';
+import { cookies, headers } from "next/headers";
 const cookieStore = cookies();
 const headersList = headers();
 
 // Después
-import { cookies, headers } from 'next/headers';
+import { cookies, headers } from "next/headers";
 const cookieStore = await cookies();
 const headersList = await headers();
 ```

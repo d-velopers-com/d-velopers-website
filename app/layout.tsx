@@ -1,17 +1,17 @@
 import "@/styles/globals.css";
-import { Metadata, Viewport } from "next";
-import clsx from "clsx";
 import { Analytics } from "@vercel/analytics/react";
+import clsx from "clsx";
+import { Metadata, Viewport } from "next";
+
+import { Footer } from "@/components/footer";
+import { Navbar } from "@/components/navbar";
+import { Toaster } from "@/components/toaster";
+import { fontSans, fontMono } from "@/config/fonts";
+import { siteConfig } from "@/config/site";
+import { getNavbarViewerContext } from "@/lib/viewer";
+import { en } from "@/locales/en";
 
 import { Providers } from "./providers";
-
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
-import { Toaster } from "@/components/toaster";
-
-import { siteConfig } from "@/config/site";
-import { fontSans, fontMono } from "@/config/fonts";
-import { getNavbarViewerContext } from "@/lib/viewer";
 
 export const metadata: Metadata = {
   title: {
@@ -59,6 +59,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: siteConfig.themeColor },
     { media: "(prefers-color-scheme: dark)", color: siteConfig.themeColor },
@@ -88,9 +89,17 @@ export default async function RootLayout({
           initialSession={viewer.session}
           themeProps={{ attribute: "class", defaultTheme: "dark" }}
         >
+          <a
+            className="sr-only z-[100] rounded-md bg-background px-4 py-3 text-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:ring-2 focus:ring-primary"
+            href="#main-content"
+          >
+            {en.common.skipToContent}
+          </a>
           <div className="flex flex-col min-h-screen">
             <Navbar permissions={viewer.permissions} session={viewer.session} />
-            <main className="flex-grow">{children}</main>
+            <main className="flex-grow" id="main-content" tabIndex={-1}>
+              {children}
+            </main>
             <Footer />
           </div>
           <Toaster />

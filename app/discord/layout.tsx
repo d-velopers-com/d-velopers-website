@@ -3,11 +3,11 @@ import { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
-  title: "Discord - D-velopers",
+  title: "Discord",
   description:
     "Unlock your Discord access with a YouTube channel membership. Join the D-velopers community and connect with developers worldwide.",
   openGraph: {
-    title: "Discord - D-velopers",
+    title: "Discord | D-velopers",
     description:
       "Unlock your Discord access with a YouTube channel membership. Join the D-velopers community and connect with developers worldwide.",
     url: `${siteConfig.url}/discord`,
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Discord - D-velopers",
+    title: "Discord | D-velopers",
     description:
       "Unlock your Discord access with a YouTube channel membership. Join the D-velopers community.",
     images: [`${siteConfig.url}${siteConfig.ogImage}`],

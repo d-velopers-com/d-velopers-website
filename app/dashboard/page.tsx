@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
-import DashboardClient from "./dashboard-client";
-
 import technologies from "@/config/technologies.json";
 import { getViewerContext } from "@/lib/viewer";
+
+import DashboardClient from "./dashboard-client";
 
 export default async function DashboardPage() {
   const viewer = await getViewerContext();

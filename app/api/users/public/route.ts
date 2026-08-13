@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { serializePublicUsers } from "@/lib/serializers";
 import { parsePublicUserSearchParams } from "@/lib/search-params";
+import { serializePublicUsers } from "@/lib/serializers";
 import { getPublicUsersPage, PUBLIC_USERS_PAGE_SIZE } from "@/lib/user";
 
 export async function GET(request: NextRequest) {
@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to fetch users",
-        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 },
     );

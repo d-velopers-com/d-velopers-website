@@ -4,6 +4,9 @@ export const en = {
     close: "Close",
     logout: "Logout",
     memberSince: "Member Since",
+    skipToContent: "Skip to main content",
+    switchToDarkMode: "Switch to dark mode",
+    switchToLightMode: "Switch to light mode",
   },
   nav: {
     home: "Home",
@@ -21,9 +24,11 @@ export const en = {
     signUp: "Sign Up",
   },
   home: {
+    directoryEyebrow: "Community directory",
     title: "D-velopers",
     subtitle: "Smart minds, ready to make an impact",
     resultsHeading: "Developer results",
+    resultsCount: "{count} public profiles",
     paginationLabel: "Results pagination",
     pageLabel: "Page",
     previousPage: "Previous",
@@ -34,6 +39,8 @@ export const en = {
     dashboard: "Dashboard",
     joinCommunity: "Join the Community",
     searcher: {
+      filtersLabel: "Filters",
+      anyOption: "Any",
       placeholder: "Search developers",
       filters: {
         english: "English",
@@ -49,10 +56,22 @@ export const en = {
     yearsOfExperiencePlural: "years exp",
   },
   login: {
+    eyebrow: "Your D-velopers account",
+    communityTitle: "Build your place in the community",
+    communityDescription:
+      "Create a public profile, connect with other developers, and discover opportunities shared by the community.",
+    benefitProfile: "Publish and manage your developer profile",
+    benefitNetwork: "Find people by skills, availability, and location",
+    benefitJobs: "Access community opportunities in one place",
+    discordReason: "Why Discord?",
+    discordReasonDescription:
+      "We use Discord to verify your community identity and keep access simple.",
+    secureNote: "D-velopers never receives your Discord password.",
     title: "Welcome Back",
     subtitle: "Sign in to continue to your account",
     sessionExpiredTitle: "Session Expired",
-    sessionExpiredDesc: "Your session has expired. Please sign in again to continue.",
+    sessionExpiredDesc:
+      "Your session has expired. Please sign in again to continue.",
     discordButton: "Continue with Discord",
     terms: "By continuing, you agree to our",
     termsLink: "Terms of Service",
@@ -199,6 +218,12 @@ export const en = {
     yoe: "Years of experience",
   },
   profile: {
+    contact: "Contact",
+    skills: "Skills",
+    copyEmail: "Copy email address",
+    emailCopied: "Email copied",
+    copyEmailShort: "Copy",
+    emailCopiedShort: "Copied",
     about: "About",
     visitWebsite: "Visit Website",
     english: "English",
@@ -247,6 +272,56 @@ export const en = {
   },
   discord: {
     pageTitle: "Discord landing",
+    communityAlt: "D-velopers community",
+    exclusiveBenefits: "Exclusive benefits",
+    forMembers: "for members",
+    heroDescription:
+      "Connect with the community, access premium content, and join private events.",
+    howToJoin: "See how to join",
+    discoverPower: "Discover the power",
+    ofCommunity: "of the community",
+    videoTitle: "Discover the D-velopers community",
+    exclusiveAccess: "Access the exclusive Discord",
+    accessDescription:
+      "Follow these steps to join our private developer community.",
+    guideTitle: "How to join Discord with YouTube",
+    guideSubtitle: "Follow these steps to get access",
+    subscribeAlt: "YouTube membership screen with the Join button highlighted",
+    subscribeTitle: "Become a YouTube member",
+    subscribeDetailOne: 'Find the "Join" button on the channel',
+    subscribeDetailTwo: "Choose the Developer tier or higher",
+    subscribeNow: "Join now",
+    accountNote: "Requires a YouTube account",
+    connectAccounts: "Connect your accounts",
+    openConnections: "In Discord, go to User Settings → Connections",
+    authorizeYoutube: "Select YouTube and choose Authorize",
+    acceptPermissions: "Accept the required permissions",
+    getAccess: "Get Discord access",
+    automaticAccess:
+      "You will automatically receive access to the private server",
+    accessTiming:
+      "Access is usually enabled within five minutes after connecting your accounts.",
+    serverAlt: "Private Discord server access notification",
+    enlargeImage: "Enlarge",
+    previousImage: "Previous screenshot",
+    nextImage: "Next screenshot",
+    imageGroup: "Connection screenshots",
+    showImage: "Show screenshot",
+    imageCount: "Screenshot {current} of {total}",
+    enlargedView: "Enlarged view",
+    closeEnlargedView: "Close enlarged view",
+    closeImage: "Close enlarged image",
+    wantsAccess: "Want to join Discord?",
+    scrollHint: "Scroll down for the step-by-step guide.",
+    viewGuide: "View guide",
+    viewInstructions: "View instructions",
+    closeNotice: "Close notice",
+    connectionImageAlts: [
+      "Step 1: open Discord user settings",
+      "Step 2: select Connections in Discord",
+      "Step 3: select YouTube from the connections",
+      "Step 4: authorize the YouTube connection",
+    ],
   },
   jobs: {
     title: "Job Opportunities",
@@ -274,7 +349,7 @@ export const en = {
       error: "Failed to update auto-approve setting",
     },
     getting: {
-      errorMessage: "Failed to fetch posts"
+      errorMessage: "Failed to fetch posts",
     },
     tabs: {
       all: "All Posts",
@@ -302,9 +377,11 @@ export const en = {
       urlField: {
         title: "Post URL or Iframe",
         placeholder: "Paste LinkedIn or Twitter/X post URL",
-        description: "Paste the URL of a LinkedIn or Twitter/X post, and the embed will be generated automatically",
+        description:
+          "Paste the URL of a LinkedIn or Twitter/X post, and the embed will be generated automatically",
         detected: "Platform detected",
-        invalidUrl: "Could not generate embed from this URL. Try pasting the iframe code directly.",
+        invalidUrl:
+          "Could not generate embed from this URL. Try pasting the iframe code directly.",
       },
       iframeField: {
         title: "Iframe",

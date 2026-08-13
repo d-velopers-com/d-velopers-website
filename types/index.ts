@@ -1,5 +1,6 @@
 import { SVGProps } from "react";
-import {Availability} from "@/lib/constants";
+
+import { Availability } from "@/lib/constants";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;

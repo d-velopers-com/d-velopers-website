@@ -1,6 +1,6 @@
 import { PostStatus } from "@prisma/client";
-
-import JobsClient from "./jobs-client";
+import { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import {
   buildPostSearchConditions,
@@ -11,7 +11,15 @@ import { parseJobsSearchParams } from "@/lib/search-params";
 import { serializePosts } from "@/lib/serializers";
 import { getViewerContext } from "@/lib/viewer";
 
+import JobsClient from "./jobs-client";
+
 const POSTS_PER_PAGE = 6;
+
+export const metadata: Metadata = {
+  title: "Jobs",
+  description: "Curated job opportunities shared by the D-velopers community.",
+  robots: { index: false, follow: false },
+};
 
 type JobsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -22,6 +30,14 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     getViewerContext(),
     searchParams,
   ]);
+
+  if (!viewer.session.user) {
+    redirect("/login");
+  }
+
+  if (!viewer.permissions.canViewJobs) {
+    redirect("/");
+  }
 
   const { page, search } = parseJobsSearchParams(rawSearchParams);
   const searchConditions = buildPostSearchConditions(search);

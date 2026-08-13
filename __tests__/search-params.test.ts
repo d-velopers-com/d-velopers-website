@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { PostStatus } from "@prisma/client";
+import { describe, expect, it } from "vitest";
 
 import { Availability } from "@/lib/constants";
 import { buildPostSearchConditions } from "@/lib/posts";
@@ -77,24 +77,32 @@ describe("search param parsing", () => {
   });
 
   it("uses URL params as the source of truth for jobs search and pagination", () => {
-    expect(parseJobsSearchParams({ page: "3", search: "  remote nextjs  " })).toEqual({
+    expect(
+      parseJobsSearchParams({ page: "3", search: "  remote nextjs  " }),
+    ).toEqual({
       page: 3,
       search: "remote nextjs",
     });
 
-    expect(parseJobsSearchParams({ page: "-9", search: "x".repeat(250) })).toEqual({
+    expect(
+      parseJobsSearchParams({ page: "-9", search: "x".repeat(250) }),
+    ).toEqual({
       page: 1,
       search: "x".repeat(200),
     });
   });
 
   it("parses manage jobs filters with valid PostStatus only", () => {
-    expect(parseManagePostsSearchParams({ page: "2", status: "approved" })).toEqual({
+    expect(
+      parseManagePostsSearchParams({ page: "2", status: "approved" }),
+    ).toEqual({
       page: 2,
       status: PostStatus.APPROVED,
     });
 
-    expect(parseManagePostsSearchParams({ page: "0", status: "draft" })).toEqual({
+    expect(
+      parseManagePostsSearchParams({ page: "0", status: "draft" }),
+    ).toEqual({
       page: 1,
       status: undefined,
     });

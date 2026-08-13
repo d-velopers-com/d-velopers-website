@@ -1,11 +1,16 @@
-import {memo} from "react";
-import {Card, CardBody} from "@heroui/card";
-import {cardStyles, typography} from "@/lib/ui-constants";
+import { Card, CardBody } from "@heroui/card";
+import { memo } from "react";
+
+import { cardStyles, typography } from "@/lib/ui-constants";
 
 /**
  * Empty state component
  */
-export const EmptyState = memo(function EmptyState({message}: { message: string }) {
+export const EmptyState = memo(function EmptyState({
+  message,
+}: {
+  message: string;
+}) {
   return (
     <Card className={`${cardStyles.base} py-16`}>
       <CardBody className="flex flex-col items-center justify-center gap-4">
@@ -24,7 +29,9 @@ export const EmptyState = memo(function EmptyState({message}: { message: string 
             />
           </svg>
         </div>
-        <p className={`${typography.body} text-default-500 text-center max-w-md`}>
+        <p
+          className={`${typography.body} text-default-500 text-center max-w-md`}
+        >
           {message}
         </p>
       </CardBody>

@@ -1,33 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardBody } from "@heroui/card";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
+import { Card, CardBody } from "@heroui/card";
 import { Chip } from "@heroui/chip";
+import { useState } from "react";
 
-import { useLanguage } from "@/contexts/language-context";
-import { getCountryName, getCountryFlagUrl } from "@/lib/countries";
-import { detectSocialPlatform } from "@/lib/url-detector";
 import {
-  LinkedInIcon,
+  DiscordIcon,
   GithubIcon,
+  InstagramIcon,
+  LinkedInIcon,
   TwitterIcon,
   YouTubeIcon,
-  InstagramIcon,
-  DiscordIcon,
 } from "@/components/icons";
+import { useLanguage } from "@/contexts/language-context";
+import { getCountryFlagUrl, getCountryName } from "@/lib/countries";
 import {
   cardStyles,
-  typography,
-  iconSizes,
   chipStyles,
-  avatarStyles,
   gradients,
-  spacing,
-  borderRadius,
+  typography,
 } from "@/lib/ui-constants";
+import { detectSocialPlatform } from "@/lib/url-detector";
 import { getDiscordAvatarUrl } from "@/shared/lib";
 
 interface ProfileClientProps {
@@ -54,410 +49,249 @@ interface ProfileClientProps {
 export default function ProfileClient({ user }: ProfileClientProps) {
   const { t } = useLanguage();
   const [emailCopied, setEmailCopied] = useState(false);
-  const [emailButtonPressed, setEmailButtonPressed] = useState(false);
-
   const avatarUrl = getDiscordAvatarUrl(
     user.discordId,
     user.avatar,
     user.discriminator || "0",
   );
+  const socialLink = user.contactLinks.find(Boolean);
+  const socialPlatform = socialLink
+    ? detectSocialPlatform(socialLink)
+    : undefined;
 
-  const handleCopyEmail = () => {
-    if (user.contactEmail) {
-      navigator.clipboard.writeText(user.contactEmail);
-      setEmailCopied(true);
-      setEmailButtonPressed(true);
-      setTimeout(() => {
-        setEmailCopied(false);
-        setEmailButtonPressed(false);
-      }, 2000);
+  const availabilityLabels = user.availability.map((availability) => {
+    switch (availability) {
+      case "freelance":
+        return t.profile.availabilityFreelance;
+      case "part_time":
+        return t.profile.availabilityPartTime;
+      case "full_time":
+        return t.profile.availabilityFullTime;
+      case "consulting":
+        return t.profile.availabilityConsulting;
+      case "not_available":
+        return t.profile.availabilityNotAvailable;
+      default:
+        return availability;
     }
+  });
+
+  const socialLabel = (() => {
+    switch (socialPlatform) {
+      case "linkedin":
+        return t.profile.myLinkedIn;
+      case "github":
+        return t.profile.myGitHub;
+      case "x":
+        return t.profile.myX;
+      case "youtube":
+        return t.profile.myYouTube;
+      case "instagram":
+        return t.profile.myInstagram;
+      case "discord":
+        return t.profile.myDiscord;
+      case "facebook":
+        return t.profile.myFacebook;
+      case "tiktok":
+        return t.profile.myTikTok;
+      case "twitch":
+        return t.profile.myTwitch;
+      case "reddit":
+        return t.profile.myReddit;
+      case "telegram":
+        return t.profile.myTelegram;
+      case "whatsapp":
+        return t.profile.myWhatsApp;
+      case "spotify":
+        return t.profile.mySpotify;
+      case "medium":
+        return t.profile.myMedium;
+      case "behance":
+        return t.profile.myBehance;
+      case "dribbble":
+        return t.profile.myDribbble;
+      default:
+        return t.profile.socialLink;
+    }
+  })();
+
+  const socialIcon = (() => {
+    switch (socialPlatform) {
+      case "linkedin":
+        return <LinkedInIcon size={18} />;
+      case "github":
+        return <GithubIcon size={18} />;
+      case "x":
+        return <TwitterIcon size={18} />;
+      case "youtube":
+        return <YouTubeIcon size={18} />;
+      case "instagram":
+        return <InstagramIcon size={18} />;
+      case "discord":
+        return <DiscordIcon size={18} />;
+      default:
+        return undefined;
+    }
+  })();
+
+  const handleCopyEmail = async () => {
+    if (!user.contactEmail) return;
+    await navigator.clipboard.writeText(user.contactEmail);
+    setEmailCopied(true);
+    window.setTimeout(() => setEmailCopied(false), 2000);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 py-8">
-      <Card className={`max-w-3xl w-full ${cardStyles.base}`}>
+    <div className="min-h-[calc(100svh-8rem)] px-4 py-8 sm:px-6 sm:py-12">
+      <Card className={`mx-auto w-full max-w-5xl ${cardStyles.base}`}>
         <CardBody className="p-0">
-          <div className={`relative ${gradients.primary} h-40 rounded-t-lg`} />
+          <div className={`h-24 rounded-t-lg sm:h-32 ${gradients.primary}`} />
 
-          <div className="relative px-4 sm:px-8 pb-6 sm:pb-8">
-            <div
-              className={`flex flex-col sm:flex-row items-center sm:items-start ${spacing.lg} -mt-16 mb-6`}
-            >
+          <div className="relative px-5 pb-6 sm:px-8 sm:pb-8">
+            <header className="-mt-12 flex flex-col items-center gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:gap-6">
               <Avatar
-                className={`w-24 h-24 sm:w-28 sm:h-28 border-4 border-background shadow-xl ${avatarStyles.ringLarge} flex-shrink-0`}
+                className="h-24 w-24 flex-shrink-0 border-4 border-background shadow-lg sm:h-28 sm:w-28"
+                name={user.name || user.username}
                 src={avatarUrl}
               />
-
-              <div className="flex-1 w-full sm:pt-20 pt-4 text-center sm:text-left">
-                <div className={`flex flex-col ${spacing.sm} mb-4`}>
-                  <h1 className={`${typography.h1} text-foreground`}>
-                    {user.name || user.username}
-                  </h1>
-                  {user.title ? (
-                    <p
-                      className={`${typography.bodyLarge} text-default-600 font-medium`}
-                    >
-                      {user.title}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div
-                  className={`flex flex-col ${spacing.md} ${typography.body} text-default-500`}
-                >
-                  <div
-                    className={`flex flex-wrap items-center justify-center sm:justify-start ${spacing.md}`}
+              <div className="min-w-0 flex-1 pb-1 text-center sm:text-left">
+                <h1 className={`${typography.h1} truncate text-foreground`}>
+                  {user.name || user.username}
+                </h1>
+                <p className="mt-1 text-sm text-default-500">@{user.handler}</p>
+                {user.title ? (
+                  <p
+                    className={`${typography.bodyLarge} mt-2 font-medium text-default-600`}
                   >
-                    {user.country ? (
-                      <div className={`flex items-center ${spacing.sm}`}>
-                        <img
-                          alt={getCountryName(user.country)}
-                          className="w-5 h-4 rounded object-cover"
-                          src={getCountryFlagUrl(user.country, "24")}
-                        />
-                        <span>{getCountryName(user.country)}</span>
-                      </div>
-                    ) : null}
-                    {user.englishLevel ? (
-                      <div className={`flex items-center ${spacing.sm}`}>
-                        <svg
-                          className={iconSizes.md}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                    {user.title}
+                  </p>
+                ) : null}
+              </div>
+            </header>
+
+            <div className="mt-6 flex flex-wrap justify-center gap-2 sm:justify-start">
+              {user.country ? (
+                <span className="inline-flex min-h-9 items-center gap-2 rounded-full border border-default-200/70 bg-default-50 px-3 text-sm text-default-600">
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    className="h-4 w-5 rounded-sm object-cover"
+                    src={getCountryFlagUrl(user.country, "24")}
+                  />
+                  {getCountryName(user.country)}
+                </span>
+              ) : null}
+              {user.englishLevel ? (
+                <span className="inline-flex min-h-9 items-center rounded-full border border-default-200/70 bg-default-50 px-3 text-sm text-default-600">
+                  {t.profile.english}: {user.englishLevel}
+                </span>
+              ) : null}
+              {availabilityLabels.length > 0 ? (
+                <span className="inline-flex min-h-9 items-center rounded-full border border-primary/20 bg-primary/10 px-3 text-sm font-medium text-primary">
+                  {availabilityLabels.join(", ")}
+                </span>
+              ) : null}
+            </div>
+
+            <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_19rem]">
+              <div className="min-w-0 space-y-7">
+                {user.description ? (
+                  <section aria-labelledby="profile-about-heading">
+                    <h2
+                      className={`${typography.h4} mb-3 text-foreground`}
+                      id="profile-about-heading"
+                    >
+                      {t.profile.about}
+                    </h2>
+                    <p
+                      className={`${typography.body} whitespace-pre-wrap leading-7 text-default-600`}
+                    >
+                      {user.description}
+                    </p>
+                  </section>
+                ) : null}
+
+                {user.tags.length > 0 ? (
+                  <section aria-labelledby="profile-skills-heading">
+                    <h2
+                      className={`${typography.h4} mb-3 text-foreground`}
+                      id="profile-skills-heading"
+                    >
+                      {t.profile.skills}
+                    </h2>
+                    <div className="flex flex-wrap gap-2">
+                      {user.tags.map((tag) => (
+                        <Chip
+                          key={tag}
+                          className={chipStyles.base}
+                          classNames={chipStyles.classNames}
+                          color="primary"
+                          size="md"
+                          variant="flat"
                         >
-                          <path
-                            d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                          />
-                        </svg>
-                        <span>
-                          {t.profile.english}: {user.englishLevel}
+                          {tag}
+                        </Chip>
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+              </div>
+
+              {user.contactEmail || user.link || socialLink ? (
+                <aside className="rounded-2xl border border-default-200/70 bg-default-50/60 p-4 sm:p-5">
+                  <h2 className={`${typography.h4} mb-4 text-foreground`}>
+                    {t.profile.contact}
+                  </h2>
+                  <div className="flex flex-col gap-3">
+                    {user.contactEmail ? (
+                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-default-200/70 bg-content1 p-2 pl-3">
+                        <a
+                          className="min-w-0 flex-1 truncate text-sm font-medium text-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          href={`mailto:${user.contactEmail}`}
+                        >
+                          {user.contactEmail}
+                        </a>
+                        <Button
+                          aria-label={t.profile.copyEmail}
+                          color={emailCopied ? "success" : "default"}
+                          size="sm"
+                          variant="flat"
+                          onPress={handleCopyEmail}
+                        >
+                          {emailCopied
+                            ? t.profile.emailCopiedShort
+                            : t.profile.copyEmailShort}
+                        </Button>
+                        <span aria-live="polite" className="sr-only">
+                          {emailCopied ? t.profile.emailCopied : ""}
                         </span>
                       </div>
                     ) : null}
+
+                    {user.link ? (
+                      <a
+                        className="inline-flex min-h-10 w-full items-center rounded-xl bg-primary/10 px-4 text-sm font-medium text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        href={user.link}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        {t.profile.visitWebsite}
+                      </a>
+                    ) : null}
+
+                    {socialLink ? (
+                      <a
+                        className="inline-flex min-h-10 w-full items-center gap-2 rounded-xl bg-default-100 px-4 text-sm font-medium text-foreground transition-colors hover:bg-default-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        href={socialLink}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        {socialIcon}
+                        {socialLabel}
+                      </a>
+                    ) : null}
                   </div>
-                  {user.availability && user.availability.length > 0 ? (
-                    <div
-                      className={`flex flex-wrap items-center justify-center sm:justify-start ${spacing.sm} text-default-600 font-medium`}
-                    >
-                      <svg
-                        className={`${iconSizes.md} text-default-400 flex-shrink-0`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                        />
-                      </svg>
-                      <span className={typography.body}>
-                        {t.profile.availability}:
-                      </span>
-                      <span className={`${typography.body} text-default-500`}>
-                        {user.availability
-                          .map((avail) => {
-                            switch (avail) {
-                              case "freelance":
-                                return t.profile.availabilityFreelance;
-                              case "part_time":
-                                return t.profile.availabilityPartTime;
-                              case "full_time":
-                                return t.profile.availabilityFullTime;
-                              case "consulting":
-                                return t.profile.availabilityConsulting;
-                              case "not_available":
-                                return t.profile.availabilityNotAvailable;
-                              default:
-                                return avail;
-                            }
-                          })
-                          .join(", ")}
-                      </span>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-
-            {user.description ? (
-              <div
-                className={`mb-6 bg-default-50/50 dark:bg-default-100/10 ${borderRadius.outer.lg} p-5 border border-default-200/50`}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <svg
-                    className="w-5 h-5 text-primary"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                    />
-                  </svg>
-                  <span
-                    className={`${typography.body} font-semibold text-default-700`}
-                  >
-                    {t.profile.about}
-                  </span>
-                </div>
-                <p
-                  className={`${typography.body} text-default-600 leading-relaxed whitespace-pre-wrap`}
-                >
-                  {user.description}
-                </p>
-              </div>
-            ) : null}
-
-            {user.tags && user.tags.length > 0 ? (
-              <div className="mb-6">
-                <div className={`flex flex-wrap ${spacing.sm}`}>
-                  {user.tags.map((tag) => (
-                    <Chip
-                      key={tag}
-                      className={chipStyles.base}
-                      classNames={chipStyles.classNames}
-                      color="primary"
-                      size="md"
-                      variant="flat"
-                    >
-                      {tag}
-                    </Chip>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            <div className="flex flex-col gap-3">
-              {user.contactEmail ? (
-                <div
-                  className="flex items-center gap-3 bg-default-50/50 dark:bg-default-100/10 rounded-lg p-4 border border-default-200/50 cursor-pointer transition-all duration-200 hover:bg-default-100/70 dark:hover:bg-default-100/20 hover:border-default-300/50 active:scale-[0.98]"
-                  onClick={handleCopyEmail}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleCopyEmail();
-                    }
-                  }}
-                >
-                  <svg
-                    className="w-5 h-5 text-default-400 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                    />
-                  </svg>
-                  <span className={`flex-1 ${typography.body} font-medium`}>
-                    {user.contactEmail}
-                  </span>
-                  <AnimatePresence mode="wait">
-                    {emailCopied ? (
-                      <motion.div
-                        animate={{ scale: 1, rotate: 0 }}
-                        exit={{ scale: 0, rotate: 180 }}
-                        initial={{ scale: 0, rotate: -180 }}
-                        key="check"
-                        transition={{ duration: 0.3, type: "spring" }}
-                      >
-                        <Button
-                          className="min-w-fit pointer-events-none"
-                          color="success"
-                          size="sm"
-                          variant="flat"
-                        >
-                          <svg
-                            className="w-4 h-4 checkmark-animated"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M5 13l4 4L19 7"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                            />
-                          </svg>
-                        </Button>
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                        initial={{ scale: 0 }}
-                        key="copy"
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Button
-                          className={`min-w-fit pointer-events-none transition-transform duration-150 ${emailButtonPressed ? "scale-95" : ""}`}
-                          color="default"
-                          size="sm"
-                          variant="flat"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                            />
-                          </svg>
-                        </Button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ) : null}
-
-              {user.link ? (
-                <Button
-                  fullWidth
-                  as="a"
-                  className="font-medium"
-                  color="default"
-                  href={user.link}
-                  rel="noopener noreferrer"
-                  size="md"
-                  startContent={
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                      />
-                    </svg>
-                  }
-                  target="_blank"
-                  variant="flat"
-                >
-                  {t.profile.visitWebsite}
-                </Button>
-              ) : null}
-
-              {user.contactLinks &&
-              user.contactLinks.length > 0 &&
-              user.contactLinks[0] ? (
-                (() => {
-                  const contactLink = user.contactLinks[0];
-                  const platform = detectSocialPlatform(contactLink);
-
-                  const getButtonText = () => {
-                    switch (platform) {
-                      case "linkedin":
-                        return t.profile.myLinkedIn;
-                      case "github":
-                        return t.profile.myGitHub;
-                      case "x":
-                        return t.profile.myX;
-                      case "youtube":
-                        return t.profile.myYouTube;
-                      case "instagram":
-                        return t.profile.myInstagram;
-                      case "discord":
-                        return t.profile.myDiscord;
-                      case "facebook":
-                        return t.profile.myFacebook;
-                      case "tiktok":
-                        return t.profile.myTikTok;
-                      case "twitch":
-                        return t.profile.myTwitch;
-                      case "reddit":
-                        return t.profile.myReddit;
-                      case "telegram":
-                        return t.profile.myTelegram;
-                      case "whatsapp":
-                        return t.profile.myWhatsApp;
-                      case "spotify":
-                        return t.profile.mySpotify;
-                      case "medium":
-                        return t.profile.myMedium;
-                      case "behance":
-                        return t.profile.myBehance;
-                      case "dribbble":
-                        return t.profile.myDribbble;
-                      default:
-                        return t.profile.socialLink;
-                    }
-                  };
-
-                  const getIcon = () => {
-                    switch (platform) {
-                      case "linkedin":
-                        return <LinkedInIcon size={16} />;
-                      case "github":
-                        return <GithubIcon size={16} />;
-                      case "x":
-                        return <TwitterIcon size={16} />;
-                      case "youtube":
-                        return <YouTubeIcon size={16} />;
-                      case "instagram":
-                        return <InstagramIcon size={16} />;
-                      case "discord":
-                        return <DiscordIcon size={16} />;
-                      default:
-                        return (
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                            />
-                          </svg>
-                        );
-                    }
-                  };
-
-                  return (
-                    <Button
-                      fullWidth
-                      as="a"
-                      className="font-medium"
-                      color="default"
-                      href={contactLink}
-                      rel="noopener noreferrer"
-                      size="md"
-                      startContent={getIcon()}
-                      target="_blank"
-                      variant="flat"
-                    >
-                      {getButtonText()}
-                    </Button>
-                  );
-                })()
+                </aside>
               ) : null}
             </div>
           </div>

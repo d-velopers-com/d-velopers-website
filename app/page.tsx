@@ -1,9 +1,9 @@
-import HomeClient from "./home-client";
-
 import { UserCard } from "@/features/users/components/UserCard";
-import { serializePublicUsers } from "@/lib/serializers";
 import { parsePublicUserSearchParams } from "@/lib/search-params";
+import { serializePublicUsers } from "@/lib/serializers";
 import { getPublicUsersPage, PUBLIC_USERS_PAGE_SIZE } from "@/lib/user";
+
+import HomeClient from "./home-client";
 
 type HomePageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

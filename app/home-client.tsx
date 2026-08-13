@@ -1,17 +1,25 @@
 "use client";
 
-import { type ReactNode, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 
+import { SearchIcon } from "@/components/icons";
 import { useLanguage } from "@/contexts/language-context";
 import { useSessionContext } from "@/contexts/session-context";
-import { SearchIcon } from "@/components/icons";
-import { countries } from "@/lib/countries";
 import { Availability } from "@/lib/constants";
+import { countries } from "@/lib/countries";
+import { gradients, typography } from "@/lib/ui-constants";
 import { debounce, filtersToSearchParams } from "@/lib/utils";
 import { SearchFilters } from "@/types";
-import { gradients, typography } from "@/lib/ui-constants";
 
 interface HomeClientProps {
   initialFilters: {
@@ -42,10 +50,18 @@ export default function HomeClient({
   const { t } = useLanguage();
   const session = useSessionContext();
   const isAuthenticated = !!session.user;
+  const activeFacetCount = [
+    filters.availability,
+    filters.english,
+    filters.country,
+  ].filter(Boolean).length;
+  const hasActiveFilters = Boolean(
+    filters.searchQuery?.trim() || activeFacetCount,
+  );
   const inputClasses =
     "w-full rounded-2xl border border-default-200/70 bg-content1 text-base text-foreground shadow-sm outline-none transition placeholder:text-default-500 focus:border-primary focus:ring-2 focus:ring-primary/20";
   const filterClasses =
-    "h-10 rounded-xl border border-default-200/70 bg-content1 px-3 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20";
+    "h-11 rounded-xl border border-default-200/80 bg-content1 px-3 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20";
   const clearButtonClasses =
     "inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-default-600 transition hover:bg-default-100 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20";
   const primaryButtonClasses =
@@ -56,20 +72,20 @@ export default function HomeClient({
     previousQueryRef.current = initialFilters.searchQuery;
   }, [initialFilters]);
 
-  const navigateWithFilters = (
-    nextFilters: SearchFilters,
-    nextPage = 1,
-  ) => {
-    const queryString = filtersToSearchParams({
-      ...nextFilters,
-      page: nextPage > 1 ? nextPage : undefined,
-    }).toString();
-    startTransition(() => {
-      router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
-        scroll: false,
+  const navigateWithFilters = useCallback(
+    (nextFilters: SearchFilters, nextPage = 1) => {
+      const queryString = filtersToSearchParams({
+        ...nextFilters,
+        page: nextPage > 1 ? nextPage : undefined,
+      }).toString();
+      startTransition(() => {
+        router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
+          scroll: false,
+        });
       });
-    });
-  };
+    },
+    [pathname, router],
+  );
 
   const debouncedNavigate = useMemo(
     () =>
@@ -77,8 +93,10 @@ export default function HomeClient({
         (nextFilters: SearchFilters) => navigateWithFilters(nextFilters, 1),
         500,
       ),
-    [pathname, router],
+    [navigateWithFilters],
   );
+
+  useEffect(() => () => debouncedNavigate.cancel(), [debouncedNavigate]);
 
   const updateFilter = <K extends keyof SearchFilters>(
     key: K,
@@ -112,6 +130,7 @@ export default function HomeClient({
       return;
     }
 
+    debouncedNavigate.cancel();
     navigateWithFilters(nextFilters, 1);
   };
 
@@ -123,6 +142,7 @@ export default function HomeClient({
       country: "",
     };
 
+    debouncedNavigate.cancel();
     setFilters(emptyFilters);
     previousQueryRef.current = "";
     navigateWithFilters(emptyFilters, 1);
@@ -133,17 +153,22 @@ export default function HomeClient({
       className={`min-h-screen px-4 pb-12 pt-6 sm:px-6 lg:px-8 ${gradients.background}`}
     >
       <div className="mx-auto max-w-7xl">
-        <section className="mb-12 mt-0 text-center">
-          <h1 className={`${typography.h1} mb-4 min-h-[2.5rem] text-foreground`}>
+        <section className="mb-10 mt-0">
+          <p className="mb-3 text-center text-xs font-bold uppercase tracking-[0.18em] text-primary">
+            {t.home.directoryEyebrow}
+          </p>
+          <h1
+            className={`${typography.h1} mb-3 min-h-[2.5rem] text-center text-foreground`}
+          >
             {t.home.title}
           </h1>
           <p
-            className={`${typography.bodyLarge} mx-auto mb-8 min-h-[1.5rem] max-w-2xl`}
+            className={`${typography.bodyLarge} mx-auto mb-7 min-h-[1.5rem] max-w-2xl text-center`}
           >
             {t.home.subtitle}
           </p>
 
-          <div className="max-w-4xl mx-auto mb-8 space-y-4">
+          <div className="mx-auto max-w-5xl rounded-3xl border border-default-200/70 bg-content1/90 p-3 shadow-sm sm:p-5">
             <div className="relative flex gap-2">
               <SearchIcon
                 className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-default-400"
@@ -163,7 +188,8 @@ export default function HomeClient({
                     ? t.home.searcher.hideFilters
                     : t.home.searcher.showFilters
                 }
-                className="inline-flex h-14 min-w-14 items-center justify-center rounded-xl border border-default-200/70 bg-content1 text-foreground shadow-sm transition hover:bg-default-100 focus:outline-none focus:ring-2 focus:ring-primary/20 md:hidden"
+                aria-expanded={showFilters}
+                className="inline-flex h-14 min-w-fit items-center justify-center gap-2 rounded-xl border border-default-200/70 bg-content1 px-4 text-sm font-semibold text-foreground transition hover:bg-default-100 focus:outline-none focus:ring-2 focus:ring-primary/20 md:hidden"
                 type="button"
                 onClick={() => setShowFilters(!showFilters)}
               >
@@ -180,105 +206,116 @@ export default function HomeClient({
                     strokeWidth={2}
                   />
                 </svg>
+                <span>{t.home.searcher.filtersLabel}</span>
+                {activeFacetCount > 0 ? (
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs text-white">
+                    {activeFacetCount}
+                  </span>
+                ) : null}
               </button>
             </div>
 
-            <div>
-              <div className="hidden md:flex md:flex-wrap md:items-center md:justify-center md:gap-3">
-                <select
-                  aria-label={t.home.searcher.filters.english}
-                  className={`${filterClasses} min-w-[200px]`}
-                  value={filters.english || ""}
-                  onChange={(e) => updateFilter("english", e.target.value)}
-                >
-                  <option value="">{t.home.searcher.filters.english}</option>
-                  {t.dashboard.englishLevels.map((level) => (
-                    <option key={level.key} value={level.key}>
-                      {level.text}
+            <div className="mt-4">
+              <div className="hidden md:grid md:grid-cols-3 md:gap-3">
+                <label className="flex flex-col gap-1.5 text-left text-xs font-semibold text-default-600">
+                  {t.home.searcher.filters.english}
+                  <select
+                    className={filterClasses}
+                    value={filters.english || ""}
+                    onChange={(e) => updateFilter("english", e.target.value)}
+                  >
+                    <option value="">{t.home.searcher.anyOption}</option>
+                    {t.dashboard.englishLevels.map((level) => (
+                      <option key={level.key} value={level.key}>
+                        {level.text}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1.5 text-left text-xs font-semibold text-default-600">
+                  {t.home.searcher.filters.availability}
+                  <select
+                    className={filterClasses}
+                    value={filters.availability || ""}
+                    onChange={(e) =>
+                      updateFilter(
+                        "availability",
+                        e.target.value
+                          ? (e.target.value as Availability)
+                          : null,
+                      )
+                    }
+                  >
+                    <option value="">{t.home.searcher.anyOption}</option>
+                    <option value={Availability.FREELANCE}>
+                      {t.dashboard.availabilityFreelance}
                     </option>
-                  ))}
-                </select>
-                <select
-                  aria-label={t.home.searcher.filters.availability}
-                  className={`${filterClasses} min-w-[200px]`}
-                  value={filters.availability || ""}
-                  onChange={(e) =>
-                    updateFilter(
-                      "availability",
-                      e.target.value ? (e.target.value as Availability) : null,
-                    )
-                  }
-                >
-                  <option value="">{t.home.searcher.filters.availability}</option>
-                  <option value={Availability.FREELANCE}>
-                    {t.dashboard.availabilityFreelance}
-                  </option>
-                  <option value={Availability.PART_TIME}>
-                    {t.dashboard.availabilityPartTime}
-                  </option>
-                  <option value={Availability.FULL_TIME}>
-                    {t.dashboard.availabilityFullTime}
-                  </option>
-                  <option value={Availability.CONSULTING}>
-                    {t.dashboard.availabilityConsulting}
-                  </option>
-                  <option value={Availability.NOT_AVAILABLE}>
-                    {t.dashboard.availabilityNotAvailable}
-                  </option>
-                </select>
-                <select
-                  aria-label={t.home.searcher.filters.country}
-                  className={`${filterClasses} w-[200px]`}
-                  value={filters.country || ""}
-                  onChange={(e) => updateFilter("country", e.target.value)}
-                >
-                  <option value="">{t.home.searcher.filters.country}</option>
-                  {countries.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.name}
+                    <option value={Availability.PART_TIME}>
+                      {t.dashboard.availabilityPartTime}
                     </option>
-                  ))}
-                </select>
-                <button
-                  className={clearButtonClasses}
-                  type="button"
-                  onClick={clearFilters}
-                >
-                  {t.home.searcher.clearFilters}
-                </button>
+                    <option value={Availability.FULL_TIME}>
+                      {t.dashboard.availabilityFullTime}
+                    </option>
+                    <option value={Availability.CONSULTING}>
+                      {t.dashboard.availabilityConsulting}
+                    </option>
+                    <option value={Availability.NOT_AVAILABLE}>
+                      {t.dashboard.availabilityNotAvailable}
+                    </option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1.5 text-left text-xs font-semibold text-default-600">
+                  {t.home.searcher.filters.country}
+                  <select
+                    className={filterClasses}
+                    value={filters.country || ""}
+                    onChange={(e) => updateFilter("country", e.target.value)}
+                  >
+                    <option value="">{t.home.searcher.anyOption}</option>
+                    {countries.map((country) => (
+                      <option key={country.code} value={country.code}>
+                        {country.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
 
               {showFilters ? (
                 <div className="overflow-hidden md:hidden">
-                  <div className="space-y-3 pt-3">
-                    <div className="w-full">
+                  <div className="space-y-3 pt-1">
+                    <label className="flex w-full flex-col gap-1.5 text-left text-xs font-semibold text-default-600">
+                      {t.home.searcher.filters.english}
                       <select
-                        aria-label={t.home.searcher.filters.english}
                         className={`${filterClasses} w-full`}
                         value={filters.english || ""}
-                        onChange={(e) => updateFilter("english", e.target.value)}
+                        onChange={(e) =>
+                          updateFilter("english", e.target.value)
+                        }
                       >
-                        <option value="">{t.home.searcher.filters.english}</option>
+                        <option value="">{t.home.searcher.anyOption}</option>
                         {t.dashboard.englishLevels.map((level) => (
                           <option key={level.key} value={level.key}>
                             {level.text}
                           </option>
                         ))}
                       </select>
-                    </div>
-                    <div className="w-full">
+                    </label>
+                    <label className="flex w-full flex-col gap-1.5 text-left text-xs font-semibold text-default-600">
+                      {t.home.searcher.filters.availability}
                       <select
-                        aria-label={t.home.searcher.filters.availability}
                         className={`${filterClasses} w-full`}
                         value={filters.availability || ""}
                         onChange={(e) =>
                           updateFilter(
                             "availability",
-                            e.target.value ? (e.target.value as Availability) : null,
+                            e.target.value
+                              ? (e.target.value as Availability)
+                              : null,
                           )
                         }
                       >
-                        <option value="">{t.home.searcher.filters.availability}</option>
+                        <option value="">{t.home.searcher.anyOption}</option>
                         <option value={Availability.FREELANCE}>
                           {t.dashboard.availabilityFreelance}
                         </option>
@@ -295,31 +332,35 @@ export default function HomeClient({
                           {t.dashboard.availabilityNotAvailable}
                         </option>
                       </select>
-                    </div>
-                    <div className="w-full">
+                    </label>
+                    <label className="flex w-full flex-col gap-1.5 text-left text-xs font-semibold text-default-600">
+                      {t.home.searcher.filters.country}
                       <select
-                        aria-label={t.home.searcher.filters.country}
                         className={`${filterClasses} w-full`}
                         value={filters.country || ""}
-                        onChange={(e) => updateFilter("country", e.target.value)}
+                        onChange={(e) =>
+                          updateFilter("country", e.target.value)
+                        }
                       >
-                        <option value="">{t.home.searcher.filters.country}</option>
+                        <option value="">{t.home.searcher.anyOption}</option>
                         {countries.map((country) => (
                           <option key={country.code} value={country.code}>
                             {country.name}
                           </option>
                         ))}
                       </select>
-                    </div>
-                    <div className="w-full pt-2">
-                      <button
-                        className={`${clearButtonClasses} w-full`}
-                        type="button"
-                        onClick={clearFilters}
-                      >
-                        {t.home.searcher.clearFilters}
-                      </button>
-                    </div>
+                    </label>
+                    {hasActiveFilters ? (
+                      <div className="w-full pt-1">
+                        <button
+                          className={`${clearButtonClasses} w-full`}
+                          type="button"
+                          onClick={clearFilters}
+                        >
+                          {t.home.searcher.clearFilters}
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               ) : null}
@@ -328,9 +369,28 @@ export default function HomeClient({
         </section>
 
         <section aria-labelledby="directory-results-heading">
-          <h2 className="sr-only" id="directory-results-heading">
-            {t.home.resultsHeading}
-          </h2>
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2
+                className={`${typography.h3} text-foreground`}
+                id="directory-results-heading"
+              >
+                {t.home.resultsHeading}
+              </h2>
+              <p aria-live="polite" className="mt-1 text-sm text-default-500">
+                {t.home.resultsCount.replace("{count}", String(totalUsers))}
+              </p>
+            </div>
+            {hasActiveFilters ? (
+              <button
+                className={clearButtonClasses}
+                type="button"
+                onClick={clearFilters}
+              >
+                {t.home.searcher.clearFilters}
+              </button>
+            ) : null}
+          </div>
 
           {isPending ? (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -357,8 +417,11 @@ export default function HomeClient({
             </div>
           ) : totalUsers === 0 ? (
             <div className="py-32 text-center">
-              <div className="mb-8 text-8xl" aria-hidden="true">
-                👥
+              <div
+                className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary"
+                aria-hidden="true"
+              >
+                <SearchIcon size={28} />
               </div>
               <p
                 className={`mb-8 text-default-600 dark:text-default-300 ${typography.bodyLarge}`}
@@ -366,10 +429,7 @@ export default function HomeClient({
                 {t.home.noProfiles}
               </p>
               {!isAuthenticated ? (
-                <Link
-                  className={`mt-4 ${primaryButtonClasses}`}
-                  href="/login"
-                >
+                <Link className={`mt-4 ${primaryButtonClasses}`} href="/login">
                   {t.home.beFirst}
                 </Link>
               ) : null}
@@ -380,27 +440,31 @@ export default function HomeClient({
               {totalPages > 1 ? (
                 <nav
                   aria-label={t.home.paginationLabel}
-                  className="flex items-center justify-center gap-3 pt-8"
+                  className="flex items-center justify-center gap-1 pt-8 sm:gap-3"
                 >
                   <button
-                    className={`${clearButtonClasses} border border-default-200/70 bg-content1 disabled:cursor-not-allowed disabled:opacity-50`}
+                    className="inline-flex min-h-10 items-center justify-center whitespace-nowrap rounded-xl border border-default-200/70 bg-content1 px-3 text-sm font-medium text-default-600 transition hover:bg-default-100 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={initialPage === 1 || isPending}
                     type="button"
-                    onClick={() => navigateWithFilters(filters, initialPage - 1)}
+                    onClick={() =>
+                      navigateWithFilters(filters, initialPage - 1)
+                    }
                   >
                     {t.home.previousPage}
                   </button>
                   <p
                     aria-live="polite"
-                    className="min-w-[110px] text-center text-sm text-default-600 dark:text-default-300"
+                    className="min-w-[84px] text-center text-xs text-default-600 sm:min-w-[110px] sm:text-sm dark:text-default-300"
                   >
                     {t.home.pageLabel} {initialPage} / {totalPages}
                   </p>
                   <button
-                    className={`${clearButtonClasses} border border-default-200/70 bg-content1 disabled:cursor-not-allowed disabled:opacity-50`}
+                    className="inline-flex min-h-10 items-center justify-center whitespace-nowrap rounded-xl border border-default-200/70 bg-content1 px-3 text-sm font-medium text-default-600 transition hover:bg-default-100 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={initialPage === totalPages || isPending}
                     type="button"
-                    onClick={() => navigateWithFilters(filters, initialPage + 1)}
+                    onClick={() =>
+                      navigateWithFilters(filters, initialPage + 1)
+                    }
                   >
                     {t.home.nextPage}
                   </button>

@@ -8,6 +8,8 @@ import {
 import { createSession } from "@/lib/session";
 import { upsertUser } from "@/lib/user";
 
+const OAUTH_STATE_COOKIE = "discord_oauth_state";
+
 function getRedirectUri(request: NextRequest): string {
   // Priorizar la variable de entorno si está definida (recomendado para producción)
   const envRedirectUri = process.env.DISCORD_REDIRECT_URI;
@@ -28,13 +30,37 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get("code");
   const error = searchParams.get("error");
+  const state = searchParams.get("state");
+  const expectedState = request.cookies.get(OAUTH_STATE_COOKIE)?.value;
+
+  if (!state || !expectedState || state !== expectedState) {
+    const response = NextResponse.redirect(
+      new URL("/login?error=invalid_state", request.url),
+    );
+
+    response.cookies.delete(OAUTH_STATE_COOKIE);
+
+    return response;
+  }
 
   if (error) {
-    return NextResponse.redirect(new URL(`/login?error=${error}`, request.url));
+    const response = NextResponse.redirect(
+      new URL(`/login?error=${encodeURIComponent(error)}`, request.url),
+    );
+
+    response.cookies.delete(OAUTH_STATE_COOKIE);
+
+    return response;
   }
 
   if (!code) {
-    return NextResponse.redirect(new URL("/login?error=no_code", request.url));
+    const response = NextResponse.redirect(
+      new URL("/login?error=no_code", request.url),
+    );
+
+    response.cookies.delete(OAUTH_STATE_COOKIE);
+
+    return response;
   }
 
   try {
@@ -78,10 +104,18 @@ export async function GET(request: NextRequest) {
       expiresAt: Date.now() + tokenData.expires_in * 1000,
     });
 
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    const response = NextResponse.redirect(new URL("/dashboard", request.url));
+
+    response.cookies.delete(OAUTH_STATE_COOKIE);
+
+    return response;
   } catch {
-    return NextResponse.redirect(
+    const response = NextResponse.redirect(
       new URL("/login?error=auth_failed", request.url),
     );
+
+    response.cookies.delete(OAUTH_STATE_COOKIE);
+
+    return response;
   }
 }

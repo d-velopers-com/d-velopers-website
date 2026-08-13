@@ -9,15 +9,15 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@heroui/dropdown";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
-import { ThemeSwitch } from "@/components/theme-switch";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { signOut } from "@/hooks/useSession";
-import { useLanguage } from "@/contexts/language-context";
 import { DiscordIcon } from "@/components/icons";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { ThemeSwitch } from "@/components/theme-switch";
+import { useLanguage } from "@/contexts/language-context";
+import { signOut } from "@/hooks/useSession";
 import { SHOW_DISCORD_GUIDE_HINT_EVENT } from "@/lib/client-events";
 import { focusStates, typography } from "@/lib/ui-constants";
 import { getDiscordAvatarProxyUrl } from "@/shared/lib";
@@ -137,17 +137,19 @@ export function Navbar({ permissions, session }: NavbarProps) {
             <li>
               <LanguageSwitcher />
             </li>
-            <li>
-              <Button
-                as={Link}
-                className="data-[hover=true]:bg-transparent"
-                href="/jobs"
-                size="md"
-                variant="light"
-              >
-                {t.nav.jobs}
-              </Button>
-            </li>
+            {permissions.canViewJobs ? (
+              <li>
+                <Button
+                  as={Link}
+                  className="data-[hover=true]:bg-transparent"
+                  href="/jobs"
+                  size="md"
+                  variant="light"
+                >
+                  {t.nav.jobs}
+                </Button>
+              </li>
+            ) : null}
             {status === "authenticated" && session?.user ? (
               <>
                 <li>
@@ -260,17 +262,19 @@ export function Navbar({ permissions, session }: NavbarProps) {
                 <ThemeSwitch />
               </div>
             </li>
-            <li>
-              <Button
-                as={Link}
-                className={`w-full justify-start ${focusStates.button}`}
-                href="/jobs"
-                variant="light"
-                onPress={() => setIsMenuOpen(false)}
-              >
-                {t.nav.jobs}
-              </Button>
-            </li>
+            {permissions.canViewJobs ? (
+              <li>
+                <Button
+                  as={Link}
+                  className={`w-full justify-start ${focusStates.button}`}
+                  href="/jobs"
+                  variant="light"
+                  onPress={() => setIsMenuOpen(false)}
+                >
+                  {t.nav.jobs}
+                </Button>
+              </li>
+            ) : null}
 
             {status === "authenticated" ? (
               <>

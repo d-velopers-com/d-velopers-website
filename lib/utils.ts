@@ -1,9 +1,13 @@
-export function debounce<T extends (...args: any[]) => any>(
+export type DebouncedFunction<T extends (...args: never[]) => unknown> = ((
+  ...args: Parameters<T>
+) => void) & { cancel: () => void };
+
+export function debounce<T extends (...args: never[]) => unknown>(
   func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
+  wait: number,
+): DebouncedFunction<T> {
   let timeout: ReturnType<typeof setTimeout> | undefined;
-  return function executedFunction(...args: Parameters<T>) {
+  const executedFunction = (...args: Parameters<T>) => {
     const later = () => {
       timeout = undefined;
       func(...args);
@@ -11,9 +15,18 @@ export function debounce<T extends (...args: any[]) => any>(
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(later, wait);
   };
+
+  executedFunction.cancel = () => {
+    if (timeout) clearTimeout(timeout);
+    timeout = undefined;
+  };
+
+  return executedFunction;
 }
 
-export function filtersToSearchParams(filters: Record<string, any>): URLSearchParams {
+export function filtersToSearchParams(
+  filters: Record<string, any>,
+): URLSearchParams {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== null && value !== undefined && value !== "") {
@@ -27,7 +40,9 @@ export function filtersToSearchParams(filters: Record<string, any>): URLSearchPa
   return params;
 }
 
-export const validateRecentActivation = (profileActivatedAt: string | null | undefined) => {
+export const validateRecentActivation = (
+  profileActivatedAt: string | null | undefined,
+) => {
   if (!profileActivatedAt) {
     return false;
   }

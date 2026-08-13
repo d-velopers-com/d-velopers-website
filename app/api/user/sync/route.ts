@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { createSession, resolveSession } from "@/lib/session";
 import { getDiscordUser, getGuildMember } from "@/lib/discord-oauth";
+import { createSession, resolveSession } from "@/lib/session";
 import { upsertUser } from "@/lib/user";
 
 export async function POST() {
@@ -14,7 +14,8 @@ export async function POST() {
   if (discordReauthRequired || !session.accessToken) {
     return NextResponse.json(
       {
-        error: "Discord authorization expired. Please sign in with Discord again.",
+        error:
+          "Discord authorization expired. Please sign in with Discord again.",
         reauthRequired: true,
       },
       { status: 401 },
@@ -65,20 +66,22 @@ export async function POST() {
     });
   } catch (error) {
     console.error("Sync error details:", error);
-    
+
     // Detect if it's a token expiration error
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+
     if (errorMessage.includes("Failed to fetch Discord")) {
       return NextResponse.json(
         {
-          error: "Discord authorization expired. Please sign in with Discord again.",
+          error:
+            "Discord authorization expired. Please sign in with Discord again.",
           reauthRequired: true,
         },
         { status: 401 },
       );
     }
-    
+
     return NextResponse.json(
       { error: "Failed to sync profile" },
       { status: 500 },

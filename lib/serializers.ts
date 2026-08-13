@@ -1,5 +1,5 @@
-import type { PostData } from "@/lib/posts";
 import type { PublicUser } from "@/features/users";
+import type { PostData } from "@/lib/posts";
 
 export interface SerializedPost {
   id: string;

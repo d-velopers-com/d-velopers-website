@@ -1,18 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
-import { toast } from "sonner";
-import { Card, CardHeader, CardBody } from "@heroui/card";
+import type { SessionState, ViewerProfile } from "@/lib/viewer";
+
+import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
+import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
-import { Switch } from "@heroui/switch";
 import { Input } from "@heroui/input";
 import { Textarea } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
-import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import {
   Modal,
   ModalContent,
@@ -21,11 +18,16 @@ import {
   ModalFooter,
   useDisclosure,
 } from "@heroui/modal";
+import { Select, SelectItem } from "@heroui/select";
+import { Switch } from "@heroui/switch";
 import { Tooltip } from "@heroui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
+import { toast } from "sonner";
 
-import { useLanguage } from "@/contexts/language-context";
 import { CountrySelect } from "@/components/country-select";
+import { useLanguage } from "@/contexts/language-context";
 import {
   cardStyles,
   typography,
@@ -40,7 +42,6 @@ import {
 } from "@/lib/ui-constants";
 import { validateRecentActivation } from "@/lib/utils";
 import { getDiscordAvatarUrl } from "@/shared/lib";
-import type { SessionState, ViewerProfile } from "@/lib/viewer";
 
 interface DashboardClientProps {
   allowedRoles: string[];
@@ -276,11 +277,11 @@ export default function DashboardClient({
     if (title.trim().length > 80) {
       setTitleError(
         t.dashboard.titleMaxLengthError ||
-        "Title must be 80 characters or less",
+          "Title must be 80 characters or less",
       );
       toast.error(
         t.dashboard.titleMaxLengthError ||
-        "Title must be 80 characters or less",
+          "Title must be 80 characters or less",
       );
 
       return;
@@ -339,7 +340,7 @@ export default function DashboardClient({
       setSaving(false);
       const errorMessage =
         result.error?.includes("Maximum 15 tags") ||
-          result.error?.includes("tags")
+        result.error?.includes("tags")
           ? t.dashboard.maxTagsError
           : result.error || t.dashboard.invalidUrl;
 
@@ -364,7 +365,11 @@ export default function DashboardClient({
 
   const user = session.user;
 
-  const avatarUrl = getDiscordAvatarUrl(user.id, user.avatar, user.discriminator);
+  const avatarUrl = getDiscordAvatarUrl(
+    user.id,
+    user.avatar,
+    user.discriminator,
+  );
 
   const isServerMember = user.roles && user.roles.length > 0;
   const hasAllowedRole =
@@ -372,7 +377,9 @@ export default function DashboardClient({
     allowedRoles.length > 0 &&
     user.roles.some((roleId) => allowedRoles.includes(roleId));
 
-  const hasRecentActivation = validateRecentActivation(profile?.profileActivatedAt);
+  const hasRecentActivation = validateRecentActivation(
+    profile?.profileActivatedAt,
+  );
 
   const canApplyTrialPeriod =
     isServerMember &&
@@ -397,10 +404,10 @@ export default function DashboardClient({
 
   const handleyoeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (value === '' || /^\d+$/.test(value)) {
+    if (value === "" || /^\d+$/.test(value)) {
       setYoe(value);
     }
-  }
+  };
 
   const handleSync = async () => {
     setSyncing(true);
@@ -470,16 +477,18 @@ export default function DashboardClient({
             </div>
             {syncMessage && (
               <div
-                className={`flex items-center ${spacing.sm} p-2 rounded-md ${syncMessage.type === "success"
+                className={`flex items-center ${spacing.sm} p-2 rounded-md ${
+                  syncMessage.type === "success"
                     ? stateColors.success.full
                     : stateColors.danger.full
-                  }`}
+                }`}
               >
                 <svg
-                  className={`${iconSizes.sm} ${syncMessage.type === "success"
+                  className={`${iconSizes.sm} ${
+                    syncMessage.type === "success"
                       ? stateColors.success.text
                       : stateColors.danger.text
-                    }`}
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -501,10 +510,11 @@ export default function DashboardClient({
                   )}
                 </svg>
                 <span
-                  className={`${typography.caption} font-medium ${syncMessage.type === "success"
+                  className={`${typography.caption} font-medium ${
+                    syncMessage.type === "success"
                       ? stateColors.success.text
                       : stateColors.danger.text
-                    }`}
+                  }`}
                 >
                   {syncMessage.text}
                 </span>
@@ -607,80 +617,78 @@ export default function DashboardClient({
                 </div>
               )}
 
-            {profile &&
-              profile.isPublic &&
-              canMakePublic && (
-                <div
-                  className={`flex flex-col ${spacing.sm} p-4 ${stateColors.success.full} rounded-lg`}
+            {profile && profile.isPublic && canMakePublic && (
+              <div
+                className={`flex flex-col ${spacing.sm} p-4 ${stateColors.success.full} rounded-lg`}
+              >
+                <span
+                  className={`${typography.caption} font-semibold ${stateColors.success.text}`}
                 >
-                  <span
-                    className={`${typography.caption} font-semibold ${stateColors.success.text}`}
-                  >
-                    {t.dashboard.profileUrl}
-                  </span>
-                  <div className="flex gap-2">
-                    <Input
-                      readOnly
-                      classNames={{
-                        input: "text-xs",
-                      }}
-                      size="sm"
-                      value={`${typeof window !== "undefined" ? window.location.origin : ""}/users/${profile.handler}`}
-                      variant="flat"
-                    />
-                    <AnimatePresence mode="wait">
-                      {copied ? (
-                        <motion.div
-                          key="check"
-                          initial={{ scale: 0, rotate: -180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          exit={{ scale: 0, rotate: 180 }}
-                          transition={{ duration: 0.3, type: "spring" }}
+                  {t.dashboard.profileUrl}
+                </span>
+                <div className="flex gap-2">
+                  <Input
+                    readOnly
+                    classNames={{
+                      input: "text-xs",
+                    }}
+                    size="sm"
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/users/${profile.handler}`}
+                    variant="flat"
+                  />
+                  <AnimatePresence mode="wait">
+                    {copied ? (
+                      <motion.div
+                        key="check"
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        exit={{ scale: 0, rotate: 180 }}
+                        transition={{ duration: 0.3, type: "spring" }}
+                      >
+                        <Button
+                          className={focusStates.button}
+                          color="success"
+                          size="sm"
+                          variant="flat"
                         >
-                          <Button
-                            className={focusStates.button}
-                            color="success"
-                            size="sm"
-                            variant="flat"
+                          <svg
+                            className="w-4 h-4 checkmark-animated"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                           >
-                            <svg
-                              className="w-4 h-4 checkmark-animated"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                d="M5 13l4 4L19 7"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                              />
-                            </svg>
-                          </Button>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="copy"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          exit={{ scale: 0 }}
-                          transition={{ duration: 0.2 }}
+                            <path
+                              d="M5 13l4 4L19 7"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                            />
+                          </svg>
+                        </Button>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="copy"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Button
+                          className={focusStates.button}
+                          color="success"
+                          size="sm"
+                          variant="flat"
+                          onPress={handleCopyUrl}
                         >
-                          <Button
-                            className={focusStates.button}
-                            color="success"
-                            size="sm"
-                            variant="flat"
-                            onPress={handleCopyUrl}
-                          >
-                            {t.dashboard.copyUrl}
-                          </Button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                          {t.dashboard.copyUrl}
+                        </Button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-              )}
+              </div>
+            )}
 
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
@@ -837,7 +845,7 @@ export default function DashboardClient({
                 >
                   {title.length > 80
                     ? t.dashboard.titleMaxLengthError ||
-                    "Title must be 80 characters or less"
+                      "Title must be 80 characters or less"
                     : ""}
                 </span>
                 <span
@@ -1045,9 +1053,7 @@ export default function DashboardClient({
               </Select>
             </div>
             <div className="flex flex-col gap-2">
-              <span className={typography.label}>
-                {t.dashboard.yoe}
-              </span>
+              <span className={typography.label}>{t.dashboard.yoe}</span>
               <Input
                 classNames={{
                   input: "bg-background",
@@ -1102,8 +1108,9 @@ export default function DashboardClient({
                     }
                   }}
                   disabled={isNotAvailable}
-                  className={`cursor-pointer border-none bg-transparent p-0 ${isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${
+                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                   aria-disabled={isNotAvailable}
                 >
                   <Chip
@@ -1129,8 +1136,9 @@ export default function DashboardClient({
                     }
                   }}
                   disabled={isNotAvailable}
-                  className={`cursor-pointer border-none bg-transparent p-0 ${isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${
+                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                   aria-disabled={isNotAvailable}
                 >
                   <Chip
@@ -1156,8 +1164,9 @@ export default function DashboardClient({
                     }
                   }}
                   disabled={isNotAvailable}
-                  className={`cursor-pointer border-none bg-transparent p-0 ${isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${
+                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                   aria-disabled={isNotAvailable}
                 >
                   <Chip
@@ -1183,8 +1192,9 @@ export default function DashboardClient({
                     }
                   }}
                   disabled={isNotAvailable}
-                  className={`cursor-pointer border-none bg-transparent p-0 ${isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                  className={`cursor-pointer border-none bg-transparent p-0 ${
+                    isNotAvailable ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                   aria-disabled={isNotAvailable}
                 >
                   <Chip

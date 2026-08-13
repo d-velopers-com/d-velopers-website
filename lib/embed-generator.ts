@@ -2,7 +2,7 @@
  * Generates embed iframes from social media URLs
  */
 
-export type SupportedPlatform = 'linkedin' | 'twitter' | 'unknown';
+export type SupportedPlatform = "linkedin" | "twitter" | "unknown";
 
 interface EmbedResult {
   success: boolean;
@@ -18,15 +18,15 @@ interface EmbedResult {
 export function detectPlatform(url: string): SupportedPlatform {
   const lowerUrl = url.toLowerCase();
 
-  if (lowerUrl.includes('linkedin.com')) {
-    return 'linkedin';
+  if (lowerUrl.includes("linkedin.com")) {
+    return "linkedin";
   }
 
-  if (lowerUrl.includes('twitter.com') || lowerUrl.includes('x.com')) {
-    return 'twitter';
+  if (lowerUrl.includes("twitter.com") || lowerUrl.includes("x.com")) {
+    return "twitter";
   }
 
-  return 'unknown';
+  return "unknown";
 }
 
 /**
@@ -70,12 +70,13 @@ function generateLinkedInEmbed(url: string): EmbedResult {
     // Can't embed this type of LinkedIn content (jobs, profiles, etc.)
     // Create a placeholder iframe that just stores the URL for reference
     // The frontend will use sourceUrl to show the fallback button
-    const placeholder = `<iframe src="about:blank" data-linkedin-url="${url}" height="0" width="0" style="display:none;" title="LinkedIn Link"></iframe>`;
+    const normalizedUrl = new URL(url).href;
+    const placeholder = `<iframe src="${normalizedUrl}" data-linkedin-url="${normalizedUrl}" height="0" width="0" title="LinkedIn Link"></iframe>`;
 
     return {
       success: true,
       iframe: placeholder,
-      platform: 'linkedin',
+      platform: "linkedin",
       embeddable: false, // Mark as not embeddable
     };
   }
@@ -88,7 +89,7 @@ function generateLinkedInEmbed(url: string): EmbedResult {
   return {
     success: true,
     iframe,
-    platform: 'linkedin',
+    platform: "linkedin",
     embeddable: true,
   };
 }
@@ -113,7 +114,7 @@ function generateTwitterEmbed(url: string): EmbedResult {
   if (!tweetId) {
     return {
       success: false,
-      error: 'Could not extract Tweet ID from URL',
+      error: "Could not extract Tweet ID from URL",
     };
   }
 
@@ -125,7 +126,7 @@ function generateTwitterEmbed(url: string): EmbedResult {
   return {
     success: true,
     iframe,
-    platform: 'twitter',
+    platform: "twitter",
   };
 }
 
@@ -133,8 +134,13 @@ function generateTwitterEmbed(url: string): EmbedResult {
  * Checks if input is a URL
  */
 export function isUrl(input: string): boolean {
-  const trimmed = input.trim();
-  return trimmed.startsWith('http://') || trimmed.startsWith('https://');
+  try {
+    const url = new URL(input.trim());
+
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -142,7 +148,7 @@ export function isUrl(input: string): boolean {
  */
 export function isIframe(input: string): boolean {
   const trimmed = input.trim().toLowerCase();
-  return trimmed.startsWith('<iframe') && trimmed.endsWith('</iframe>');
+  return trimmed.startsWith("<iframe") && trimmed.endsWith("</iframe>");
 }
 
 /**
@@ -156,7 +162,7 @@ export function generateEmbed(input: string): EmbedResult {
     return {
       success: true,
       iframe: trimmed,
-      platform: 'unknown',
+      platform: "unknown",
     };
   }
 
@@ -164,7 +170,7 @@ export function generateEmbed(input: string): EmbedResult {
   if (!isUrl(trimmed)) {
     return {
       success: false,
-      error: 'Input must be a URL or iframe code',
+      error: "Input must be a URL or iframe code",
     };
   }
 
@@ -172,9 +178,9 @@ export function generateEmbed(input: string): EmbedResult {
   const platform = detectPlatform(trimmed);
 
   switch (platform) {
-    case 'linkedin':
+    case "linkedin":
       return generateLinkedInEmbed(trimmed);
-    case 'twitter':
+    case "twitter":
       return generateTwitterEmbed(trimmed);
     default:
       // For any other URL, generate a generic iframe
@@ -182,7 +188,7 @@ export function generateEmbed(input: string): EmbedResult {
       return {
         success: true,
         iframe: `<iframe src="${trimmed}" width="100%" height="500" frameborder="0" allowfullscreen="" title="External Content"></iframe>`,
-        platform: 'unknown',
+        platform: "unknown",
         embeddable: true,
       };
   }
@@ -191,22 +197,24 @@ export function generateEmbed(input: string): EmbedResult {
 /**
  * Get supported platforms info
  */
-export function getSupportedPlatforms(): { name: string; examples: string[] }[] {
+export function getSupportedPlatforms(): {
+  name: string;
+  examples: string[];
+}[] {
   return [
     {
-      name: 'LinkedIn',
+      name: "LinkedIn",
       examples: [
-        'https://www.linkedin.com/posts/username_activity-123456789',
-        'https://www.linkedin.com/feed/update/urn:li:activity:123456789',
+        "https://www.linkedin.com/posts/username_activity-123456789",
+        "https://www.linkedin.com/feed/update/urn:li:activity:123456789",
       ],
     },
     {
-      name: 'Twitter/X',
+      name: "Twitter/X",
       examples: [
-        'https://twitter.com/username/status/123456789',
-        'https://x.com/username/status/123456789',
+        "https://twitter.com/username/status/123456789",
+        "https://x.com/username/status/123456789",
       ],
     },
   ];
 }
-

@@ -76,7 +76,9 @@ function createSessionUser(session: SessionData): SessionUser {
   };
 }
 
-function serializeProfile(user: NonNullable<Awaited<ReturnType<typeof getUserByDiscordId>>>): ViewerProfile {
+function serializeProfile(
+  user: NonNullable<Awaited<ReturnType<typeof getUserByDiscordId>>>,
+): ViewerProfile {
   return {
     handler: user.handler,
     isPublic: user.isPublic,
@@ -119,7 +121,9 @@ function createPermissions(
   const hasCollaboratorRole = userRoles.some((role) =>
     accessByRole.collaborators.includes(role),
   );
-  const hasStaffRole = userRoles.some((role) => accessByRole.staff.includes(role));
+  const hasStaffRole = userRoles.some((role) =>
+    accessByRole.staff.includes(role),
+  );
   const hasJobManagementRole = hasStaffRole || hasCollaboratorRole;
   const hasRecentActivation = validateRecentActivation(
     profile?.profileActivatedAt,

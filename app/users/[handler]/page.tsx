@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 
-import ProfileClient from "./profile-client";
-
 import { getUserByHandler } from "@/lib/user";
+
+import ProfileClient from "./profile-client";
 
 type ProfilePageProps = {
   params: Promise<{ handler: string }>;
