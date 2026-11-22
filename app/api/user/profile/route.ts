@@ -1,8 +1,27 @@
+import type { SessionData } from "@/lib/session";
+
 import { NextResponse } from "next/server";
 
 import { getCountryByCode } from "@/lib/countries";
-import { getSession } from "@/lib/session";
-import { updateUserProfile, getUserByDiscordId } from "@/lib/user";
+import {
+  DiscordApiError,
+  getGuildMember,
+  refreshDiscordToken,
+} from "@/lib/discord-oauth";
+import { getProjectAccess } from "@/lib/project-access";
+import {
+  createSession,
+  getSession,
+  isDiscordTokenExpired,
+} from "@/lib/session";
+import {
+  ProjectLimitExceededError,
+  ProjectRoleVerificationRequiredError,
+  updateUserProfile,
+  updateUserRolesByDiscordId,
+  getUserByDiscordId,
+  type UserProjectInput,
+} from "@/lib/user";
 import { isSafeExternalUrl } from "@/lib/validations";
 
 function isValidEmail(email: string): boolean {
@@ -20,6 +39,107 @@ function isValidYOE(year: unknown) {
     yearsNumber >= 0 &&
     yearsNumber <= 80
   );
+}
+
+async function getVerifiedDiscordRoles(
+  session: SessionData,
+): Promise<{ roles: string[] } | { response: NextResponse }> {
+  const guildId = process.env.DISCORD_GUILD_ID;
+
+  if (!guildId) {
+    return {
+      response: NextResponse.json(
+        { error: "Discord guild is not configured for project changes" },
+        { status: 503 },
+      ),
+    };
+  }
+
+  let discordSession = session;
+
+  if (
+    !discordSession.accessToken ||
+    isDiscordTokenExpired(discordSession.expiresAt)
+  ) {
+    if (!discordSession.refreshToken) {
+      return {
+        response: NextResponse.json(
+          {
+            error:
+              "Discord authorization expired. Please sign in with Discord again.",
+            reauthRequired: true,
+          },
+          { status: 401 },
+        ),
+      };
+    }
+
+    try {
+      const tokenData = await refreshDiscordToken(discordSession.refreshToken);
+
+      discordSession = {
+        ...discordSession,
+        accessToken: tokenData.access_token,
+        refreshToken: tokenData.refresh_token || discordSession.refreshToken,
+        expiresAt: Date.now() + tokenData.expires_in * 1000,
+      };
+    } catch {
+      return {
+        response: NextResponse.json(
+          {
+            error:
+              "Discord authorization expired. Please sign in with Discord again.",
+            reauthRequired: true,
+          },
+          { status: 401 },
+        ),
+      };
+    }
+  }
+
+  const accessToken = discordSession.accessToken;
+
+  if (!accessToken) {
+    return {
+      response: NextResponse.json(
+        {
+          error:
+            "Discord authorization expired. Please sign in with Discord again.",
+          reauthRequired: true,
+        },
+        { status: 401 },
+      ),
+    };
+  }
+
+  try {
+    const memberData = await getGuildMember(accessToken, guildId);
+
+    await createSession({ ...discordSession, roles: memberData.roles });
+    await updateUserRolesByDiscordId(session.discordId, memberData.roles);
+
+    return { roles: memberData.roles };
+  } catch (error) {
+    if (error instanceof DiscordApiError && error.status === 401) {
+      return {
+        response: NextResponse.json(
+          {
+            error:
+              "Discord authorization expired. Please sign in with Discord again.",
+            reauthRequired: true,
+          },
+          { status: 401 },
+        ),
+      };
+    }
+
+    return {
+      response: NextResponse.json(
+        { error: "Could not verify your Discord roles. Please try again." },
+        { status: 503 },
+      ),
+    };
+  }
 }
 
 export async function GET() {
@@ -49,6 +169,7 @@ export async function GET() {
     englishLevel: user.englishLevel,
     availability: Array.isArray(user.availability) ? user.availability : [],
     yoe: user.yoe,
+    projects: user.projects,
     joinedServerAt: user.joinedServerAt,
     profileActivatedAt: user.profileActivatedAt,
   });
@@ -75,6 +196,7 @@ export async function PATCH(request: Request) {
     englishLevel,
     availability,
     yoe,
+    projects,
   } = body;
 
   const updateData: {
@@ -403,7 +525,128 @@ export async function PATCH(request: Request) {
     }
   }
 
-  const user = await updateUserProfile(session.discordId, updateData);
+  let projectData: UserProjectInput[] | undefined;
+
+  if (projects !== undefined) {
+    if (!Array.isArray(projects)) {
+      return NextResponse.json(
+        { error: "Projects must be an array" },
+        { status: 400 },
+      );
+    }
+
+    if (projects.length > 10) {
+      return NextResponse.json(
+        { error: "A maximum of 10 projects can be saved" },
+        { status: 400 },
+      );
+    }
+
+    projectData = [];
+
+    for (const project of projects) {
+      if (!project || typeof project !== "object" || Array.isArray(project)) {
+        return NextResponse.json(
+          { error: "Invalid project" },
+          { status: 400 },
+        );
+      }
+
+      const title = typeof project.title === "string" ? project.title.trim() : "";
+      const url = typeof project.url === "string" ? project.url.trim() : "";
+      const description =
+        project.description === null || project.description === undefined
+          ? null
+          : typeof project.description === "string"
+            ? project.description.trim() || null
+            : undefined;
+
+      if (!title || title.length > 100) {
+        return NextResponse.json(
+          { error: "Project titles must be between 1 and 100 characters" },
+          { status: 400 },
+        );
+      }
+
+      if (description === undefined || (description && description.length > 500)) {
+        return NextResponse.json(
+          { error: "Project descriptions must be 500 characters or less" },
+          { status: 400 },
+        );
+      }
+
+      if (!url || !isSafeExternalUrl(url)) {
+        return NextResponse.json(
+          { error: "Each project needs a valid HTTP or HTTPS URL" },
+          { status: 400 },
+        );
+      }
+
+      const normalizedUrl = new URL(url).href;
+
+      if (normalizedUrl.length > 2048) {
+        return NextResponse.json(
+          { error: "Each project needs a valid HTTP or HTTPS URL" },
+          { status: 400 },
+        );
+      }
+
+      projectData.push({ title, description, url: normalizedUrl });
+    }
+  }
+
+  let user;
+
+  try {
+    user = await updateUserProfile(
+      session.discordId,
+      updateData,
+      projectData,
+    );
+  } catch (error) {
+    if (error instanceof ProjectLimitExceededError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          limit: error.limit,
+          currentCount: error.currentCount,
+        },
+        { status: 403 },
+      );
+    }
+
+    if (error instanceof ProjectRoleVerificationRequiredError) {
+      const verification = await getVerifiedDiscordRoles(session);
+
+      if ("response" in verification) {
+        return verification.response;
+      }
+
+      try {
+        user = await updateUserProfile(
+          session.discordId,
+          updateData,
+          projectData,
+          verification.roles,
+        );
+      } catch (retryError) {
+        if (retryError instanceof ProjectLimitExceededError) {
+          return NextResponse.json(
+            {
+              error: retryError.message,
+              limit: retryError.limit,
+              currentCount: retryError.currentCount,
+            },
+            { status: 403 },
+          );
+        }
+
+        throw retryError;
+      }
+    } else {
+      throw error;
+    }
+  }
 
   return NextResponse.json({
     handler: user.handler,
@@ -419,6 +662,8 @@ export async function PATCH(request: Request) {
     englishLevel: user.englishLevel,
     availability: Array.isArray(user.availability) ? user.availability : [],
     yoe: user.yoe,
+    projects: user.projects,
+    projectLimit: getProjectAccess(user.roles).limit,
     joinedServerAt: user.joinedServerAt,
     profileActivatedAt: user.profileActivatedAt,
   });

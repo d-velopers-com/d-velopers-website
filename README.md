@@ -175,8 +175,14 @@ d-velopers-website/
 | `DISCORD_REDIRECT_URI`  | OAuth callback URL                                     | ✅ Yes   |
 | `DISCORD_GUILD_ID`      | Your Discord server ID                                 | ✅ Yes   |
 | `ALLOWED_ROLES`         | Comma-separated role IDs that can make profiles public | ❌ No    |
+| `PROJECT_DEVELOPER_ROLE_IDS` | Developer role IDs (up to 2 profile projects)      | ❌ No    |
+| `PROJECT_PRO_ROLE_IDS`       | Pro role IDs (up to 5 profile projects)            | ❌ No    |
+| `PROJECT_ELITE_ROLE_IDS`     | Elite role IDs (up to 10 profile projects)         | ❌ No    |
 | `DATABASE_URL`          | PostgreSQL connection string                           | ✅ Yes   |
 | `NEXTAUTH_SECRET`       | Secret key used to sign the session JWT                | ✅ Yes   |
+
+Project role variables accept comma-separated Discord role IDs. Configure the
+same values in each deployment environment that should grant the limits.
 
 ## 📝 Available Scripts
 

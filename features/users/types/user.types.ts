@@ -19,6 +19,14 @@ export interface PublicUser {
   createdAt: string;
 }
 
+export interface UserProject {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  sortOrder: number;
+}
+
 /**
  * Full user profile data including private fields
  */
@@ -32,6 +40,7 @@ export interface UserProfile extends PublicUser {
   contactEmail: string | null;
   englishLevel: string | null;
   availability: Availability[];
+  projects: UserProject[];
   profileActivatedAt: string | null;
   updatedAt: string;
 }
@@ -51,5 +60,6 @@ export interface UpdateUserProfileInput {
   contactEmail?: string | null;
   contactLinks?: string[];
   link?: string | null;
+  projects?: Omit<UserProject, "id" | "sortOrder">[];
   isPublic?: boolean;
 }

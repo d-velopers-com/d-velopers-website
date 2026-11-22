@@ -1,6 +1,7 @@
 import { cache } from "react";
 
 import { accessByRole } from "@/config/access-by-role";
+import { getProjectAccess } from "@/lib/project-access";
 import { resolveSession, type SessionData } from "@/lib/session";
 import { getUserAccessStateByDiscordId, getUserByDiscordId } from "@/lib/user";
 import { validateRecentActivation } from "@/lib/utils";
@@ -19,6 +20,14 @@ export interface SessionState {
   discordReauthRequired: boolean;
 }
 
+export interface ProfileProject {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  sortOrder: number;
+}
+
 export interface ViewerProfile {
   handler: string;
   isPublic: boolean;
@@ -33,6 +42,7 @@ export interface ViewerProfile {
   englishLevel: string | null;
   availability: string[];
   yoe: number | null;
+  projects: ProfileProject[];
   joinedServerAt: string | null;
   profileActivatedAt: string | null;
 }
@@ -48,6 +58,7 @@ export interface ViewerPermissions {
   canApplyTrialPeriod: boolean;
   canViewJobs: boolean;
   canMakePublic: boolean;
+  projectLimit: number;
 }
 
 export interface ViewerContext {
@@ -93,6 +104,15 @@ function serializeProfile(
     englishLevel: user.englishLevel,
     availability: Array.isArray(user.availability) ? user.availability : [],
     yoe: user.yoe,
+    projects: Array.isArray(user.projects)
+      ? user.projects.map((project) => ({
+          id: project.id,
+          title: project.title,
+          description: project.description,
+          url: project.url,
+          sortOrder: project.sortOrder,
+        }))
+      : [],
     joinedServerAt: user.joinedServerAt?.toISOString() ?? null,
     profileActivatedAt: user.profileActivatedAt?.toISOString() ?? null,
   };
@@ -113,6 +133,7 @@ function serializePermissionProfile(
 function createPermissions(
   sessionUser: SessionUser | null,
   profile: PermissionProfileState | null,
+  projectRoles?: readonly string[],
 ): ViewerPermissions {
   const allowedRoles = getAllowedRoles();
   const userRoles = sessionUser?.roles || [];
@@ -158,6 +179,7 @@ function createPermissions(
     canApplyTrialPeriod,
     canViewJobs,
     canMakePublic,
+    projectLimit: getProjectAccess(projectRoles ?? userRoles).limit,
   };
 }
 
@@ -194,6 +216,7 @@ export const getViewerContext = cache(async (): Promise<ViewerContext> => {
   const permissions = createPermissions(
     session.user,
     profile ? { profileActivatedAt: profile.profileActivatedAt } : null,
+    user?.roles,
   );
 
   return {

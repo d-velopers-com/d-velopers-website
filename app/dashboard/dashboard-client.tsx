@@ -46,13 +46,31 @@ import { getDiscordAvatarUrl } from "@/shared/lib";
 interface DashboardClientProps {
   allowedRoles: string[];
   initialProfile: ViewerProfile;
+  projectLimit: number;
   session: SessionState;
   technologies: string[];
+}
+
+interface ProjectDraft {
+  id?: string;
+  title: string;
+  description: string;
+  url: string;
+}
+
+function toProjectDrafts(projects: ViewerProfile["projects"]): ProjectDraft[] {
+  return projects.map((project) => ({
+    id: project.id,
+    title: project.title,
+    description: project.description || "",
+    url: project.url,
+  }));
 }
 
 export default function DashboardClient({
   allowedRoles,
   initialProfile,
+  projectLimit,
   session,
   technologies,
 }: DashboardClientProps) {
@@ -72,6 +90,11 @@ export default function DashboardClient({
   const [availability, setAvailability] = useState<string[]>([]);
   const [isNotAvailable, setIsNotAvailable] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
+  const [projects, setProjects] = useState<ProjectDraft[]>(() =>
+    toProjectDrafts(initialProfile.projects),
+  );
+  const [activeProjectLimit, setActiveProjectLimit] = useState(projectLimit);
+  const [projectsDirty, setProjectsDirty] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [linkError, setLinkError] = useState("");
@@ -99,6 +122,13 @@ export default function DashboardClient({
     onOpenChange: onTrialModalOpenChange,
   } = useDisclosure();
 
+  const updateProjects = (
+    updater: (current: ProjectDraft[]) => ProjectDraft[],
+  ) => {
+    setProjects(updater);
+    setProjectsDirty(true);
+  };
+
   useEffect(() => {
     if (profile) {
       setDescription(profile.description || "");
@@ -123,6 +153,12 @@ export default function DashboardClient({
       setTags(profile.tags || []);
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (profile && !projectsDirty) {
+      setProjects(toProjectDrafts(profile.projects));
+    }
+  }, [profile, projectsDirty]);
 
   const filteredTechnologies = useMemo(() => {
     const available = technologies.filter(
@@ -180,6 +216,11 @@ export default function DashboardClient({
     englishLevel?: string | null;
     availability?: string[];
     yoe?: string | null;
+    projects?: Array<{
+      title: string;
+      description: string | null;
+      url: string;
+    }>;
   }) => {
     try {
       const res = await fetch("/api/user/profile", {
@@ -191,7 +232,12 @@ export default function DashboardClient({
       if (!res.ok) {
         const error = await res.json();
 
-        return { success: false, error: error.error || "Update failed" };
+        return {
+          success: false,
+          error: error.error || "Update failed",
+          reauthRequired: error.reauthRequired === true,
+          limit: typeof error.limit === "number" ? error.limit : undefined,
+        };
       }
 
       const updatedData = await res.json();
@@ -313,6 +359,30 @@ export default function DashboardClient({
       return;
     }
 
+    if (
+      projects.some((project) => !project.title.trim() || !project.url.trim())
+    ) {
+      toast.error(t.dashboard.projectRequiredError);
+
+      return;
+    }
+
+    const hasInvalidProjectUrl = projects.some((project) => {
+      try {
+        const projectUrl = new URL(project.url.trim());
+
+        return !["http:", "https:"].includes(projectUrl.protocol);
+      } catch {
+        return true;
+      }
+    });
+
+    if (hasInvalidProjectUrl) {
+      toast.error(t.dashboard.projectUrlError);
+
+      return;
+    }
+
     setSaving(true);
     const result = await updateProfile({
       description: description.trim() || null,
@@ -326,9 +396,25 @@ export default function DashboardClient({
       availability: isNotAvailable ? ["not_available"] : availability,
       yoe: yoe || null,
       tags: tags,
+      ...(projectsDirty
+        ? {
+            projects: projects.map((project) => ({
+              title: project.title.trim(),
+              description: project.description.trim() || null,
+              url: project.url.trim(),
+            })),
+          }
+        : {}),
     });
 
     if (result.success) {
+      if (projectsDirty) {
+        setProjects(toProjectDrafts(result.data.projects));
+        setProjectsDirty(false);
+      }
+      if (typeof result.data.projectLimit === "number") {
+        setActiveProjectLimit(result.data.projectLimit);
+      }
       await refreshProfile();
       setSaving(false);
       toast.success(t.dashboard.saved, {
@@ -338,19 +424,34 @@ export default function DashboardClient({
       return;
     } else {
       setSaving(false);
-      const errorMessage =
-        result.error?.includes("Maximum 15 tags") ||
-        result.error?.includes("tags")
+      if (result.reauthRequired) {
+        window.location.href = "/login?expired=true";
+        return;
+      }
+
+      const isProjectLimitError =
+        result.error?.includes("Project limit exceeded");
+
+      if (isProjectLimitError && typeof result.limit === "number") {
+        setActiveProjectLimit(result.limit);
+      }
+
+      const errorMessage = isProjectLimitError
+        ? t.dashboard.projectLimitError
+        : result.error?.includes("Maximum 15 tags") ||
+            result.error?.includes("tags")
           ? t.dashboard.maxTagsError
           : result.error || t.dashboard.invalidUrl;
 
-      if (
-        result.error?.includes("Maximum 15 tags") ||
-        result.error?.includes("tags")
-      ) {
-        setTagsError(t.dashboard.maxTagsError);
-      } else {
-        setLinkError(result.error || t.dashboard.errorSaving);
+      if (!isProjectLimitError) {
+        if (
+          result.error?.includes("Maximum 15 tags") ||
+          result.error?.includes("tags")
+        ) {
+          setTagsError(t.dashboard.maxTagsError);
+        } else {
+          setLinkError(result.error || t.dashboard.errorSaving);
+        }
       }
 
       toast.error(errorMessage, {
@@ -1291,6 +1392,121 @@ export default function DashboardClient({
                 )}
               </div>
             </div>
+
+            <section className="flex flex-col gap-3 rounded-xl border border-default-200/70 bg-default-50/40 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-col gap-1">
+                  <span className={typography.label}>{t.dashboard.projects}</span>
+                  <span className={typography.captionMuted}>
+                    {projects.length}/{activeProjectLimit} {t.dashboard.projectsCount}
+                  </span>
+                </div>
+                <Button
+                  className={focusStates.button}
+                  color="primary"
+                  isDisabled={saving || projects.length >= activeProjectLimit}
+                  size="sm"
+                  variant="flat"
+                  onPress={() =>
+                    updateProjects((current) => [
+                      ...current,
+                      { title: "", description: "", url: "" },
+                    ])
+                  }
+                >
+                  {t.dashboard.addProject}
+                </Button>
+              </div>
+
+              {activeProjectLimit === 0 ? (
+                <p className={typography.captionMuted}>
+                  {t.dashboard.projectAccessRequired}
+                </p>
+              ) : null}
+
+              {projects.map((project, index) => (
+                <div
+                  key={project.id || `project-${index}`}
+                  className="flex flex-col gap-3 rounded-lg border border-default-200/70 bg-content1 p-3"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className={typography.labelSmall}>
+                      {t.dashboard.project} {index + 1}
+                    </span>
+                    <Button
+                      color="danger"
+                      isDisabled={saving}
+                      size="sm"
+                      variant="light"
+                      onPress={() =>
+                        updateProjects((current) =>
+                          current.filter((_, projectIndex) => projectIndex !== index),
+                        )
+                      }
+                    >
+                      {t.dashboard.removeProject}
+                    </Button>
+                  </div>
+                  <Input
+                    isDisabled={saving}
+                    isRequired
+                    label={t.dashboard.projectTitle}
+                    labelPlacement="outside"
+                    maxLength={100}
+                    placeholder={t.dashboard.projectTitlePlaceholder}
+                    value={project.title}
+                    variant="bordered"
+                    onChange={(event) =>
+                      updateProjects((current) =>
+                        current.map((item, projectIndex) =>
+                          projectIndex === index
+                            ? { ...item, title: event.target.value }
+                            : item,
+                        ),
+                      )
+                    }
+                  />
+                  <Textarea
+                    isDisabled={saving}
+                    label={t.dashboard.projectDescription}
+                    labelPlacement="outside"
+                    maxLength={500}
+                    maxRows={4}
+                    placeholder={t.dashboard.projectDescriptionPlaceholder}
+                    value={project.description}
+                    variant="bordered"
+                    onChange={(event) =>
+                      updateProjects((current) =>
+                        current.map((item, projectIndex) =>
+                          projectIndex === index
+                            ? { ...item, description: event.target.value }
+                            : item,
+                        ),
+                      )
+                    }
+                  />
+                  <Input
+                    isDisabled={saving}
+                    isRequired
+                    label={t.dashboard.projectUrl}
+                    labelPlacement="outside"
+                    placeholder={t.dashboard.projectUrlPlaceholder}
+                    type="url"
+                    value={project.url}
+                    variant="bordered"
+                    onChange={(event) =>
+                      updateProjects((current) =>
+                        current.map((item, projectIndex) =>
+                          projectIndex === index
+                            ? { ...item, url: event.target.value }
+                            : item,
+                        ),
+                      )
+                    }
+                  />
+                </div>
+              ))}
+            </section>
 
             <Button
               className={`font-semibold ${focusStates.button}`}

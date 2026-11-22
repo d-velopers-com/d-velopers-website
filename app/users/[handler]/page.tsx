@@ -34,6 +34,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         tags: Array.isArray(user.tags) ? user.tags : [],
         englishLevel: user.englishLevel,
         availability: Array.isArray(user.availability) ? user.availability : [],
+        projects: Array.isArray(user.projects) ? user.projects : [],
         joinedServerAt: user.joinedServerAt?.toISOString() ?? null,
       }}
     />

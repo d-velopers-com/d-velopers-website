@@ -1,8 +1,32 @@
 import { Prisma } from "@prisma/client";
 
+import { getProjectAccess } from "@/lib/project-access";
 import { SearchFilters } from "@/types";
 
 import { prisma } from "./prisma";
+
+export interface UserProjectInput {
+  title: string;
+  description: string | null;
+  url: string;
+}
+
+export class ProjectLimitExceededError extends Error {
+  constructor(
+    readonly limit: number,
+    readonly currentCount: number,
+  ) {
+    super(`Project limit exceeded. This role allows up to ${limit} projects.`);
+    this.name = "ProjectLimitExceededError";
+  }
+}
+
+export class ProjectRoleVerificationRequiredError extends Error {
+  constructor() {
+    super("Discord roles must be verified before increasing project count.");
+    this.name = "ProjectRoleVerificationRequiredError";
+  }
+}
 
 interface CreateUserData {
   discordId: string;
@@ -117,12 +141,10 @@ export async function upsertUser(data: CreateUserData) {
   });
 
   if (existingUser) {
-    // Protección: Solo actualizar roles si:
-    // 1. isMember es true (confirmamos que el usuario está en el servidor), o
-    // 2. Los nuevos roles NO están vacíos, o
-    // 3. El usuario no tenía roles de todos modos
+    // Update an explicit membership result even when it contains no roles.
+    // Otherwise, preserve old roles on an unconfirmed empty response.
     const shouldUpdateRoles =
-      data.isMember === true ||
+      data.isMember !== undefined ||
       data.roles.length > 0 ||
       existingUser.roles.length === 0;
 
@@ -162,6 +184,16 @@ export async function upsertUser(data: CreateUserData) {
   });
 }
 
+export async function updateUserRolesByDiscordId(
+  discordId: string,
+  roles: string[],
+) {
+  return await prisma.user.update({
+    where: { discordId },
+    data: { roles, updatedAt: new Date() },
+  });
+}
+
 export async function getUserByDiscordId(discordId: string) {
   return await prisma.user.findUnique({
     where: { discordId },
@@ -190,6 +222,16 @@ export async function getUserByDiscordId(discordId: string) {
       profileActivatedAt: true,
       createdAt: true,
       updatedAt: true,
+      projects: {
+        orderBy: { sortOrder: "asc" },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          url: true,
+          sortOrder: true,
+        },
+      },
     },
   });
 }
@@ -231,6 +273,16 @@ export async function getUserByHandler(handler: string) {
       profileActivatedAt: true,
       createdAt: true,
       updatedAt: true,
+      projects: {
+        orderBy: { sortOrder: "asc" },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          url: true,
+          sortOrder: true,
+        },
+      },
     },
   });
 }
@@ -275,7 +327,112 @@ export async function updateUserProfile(
     availability?: string[];
     yoe?: number | null;
   },
+  projects?: UserProjectInput[],
+  verifiedProjectRoles?: string[],
 ) {
+  if (projects !== undefined) {
+    return await prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`
+        SELECT "id"
+        FROM "User"
+        WHERE "discordId" = ${discordId}
+        FOR UPDATE
+      `;
+
+      const currentUser = await transaction.user.findUnique({
+        where: { discordId },
+        select: {
+          id: true,
+          isPublic: true,
+          profileActivatedAt: true,
+          roles: true,
+        },
+      });
+
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+
+      const currentProjectCount = await transaction.project.count({
+        where: { userId: currentUser.id },
+      });
+      const projectRoles = verifiedProjectRoles ?? currentUser.roles;
+      const projectLimit = getProjectAccess(projectRoles).limit;
+
+      if (
+        projects.length > currentProjectCount &&
+        verifiedProjectRoles === undefined
+      ) {
+        throw new ProjectRoleVerificationRequiredError();
+      }
+
+      // Existing projects remain editable after a role downgrade, but the
+      // account cannot increase its count beyond the current tier's limit.
+      if (
+        projects.length > projectLimit &&
+        projects.length > currentProjectCount
+      ) {
+        throw new ProjectLimitExceededError(projectLimit, currentProjectCount);
+      }
+
+      const shouldSetActivationDate =
+        data.isPublic === true &&
+        !currentUser.isPublic &&
+        !currentUser.profileActivatedAt;
+
+      await transaction.user.update({
+        where: { discordId },
+        data: {
+          ...data,
+          ...(verifiedProjectRoles !== undefined
+            ? { roles: verifiedProjectRoles }
+            : {}),
+          ...(shouldSetActivationDate
+            ? { profileActivatedAt: new Date() }
+            : {}),
+        },
+      });
+
+      await transaction.project.deleteMany({
+        where: { userId: currentUser.id },
+      });
+
+      if (projects.length > 0) {
+        await transaction.project.createMany({
+          data: projects.map((project, sortOrder) => ({
+            userId: currentUser.id,
+            title: project.title,
+            description: project.description,
+            url: project.url,
+            sortOrder,
+          })),
+        });
+      }
+
+      const updatedUser = await transaction.user.findUnique({
+        where: { discordId },
+        include: {
+          projects: {
+            orderBy: { sortOrder: "asc" },
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              url: true,
+              sortOrder: true,
+            },
+          },
+        },
+      });
+
+      if (!updatedUser) {
+        throw new Error("User not found after profile update");
+      }
+
+      return updatedUser;
+    });
+  }
+
   // Si se está activando el perfil, verificar si es la primera vez
   if (data.isPublic === true) {
     const user = await prisma.user.findUnique({
@@ -291,6 +448,18 @@ export async function updateUserProfile(
           ...data,
           profileActivatedAt: new Date(),
         },
+        include: {
+          projects: {
+            orderBy: { sortOrder: "asc" },
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              url: true,
+              sortOrder: true,
+            },
+          },
+        },
       });
     }
   }
@@ -298,6 +467,18 @@ export async function updateUserProfile(
   return await prisma.user.update({
     where: { discordId },
     data,
+    include: {
+      projects: {
+        orderBy: { sortOrder: "asc" },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          url: true,
+          sortOrder: true,
+        },
+      },
+    },
   });
 }
 

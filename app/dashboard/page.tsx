@@ -16,6 +16,7 @@ export default async function DashboardPage() {
     <DashboardClient
       allowedRoles={viewer.permissions.allowedRoles}
       initialProfile={viewer.profile}
+      projectLimit={viewer.permissions.projectLimit}
       session={viewer.session}
       technologies={technologies}
     />

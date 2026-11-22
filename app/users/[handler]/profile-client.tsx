@@ -42,6 +42,13 @@ interface ProfileClientProps {
     tags: string[];
     englishLevel: string | null;
     availability: string[];
+    projects: {
+      id: string;
+      title: string;
+      description: string | null;
+      url: string;
+      sortOrder: number;
+    }[];
     joinedServerAt: string | null;
   };
 }
@@ -231,6 +238,48 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                         >
                           {tag}
                         </Chip>
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+
+                {user.projects.length > 0 ? (
+                  <section aria-labelledby="profile-projects-heading">
+                    <h2
+                      className={`${typography.h4} mb-3 text-foreground`}
+                      id="profile-projects-heading"
+                    >
+                      {t.profile.projects}
+                    </h2>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {user.projects.map((project) => (
+                        <a
+                          key={project.id}
+                          className="group flex min-h-36 flex-col rounded-2xl border border-default-200/70 bg-content1 p-4 transition-colors hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          href={project.url}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          <span className="flex items-start justify-between gap-3">
+                            <span className="font-semibold text-foreground">
+                              {project.title}
+                            </span>
+                            <span
+                              aria-label={t.profile.viewProject}
+                              className="text-primary transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                            >
+                              ↗
+                            </span>
+                          </span>
+                          {project.description ? (
+                            <span className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-default-600">
+                              {project.description}
+                            </span>
+                          ) : null}
+                          <span className="mt-auto pt-4 text-xs font-medium text-primary">
+                            {t.profile.viewProject}
+                          </span>
+                        </a>
                       ))}
                     </div>
                   </section>

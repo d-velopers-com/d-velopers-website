@@ -45,6 +45,7 @@ export async function POST() {
       avatar: discordUser.avatar,
       roles: memberData.roles,
       joinedServerAt: memberData.joinedAt || null,
+      isMember: memberData.isMember,
     });
 
     // Actualizar la sesión con los datos actualizados de Discord

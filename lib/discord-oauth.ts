@@ -21,6 +21,16 @@ export interface TokenResponse {
   scope: string;
 }
 
+export class DiscordApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "DiscordApiError";
+  }
+}
+
 export async function exchangeCodeForToken(
   code: string,
   redirectUri: string,
@@ -125,7 +135,7 @@ export async function getGuildMember(
   }
 
   if (!response.ok) {
-    throw new Error("Failed to fetch guild member");
+    throw new DiscordApiError("Failed to fetch guild member", response.status);
   }
 
   const member: DiscordGuildMember = await response.json();

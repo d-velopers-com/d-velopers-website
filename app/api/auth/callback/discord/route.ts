@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     const guildId = process.env.DISCORD_GUILD_ID;
     let roles: string[] = [];
     let joinedServerAt: string | null = null;
-    let isMember = false;
+    let isMember: boolean | undefined;
 
     if (guildId) {
       const memberData = await getGuildMember(tokenData.access_token, guildId);
