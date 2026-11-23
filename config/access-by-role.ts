@@ -14,7 +14,10 @@ export const accessByRole = {
   collaborators: parseRoleIds(process.env.COLLABORATOR_ROLES),
   // Project display limits by Discord subscription tier.
   projectTiers: {
-    developer: parseRoleIds(process.env.PROJECT_DEVELOPER_ROLE_IDS),
+    developer: [
+      ...parseRoleIds(process.env.PROJECT_DEVELOPER_ROLE_IDS),
+      "1179604467163865199",
+    ],
     pro: parseRoleIds(process.env.PROJECT_PRO_ROLE_IDS),
     elite: parseRoleIds(process.env.PROJECT_ELITE_ROLE_IDS),
   },
