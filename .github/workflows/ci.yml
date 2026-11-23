@@ -6,9 +6,20 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db?schema=public
 
     services:
       postgres:
@@ -27,43 +38,39 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      # 👇 Instalar pnpm ANTES de setup-node
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 9.12.0
 
-      # 👇 Node con cache para pnpm
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: 24
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Check localizations
-        run: npx tsx scripts/check-localization.ts
+        run: pnpm check:locales
 
       - name: Generate Prisma Client
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db?schema=public
         run: pnpm prisma generate
 
       - name: Run migrations
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db?schema=public
         run: pnpm prisma migrate deploy
 
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
       - name: Run tests
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db?schema=public
         run: pnpm test
 
       - name: Build application
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db?schema=public
         run: pnpm build
