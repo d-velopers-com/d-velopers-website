@@ -1,3 +1,5 @@
+import type { ProjectCoverFit } from "@/lib/project-cover";
+
 import { Prisma } from "@prisma/client";
 
 import { getProjectAccess } from "@/lib/project-access";
@@ -10,6 +12,10 @@ export interface UserProjectInput {
   description: string | null;
   url: string;
   coverImageUrl: string | null;
+  coverImageFit: ProjectCoverFit;
+  coverImagePositionX: number;
+  coverImagePositionY: number;
+  coverImageZoom: number;
 }
 
 export class ProjectLimitExceededError extends Error {
@@ -231,6 +237,10 @@ export async function getUserByDiscordId(discordId: string) {
           description: true,
           url: true,
           coverImageUrl: true,
+          coverImageFit: true,
+          coverImagePositionX: true,
+          coverImagePositionY: true,
+          coverImageZoom: true,
           sortOrder: true,
         },
       },
@@ -283,6 +293,10 @@ export async function getUserByHandler(handler: string) {
           description: true,
           url: true,
           coverImageUrl: true,
+          coverImageFit: true,
+          coverImagePositionX: true,
+          coverImagePositionY: true,
+          coverImageZoom: true,
           sortOrder: true,
         },
       },
@@ -408,6 +422,10 @@ export async function updateUserProfile(
             description: project.description,
             url: project.url,
             coverImageUrl: project.coverImageUrl,
+            coverImageFit: project.coverImageFit,
+            coverImagePositionX: project.coverImagePositionX,
+            coverImagePositionY: project.coverImagePositionY,
+            coverImageZoom: project.coverImageZoom,
             sortOrder,
           })),
         });
@@ -424,6 +442,10 @@ export async function updateUserProfile(
               description: true,
               url: true,
               coverImageUrl: true,
+              coverImageFit: true,
+              coverImagePositionX: true,
+              coverImagePositionY: true,
+              coverImageZoom: true,
               sortOrder: true,
             },
           },
@@ -462,6 +484,10 @@ export async function updateUserProfile(
               description: true,
               url: true,
               coverImageUrl: true,
+              coverImageFit: true,
+              coverImagePositionX: true,
+              coverImagePositionY: true,
+              coverImageZoom: true,
               sortOrder: true,
             },
           },
@@ -482,6 +508,10 @@ export async function updateUserProfile(
           description: true,
           url: true,
           coverImageUrl: true,
+          coverImageFit: true,
+          coverImagePositionX: true,
+          coverImagePositionY: true,
+          coverImageZoom: true,
           sortOrder: true,
         },
       },

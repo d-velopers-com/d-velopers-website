@@ -10,6 +10,15 @@ import {
 } from "@/lib/discord-oauth";
 import { getProjectAccess } from "@/lib/project-access";
 import {
+  DEFAULT_COVER_IMAGE_FIT,
+  DEFAULT_COVER_IMAGE_POSITION,
+  DEFAULT_COVER_IMAGE_ZOOM,
+  MAX_COVER_IMAGE_ZOOM,
+  MIN_COVER_FIT_ZOOM,
+  MIN_COVER_IMAGE_ZOOM,
+  type ProjectCoverFit,
+} from "@/lib/project-cover";
+import {
   createSession,
   getSession,
   isDiscordTokenExpired,
@@ -618,11 +627,94 @@ export async function PATCH(request: Request) {
         ? new URL(coverImageUrl).href
         : null;
 
+      let coverImageFit: ProjectCoverFit = DEFAULT_COVER_IMAGE_FIT;
+      if (
+        project.coverImageFit !== undefined &&
+        project.coverImageFit !== null
+      ) {
+        if (
+          project.coverImageFit !== "cover" &&
+          project.coverImageFit !== "contain"
+        ) {
+          return NextResponse.json(
+            { error: "Invalid cover image fit mode" },
+            { status: 400 },
+          );
+        }
+        coverImageFit = project.coverImageFit;
+      }
+
+      let coverImagePositionX = DEFAULT_COVER_IMAGE_POSITION;
+      if (
+        project.coverImagePositionX !== undefined &&
+        project.coverImagePositionX !== null
+      ) {
+        if (
+          typeof project.coverImagePositionX !== "number" ||
+          !Number.isFinite(project.coverImagePositionX) ||
+          project.coverImagePositionX < 0 ||
+          project.coverImagePositionX > 100
+        ) {
+          return NextResponse.json(
+            { error: "Cover image horizontal position must be between 0 and 100" },
+            { status: 400 },
+          );
+        }
+        coverImagePositionX = Math.round(project.coverImagePositionX);
+      }
+
+      let coverImagePositionY = DEFAULT_COVER_IMAGE_POSITION;
+      if (
+        project.coverImagePositionY !== undefined &&
+        project.coverImagePositionY !== null
+      ) {
+        if (
+          typeof project.coverImagePositionY !== "number" ||
+          !Number.isFinite(project.coverImagePositionY) ||
+          project.coverImagePositionY < 0 ||
+          project.coverImagePositionY > 100
+        ) {
+          return NextResponse.json(
+            { error: "Cover image vertical position must be between 0 and 100" },
+            { status: 400 },
+          );
+        }
+        coverImagePositionY = Math.round(project.coverImagePositionY);
+      }
+
+      let coverImageZoom = DEFAULT_COVER_IMAGE_ZOOM;
+      if (
+        project.coverImageZoom !== undefined &&
+        project.coverImageZoom !== null
+      ) {
+        const minZoom =
+          coverImageFit === "contain"
+            ? MIN_COVER_IMAGE_ZOOM
+            : MIN_COVER_FIT_ZOOM;
+
+        if (
+          typeof project.coverImageZoom !== "number" ||
+          !Number.isFinite(project.coverImageZoom) ||
+          project.coverImageZoom < minZoom ||
+          project.coverImageZoom > MAX_COVER_IMAGE_ZOOM
+        ) {
+          return NextResponse.json(
+            { error: "Invalid cover image zoom value" },
+            { status: 400 },
+          );
+        }
+        coverImageZoom = Math.round(project.coverImageZoom * 100) / 100;
+      }
+
       projectData.push({
         title,
         description,
         url: normalizedUrl,
         coverImageUrl: normalizedCoverImageUrl,
+        coverImageFit,
+        coverImagePositionX,
+        coverImagePositionY,
+        coverImageZoom,
       });
     }
   }

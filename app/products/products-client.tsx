@@ -127,34 +127,17 @@ export default function ProductsClient({
   }, [hasError, hasMore, isLoading, loadMore]);
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pt-12 lg:px-8">
-      <header className="relative overflow-hidden rounded-3xl border border-default-200/70 bg-content1 px-6 py-8 sm:px-10 sm:py-11">
-        <div
-          aria-hidden="true"
-          className="absolute right-0 top-0 h-40 w-40 translate-x-1/3 -translate-y-1/3 rounded-full border border-primary/15 sm:h-64 sm:w-64"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute right-7 top-7 h-24 w-24 rounded-full border border-primary/10 sm:right-12 sm:top-12 sm:h-40 sm:w-40"
-        />
-        <div className="relative max-w-3xl">
-          <p className="mb-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            <span
-              aria-hidden="true"
-              className="h-1.5 w-1.5 rounded-full bg-primary"
-            />
-            {t.products.eyebrow}
-          </p>
-          <h1 className="max-w-2xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            {t.products.title}
-          </h1>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-default-600 sm:text-lg sm:leading-8">
-            {t.products.description}
-          </p>
-        </div>
+    <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pt-10 lg:px-8">
+      <header className="max-w-3xl">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+          {t.products.title}
+        </h1>
+        <p className="mt-2 text-base text-default-500 sm:text-lg">
+          {t.products.description}
+        </p>
       </header>
 
-      <section aria-labelledby="products-heading" className="mt-10 sm:mt-14">
+      <section aria-labelledby="products-heading" className="mt-8 sm:mt-10">
         <div className="mb-5 flex items-end justify-between gap-4 border-b border-default-200/60 pb-4 sm:mb-7">
           <div>
             <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-primary">

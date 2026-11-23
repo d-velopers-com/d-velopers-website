@@ -6,6 +6,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import {
+  normalizeCoverImageFit,
+  normalizeCoverImagePosition,
+  normalizeCoverImageZoom,
+  type ProjectCoverFit,
+} from "@/lib/project-cover";
 import { getDiscordAvatarProxyUrl } from "@/shared/lib";
 
 export interface ProjectShowcaseProject {
@@ -13,6 +19,10 @@ export interface ProjectShowcaseProject {
   description: string | null;
   url: string;
   coverImageUrl: string | null;
+  coverImageFit?: ProjectCoverFit | string | null;
+  coverImagePositionX?: number | null;
+  coverImagePositionY?: number | null;
+  coverImageZoom?: number | null;
 }
 
 export interface ProjectShowcaseCreator {
@@ -34,9 +44,14 @@ interface ProjectShowcaseCardProps {
     noDescription: string;
     untitledProject: string;
     domainPlaceholder: string;
+    dragToReposition?: string;
   };
   preview?: boolean;
   headingLevel?: "h2" | "h3";
+  onCoverPositionChange?: (position: {
+    coverImagePositionX: number;
+    coverImagePositionY: number;
+  }) => void;
 }
 
 function getHostname(url: string) {
@@ -97,11 +112,26 @@ function ProductIcon({ className = "h-5 w-5" }: { className?: string }) {
 function ProjectPreviewImage({
   project,
   preview,
+  dragHint,
+  onCoverPositionChange,
 }: {
   project: ProjectShowcaseProject;
   preview: boolean;
+  dragHint?: string;
+  onCoverPositionChange?: (position: {
+    coverImagePositionX: number;
+    coverImagePositionY: number;
+  }) => void;
 }) {
   const previewRef = useRef<HTMLDivElement>(null);
+  const dragStateRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    initialPosX: number;
+    initialPosY: number;
+  } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const customImageUrl = getSafeImageUrl(project.coverImageUrl);
   const hasCustomCover = Boolean(project.coverImageUrl?.trim());
   const [ogImage, setOgImage] = useState<{
@@ -115,6 +145,13 @@ function ProjectPreviewImage({
       ? ogImage.imageUrl
       : null;
   const hasImageError = imageUrl === failedImageUrl;
+  const coverFit = normalizeCoverImageFit(project.coverImageFit);
+  const positionX = normalizeCoverImagePosition(project.coverImagePositionX);
+  const positionY = normalizeCoverImagePosition(project.coverImagePositionY);
+  const zoom = normalizeCoverImageZoom(project.coverImageZoom, coverFit);
+  const canDrag = Boolean(
+    preview && onCoverPositionChange && imageUrl && !hasImageError,
+  );
 
   useEffect(() => {
     if (hasCustomCover) {
@@ -175,29 +212,118 @@ function ProjectPreviewImage({
     };
   }, [hasCustomCover, project.url]);
 
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!canDrag || !previewRef.current) {
+      return;
+    }
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      initialPosX: positionX,
+      initialPosY: positionY,
+    };
+    setIsDragging(true);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const dragState = dragStateRef.current;
+    const container = previewRef.current;
+    if (
+      !dragState ||
+      dragState.pointerId !== event.pointerId ||
+      !container ||
+      !onCoverPositionChange
+    ) {
+      return;
+    }
+
+    const rect = container.getBoundingClientRect();
+    if (!rect.width || !rect.height) {
+      return;
+    }
+
+    const deltaX = event.clientX - dragState.startX;
+    const deltaY = event.clientY - dragState.startY;
+    const nextPosX = normalizeCoverImagePosition(
+      dragState.initialPosX - (deltaX / rect.width) * 100,
+    );
+    const nextPosY = normalizeCoverImagePosition(
+      dragState.initialPosY - (deltaY / rect.height) * 100,
+    );
+
+    onCoverPositionChange({
+      coverImagePositionX: nextPosX,
+      coverImagePositionY: nextPosY,
+    });
+  };
+
+  const handlePointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (dragStateRef.current?.pointerId === event.pointerId) {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+      dragStateRef.current = null;
+      setIsDragging(false);
+    }
+  };
+
   return (
     <div
-      className="relative aspect-[16/7] overflow-hidden bg-primary/[0.04]"
+      className={`relative aspect-[16/7] overflow-hidden bg-primary/[0.04] ${
+        canDrag
+          ? isDragging
+            ? "cursor-grabbing select-none touch-none"
+            : "cursor-grab select-none touch-none"
+          : ""
+      }`}
       ref={previewRef}
+      onPointerCancel={canDrag ? handlePointerEnd : undefined}
+      onPointerDown={canDrag ? handlePointerDown : undefined}
+      onPointerMove={canDrag ? handlePointerMove : undefined}
+      onPointerUp={canDrag ? handlePointerEnd : undefined}
     >
       {imageUrl && !hasImageError ? (
-        <Image
-          alt=""
-          aria-hidden="true"
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-          fill
-          loading={preview ? "eager" : "lazy"}
-          referrerPolicy="no-referrer"
-          sizes="(min-width: 1024px) 40vw, (min-width: 640px) 50vw, 100vw"
-          src={imageUrl}
-          unoptimized
-          onError={() => setFailedImageUrl(imageUrl)}
-        />
+        <div
+          className={`relative h-full w-full ${
+            !preview
+              ? "transition-transform duration-500 group-hover:scale-[1.02]"
+              : ""
+          }`}
+        >
+          <Image
+            alt=""
+            aria-hidden="true"
+            className={`pointer-events-none select-none ${
+              coverFit === "contain" ? "object-contain" : "object-cover"
+            }`}
+            draggable={false}
+            fill
+            loading={preview ? "eager" : "lazy"}
+            referrerPolicy="no-referrer"
+            sizes="(min-width: 1024px) 40vw, (min-width: 640px) 50vw, 100vw"
+            src={imageUrl}
+            style={{
+              objectPosition: `${positionX}% ${positionY}%`,
+              transform: zoom !== 1 ? `scale(${zoom})` : undefined,
+              transformOrigin: `${positionX}% ${positionY}%`,
+            }}
+            unoptimized
+            onError={() => setFailedImageUrl(imageUrl)}
+          />
+        </div>
       ) : (
         <div className="flex h-full items-center justify-center text-primary/40">
           <ProductIcon className="h-10 w-10" />
         </div>
       )}
+      {canDrag && dragHint ? (
+        <span className="pointer-events-none absolute bottom-2 right-2 rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-medium text-foreground/90 backdrop-blur-sm">
+          {dragHint}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -235,6 +361,7 @@ export default function ProjectShowcaseCard({
   labels,
   preview = false,
   headingLevel = "h2",
+  onCoverPositionChange,
 }: ProjectShowcaseCardProps) {
   const TitleTag = headingLevel;
   const openLinkProps = {
@@ -246,7 +373,12 @@ export default function ProjectShowcaseCard({
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-default-200/70 bg-content1 transition-colors hover:border-primary/40">
       {preview ? (
-        <ProjectPreviewImage project={project} preview />
+        <ProjectPreviewImage
+          dragHint={labels.dragToReposition}
+          project={project}
+          preview
+          onCoverPositionChange={onCoverPositionChange}
+        />
       ) : (
         <a
           {...openLinkProps}

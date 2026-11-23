@@ -57,10 +57,8 @@ export const en = {
     yearsOfExperiencePlural: "years exp",
   },
   products: {
-    eyebrow: "Community showcase",
-    title: "Made by the D-velopers community.",
-    description:
-      "Explore products, tools, and side projects created by people in our community.",
+    title: "Built by the community.",
+    description: "Discover products, tools, and side projects from D-velopers.",
     latestEyebrow: "From the community",
     latestHeading: "Latest products",
     openProduct: "Visit product",
@@ -226,6 +224,13 @@ export const en = {
       "This is how your project will appear in the showcase.",
     projectPreviewUntitled: "Project title",
     projectPreviewDomain: "project-url.com",
+    projectCoverDragHint: "Drag to position",
+    projectCoverFitCover: "Fill",
+    projectCoverFitContain: "Fit",
+    projectCoverZoom: "Zoom",
+    projectCoverZoomIn: "Zoom in",
+    projectCoverZoomOut: "Zoom out",
+    projectCoverCenter: "Center",
     projectAccessRequired:
       "A Developer, Pro, or Elite YouTube role is required to add projects.",
     projectRequiredError: "Each project needs a title and a URL.",

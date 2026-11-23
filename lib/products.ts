@@ -1,4 +1,10 @@
 import { prisma } from "@/lib/prisma";
+import {
+  normalizeCoverImageFit,
+  normalizeCoverImagePosition,
+  normalizeCoverImageZoom,
+  type ProjectCoverFit,
+} from "@/lib/project-cover";
 
 export const PRODUCTS_PAGE_SIZE = 24;
 
@@ -17,6 +23,10 @@ export interface ProductListItem {
   description: string | null;
   url: string;
   coverImageUrl: string | null;
+  coverImageFit: ProjectCoverFit;
+  coverImagePositionX: number;
+  coverImagePositionY: number;
+  coverImageZoom: number;
   creator: ProductCreator;
 }
 
@@ -107,6 +117,10 @@ export async function getProductsPage(
       description: true,
       url: true,
       coverImageUrl: true,
+      coverImageFit: true,
+      coverImagePositionX: true,
+      coverImagePositionY: true,
+      coverImageZoom: true,
       createdAt: true,
       user: {
         select: {
@@ -127,30 +141,45 @@ export async function getProductsPage(
   const lastRow = visibleRows.at(-1);
 
   return {
-    products: visibleRows.map((row) => ({
-      id: row.id,
-      title: row.title,
-      description: row.description,
-      url: row.url,
-      coverImageUrl: row.coverImageUrl,
-      creator: row.user.isPublic
-        ? {
-            profilePublic: true,
-            name: row.user.name || row.user.username,
-            handler: row.user.handler,
-            discordId: row.user.discordId,
-            discriminator: row.user.discriminator,
-            avatar: row.user.avatar,
-          }
-        : {
-            profilePublic: false,
-            name: null,
-            handler: null,
-            discordId: null,
-            discriminator: null,
-            avatar: null,
-          },
-    })),
+    products: visibleRows.map((row) => {
+      const coverImageFit = normalizeCoverImageFit(row.coverImageFit);
+
+      return {
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        url: row.url,
+        coverImageUrl: row.coverImageUrl,
+        coverImageFit,
+        coverImagePositionX: normalizeCoverImagePosition(
+          row.coverImagePositionX,
+        ),
+        coverImagePositionY: normalizeCoverImagePosition(
+          row.coverImagePositionY,
+        ),
+        coverImageZoom: normalizeCoverImageZoom(
+          row.coverImageZoom,
+          coverImageFit,
+        ),
+        creator: row.user.isPublic
+          ? {
+              profilePublic: true,
+              name: row.user.name || row.user.username,
+              handler: row.user.handler,
+              discordId: row.user.discordId,
+              discriminator: row.user.discriminator,
+              avatar: row.user.avatar,
+            }
+          : {
+              profilePublic: false,
+              name: null,
+              handler: null,
+              discordId: null,
+              discriminator: null,
+              avatar: null,
+            },
+      };
+    }),
     nextCursor:
       hasMore && lastRow
         ? encodeCursor({ id: lastRow.id, createdAt: lastRow.createdAt })

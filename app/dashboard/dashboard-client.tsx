@@ -30,6 +30,18 @@ import { CountrySelect } from "@/components/country-select";
 import ProjectShowcaseCard from "@/components/project-showcase-card";
 import { useLanguage } from "@/contexts/language-context";
 import {
+  DEFAULT_COVER_IMAGE_FIT,
+  DEFAULT_COVER_IMAGE_POSITION,
+  DEFAULT_COVER_IMAGE_ZOOM,
+  MAX_COVER_IMAGE_ZOOM,
+  MIN_COVER_FIT_ZOOM,
+  MIN_COVER_IMAGE_ZOOM,
+  normalizeCoverImageFit,
+  normalizeCoverImagePosition,
+  normalizeCoverImageZoom,
+  type ProjectCoverFit,
+} from "@/lib/project-cover";
+import {
   cardStyles,
   typography,
   iconSizes,
@@ -58,16 +70,35 @@ interface ProjectDraft {
   description: string;
   url: string;
   coverImageUrl: string;
+  coverImageFit: ProjectCoverFit;
+  coverImagePositionX: number;
+  coverImagePositionY: number;
+  coverImageZoom: number;
 }
 
 function toProjectDrafts(projects: ViewerProfile["projects"]): ProjectDraft[] {
-  return projects.map((project) => ({
-    id: project.id,
-    title: project.title,
-    description: project.description || "",
-    url: project.url,
-    coverImageUrl: project.coverImageUrl || "",
-  }));
+  return projects.map((project) => {
+    const coverImageFit = normalizeCoverImageFit(project.coverImageFit);
+
+    return {
+      id: project.id,
+      title: project.title,
+      description: project.description || "",
+      url: project.url,
+      coverImageUrl: project.coverImageUrl || "",
+      coverImageFit,
+      coverImagePositionX: normalizeCoverImagePosition(
+        project.coverImagePositionX,
+      ),
+      coverImagePositionY: normalizeCoverImagePosition(
+        project.coverImagePositionY,
+      ),
+      coverImageZoom: normalizeCoverImageZoom(
+        project.coverImageZoom,
+        coverImageFit,
+      ),
+    };
+  });
 }
 
 export default function DashboardClient({
@@ -431,6 +462,10 @@ export default function DashboardClient({
               description: project.description.trim() || null,
               url: project.url.trim(),
               coverImageUrl: project.coverImageUrl.trim() || null,
+              coverImageFit: project.coverImageFit,
+              coverImagePositionX: project.coverImagePositionX,
+              coverImagePositionY: project.coverImagePositionY,
+              coverImageZoom: project.coverImageZoom,
             })),
           }
         : {}),
@@ -1448,6 +1483,10 @@ export default function DashboardClient({
                         description: "",
                         url: "",
                         coverImageUrl: "",
+                        coverImageFit: DEFAULT_COVER_IMAGE_FIT,
+                        coverImagePositionX: DEFAULT_COVER_IMAGE_POSITION,
+                        coverImagePositionY: DEFAULT_COVER_IMAGE_POSITION,
+                        coverImageZoom: DEFAULT_COVER_IMAGE_ZOOM,
                       },
                     ])
                   }
@@ -1604,13 +1643,229 @@ export default function DashboardClient({
                           noDescription: t.products.noDescription,
                           untitledProject: t.dashboard.projectPreviewUntitled,
                           domainPlaceholder: t.dashboard.projectPreviewDomain,
+                          dragToReposition: t.dashboard.projectCoverDragHint,
                         }}
                         preview
                         project={{
                           ...project,
                           coverImageUrl: project.coverImageUrl || null,
                         }}
+                        onCoverPositionChange={({
+                          coverImagePositionX,
+                          coverImagePositionY,
+                        }) =>
+                          updateProjects((current) =>
+                            current.map((item, projectIndex) =>
+                              projectIndex === index
+                                ? {
+                                    ...item,
+                                    coverImagePositionX,
+                                    coverImagePositionY,
+                                  }
+                                : item,
+                            ),
+                          )
+                        }
                       />
+                      <div className="flex flex-col gap-2.5 rounded-xl border border-default-200/70 bg-default-50/40 p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="inline-flex rounded-lg border border-default-200/70 bg-background p-0.5">
+                            <button
+                              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                                project.coverImageFit === "cover"
+                                  ? "bg-primary text-primary-foreground"
+                                  : "text-default-500 hover:text-foreground"
+                              }`}
+                              disabled={saving}
+                              type="button"
+                              onClick={() =>
+                                updateProjects((current) =>
+                                  current.map((item, projectIndex) =>
+                                    projectIndex === index
+                                      ? {
+                                          ...item,
+                                          coverImageFit: "cover",
+                                          coverImageZoom:
+                                            normalizeCoverImageZoom(
+                                              item.coverImageZoom,
+                                              "cover",
+                                            ),
+                                        }
+                                      : item,
+                                  ),
+                                )
+                              }
+                            >
+                              {t.dashboard.projectCoverFitCover}
+                            </button>
+                            <button
+                              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                                project.coverImageFit === "contain"
+                                  ? "bg-primary text-primary-foreground"
+                                  : "text-default-500 hover:text-foreground"
+                              }`}
+                              disabled={saving}
+                              type="button"
+                              onClick={() =>
+                                updateProjects((current) =>
+                                  current.map((item, projectIndex) =>
+                                    projectIndex === index
+                                      ? {
+                                          ...item,
+                                          coverImageFit: "contain",
+                                        }
+                                      : item,
+                                  ),
+                                )
+                              }
+                            >
+                              {t.dashboard.projectCoverFitContain}
+                            </button>
+                          </div>
+                          <Button
+                            isDisabled={
+                              saving ||
+                              (project.coverImagePositionX ===
+                                DEFAULT_COVER_IMAGE_POSITION &&
+                                project.coverImagePositionY ===
+                                  DEFAULT_COVER_IMAGE_POSITION &&
+                                project.coverImageZoom ===
+                                  DEFAULT_COVER_IMAGE_ZOOM)
+                            }
+                            size="sm"
+                            variant="flat"
+                            onPress={() =>
+                              updateProjects((current) =>
+                                current.map((item, projectIndex) =>
+                                  projectIndex === index
+                                    ? {
+                                        ...item,
+                                        coverImagePositionX:
+                                          DEFAULT_COVER_IMAGE_POSITION,
+                                        coverImagePositionY:
+                                          DEFAULT_COVER_IMAGE_POSITION,
+                                        coverImageZoom:
+                                          DEFAULT_COVER_IMAGE_ZOOM,
+                                      }
+                                    : item,
+                                ),
+                              )
+                            }
+                          >
+                            {t.dashboard.projectCoverCenter}
+                          </Button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="shrink-0 text-xs text-default-500">
+                            {t.dashboard.projectCoverZoom}
+                          </span>
+                          <Button
+                            aria-label={t.dashboard.projectCoverZoomOut}
+                            className="h-7 w-7 min-w-7"
+                            isDisabled={
+                              saving ||
+                              (project.coverImageFit === "contain" &&
+                                project.coverImageZoom <= MIN_COVER_IMAGE_ZOOM)
+                            }
+                            isIconOnly
+                            size="sm"
+                            variant="flat"
+                            onPress={() =>
+                              updateProjects((current) =>
+                                current.map((item, projectIndex) => {
+                                  if (projectIndex !== index) {
+                                    return item;
+                                  }
+
+                                  if (
+                                    item.coverImageFit === "cover" &&
+                                    item.coverImageZoom <= MIN_COVER_FIT_ZOOM
+                                  ) {
+                                    return {
+                                      ...item,
+                                      coverImageFit: "contain",
+                                      coverImageZoom: DEFAULT_COVER_IMAGE_ZOOM,
+                                    };
+                                  }
+
+                                  return {
+                                    ...item,
+                                    coverImageZoom: normalizeCoverImageZoom(
+                                      item.coverImageZoom - 0.1,
+                                      item.coverImageFit,
+                                    ),
+                                  };
+                                }),
+                              )
+                            }
+                          >
+                            −
+                          </Button>
+                          <input
+                            aria-label={t.dashboard.projectCoverZoom}
+                            className="h-1.5 flex-1 cursor-pointer accent-primary"
+                            disabled={saving}
+                            max={MAX_COVER_IMAGE_ZOOM}
+                            min={
+                              project.coverImageFit === "contain"
+                                ? MIN_COVER_IMAGE_ZOOM
+                                : MIN_COVER_FIT_ZOOM
+                            }
+                            step={0.05}
+                            type="range"
+                            value={project.coverImageZoom}
+                            onChange={(event) => {
+                              const nextZoom = Number(event.target.value);
+
+                              updateProjects((current) =>
+                                current.map((item, projectIndex) =>
+                                  projectIndex === index
+                                    ? {
+                                        ...item,
+                                        coverImageZoom: normalizeCoverImageZoom(
+                                          nextZoom,
+                                          item.coverImageFit,
+                                        ),
+                                      }
+                                    : item,
+                                ),
+                              );
+                            }}
+                          />
+                          <Button
+                            aria-label={t.dashboard.projectCoverZoomIn}
+                            className="h-7 w-7 min-w-7"
+                            isDisabled={
+                              saving ||
+                              project.coverImageZoom >= MAX_COVER_IMAGE_ZOOM
+                            }
+                            isIconOnly
+                            size="sm"
+                            variant="flat"
+                            onPress={() =>
+                              updateProjects((current) =>
+                                current.map((item, projectIndex) =>
+                                  projectIndex === index
+                                    ? {
+                                        ...item,
+                                        coverImageZoom: normalizeCoverImageZoom(
+                                          item.coverImageZoom + 0.1,
+                                          item.coverImageFit,
+                                        ),
+                                      }
+                                    : item,
+                                ),
+                              )
+                            }
+                          >
+                            +
+                          </Button>
+                          <span className="w-10 shrink-0 text-right font-mono text-xs text-default-500">
+                            {Math.round(project.coverImageZoom * 100)}%
+                          </span>
+                        </div>
+                      </div>
                     </section>
                   </div>
                 </div>

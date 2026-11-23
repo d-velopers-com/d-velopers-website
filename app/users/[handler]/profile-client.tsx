@@ -49,6 +49,10 @@ interface ProfileClientProps {
       description: string | null;
       url: string;
       coverImageUrl: string | null;
+      coverImageFit?: string | null;
+      coverImagePositionX?: number | null;
+      coverImagePositionY?: number | null;
+      coverImageZoom?: number | null;
       sortOrder: number;
     }[];
     joinedServerAt: string | null;

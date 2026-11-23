@@ -2,6 +2,12 @@ import { cache } from "react";
 
 import { accessByRole } from "@/config/access-by-role";
 import { getProjectAccess } from "@/lib/project-access";
+import {
+  normalizeCoverImageFit,
+  normalizeCoverImagePosition,
+  normalizeCoverImageZoom,
+  type ProjectCoverFit,
+} from "@/lib/project-cover";
 import { resolveSession, type SessionData } from "@/lib/session";
 import { getUserAccessStateByDiscordId, getUserByDiscordId } from "@/lib/user";
 import { validateRecentActivation } from "@/lib/utils";
@@ -26,6 +32,10 @@ export interface ProfileProject {
   description: string | null;
   url: string;
   coverImageUrl: string | null;
+  coverImageFit: ProjectCoverFit;
+  coverImagePositionX: number;
+  coverImagePositionY: number;
+  coverImageZoom: number;
   sortOrder: number;
 }
 
@@ -106,14 +116,29 @@ function serializeProfile(
     availability: Array.isArray(user.availability) ? user.availability : [],
     yoe: user.yoe,
     projects: Array.isArray(user.projects)
-      ? user.projects.map((project) => ({
-          id: project.id,
-          title: project.title,
-          description: project.description,
-          url: project.url,
-          coverImageUrl: project.coverImageUrl,
-          sortOrder: project.sortOrder,
-        }))
+      ? user.projects.map((project) => {
+          const coverImageFit = normalizeCoverImageFit(project.coverImageFit);
+
+          return {
+            id: project.id,
+            title: project.title,
+            description: project.description,
+            url: project.url,
+            coverImageUrl: project.coverImageUrl,
+            coverImageFit,
+            coverImagePositionX: normalizeCoverImagePosition(
+              project.coverImagePositionX,
+            ),
+            coverImagePositionY: normalizeCoverImagePosition(
+              project.coverImagePositionY,
+            ),
+            coverImageZoom: normalizeCoverImageZoom(
+              project.coverImageZoom,
+              coverImageFit,
+            ),
+            sortOrder: project.sortOrder,
+          };
+        })
       : [],
     joinedServerAt: user.joinedServerAt?.toISOString() ?? null,
     profileActivatedAt: user.profileActivatedAt?.toISOString() ?? null,

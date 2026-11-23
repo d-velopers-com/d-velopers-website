@@ -6,8 +6,7 @@ import ProductsClient from "./products-client";
 
 export const metadata: Metadata = {
   title: "Products",
-  description:
-    "Explore products, tools, and side projects built by the D-velopers community.",
+  description: "Discover products, tools, and side projects from D-velopers.",
 };
 
 export default async function ProductsPage() {
