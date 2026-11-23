@@ -4,9 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { accessByRole } from "@/config/access-by-role";
 import { checkLinkedInEmbedAccessibility } from "@/lib/embed-checker";
 import { getPost, updatePost, deletePost } from "@/lib/posts";
+import { serializePublicJobPost } from "@/lib/serializers";
 import { getUserByDiscordId } from "@/lib/user";
 import { isSafeExternalUrl, isValidHtmlString } from "@/lib/validations";
-import { getViewerContext } from "@/lib/viewer";
 import { withJobManagementRole } from "@/middlewares/auth";
 
 /**
@@ -26,14 +26,6 @@ function isOwner(postCreatorId: string, userId: string): boolean {
 
 export async function GET(request: NextRequest) {
   try {
-    const viewer = await getViewerContext();
-    if (!viewer.session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    if (!viewer.permissions.canViewJobs) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     const id = request.nextUrl.pathname.split("/").pop();
     if (!id) {
       return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
@@ -42,7 +34,7 @@ export async function GET(request: NextRequest) {
     if (!post || post.status !== PostStatus.APPROVED) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
-    return NextResponse.json(post);
+    return NextResponse.json(serializePublicJobPost(post));
   } catch (error) {
     console.error("Error fetching post:", error);
     return NextResponse.json(

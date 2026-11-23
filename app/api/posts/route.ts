@@ -9,10 +9,10 @@ import {
   getPosts,
   getPostsCount,
 } from "@/lib/posts";
+import { serializePublicJobPosts } from "@/lib/serializers";
 import { shouldAutoApproveBotPosts } from "@/lib/system-config";
 import { getUserByDiscordId } from "@/lib/user";
 import { isSafeExternalUrl, isValidHtmlString } from "@/lib/validations";
-import { getViewerContext } from "@/lib/viewer";
 import { withJobManagementRole } from "@/middlewares/auth";
 
 export const POST = withJobManagementRole(
@@ -116,14 +116,6 @@ export const POST = withJobManagementRole(
 
 export async function GET(request: NextRequest) {
   try {
-    const viewer = await getViewerContext();
-    if (!viewer.session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    if (!viewer.permissions.canViewJobs) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     const searchParams = request.nextUrl.searchParams;
     const parsedLimit = Number.parseInt(searchParams.get("limit") || "10", 10);
     const parsedPage = Number.parseInt(searchParams.get("page") || "1", 10);
@@ -149,7 +141,7 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json({
-      posts,
+      posts: serializePublicJobPosts(posts),
       pagination: {
         total,
         page,

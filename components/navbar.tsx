@@ -137,19 +137,17 @@ export function Navbar({ permissions, session }: NavbarProps) {
             <li>
               <LanguageSwitcher />
             </li>
-            {permissions.canViewJobs ? (
-              <li>
-                <Button
-                  as={Link}
-                  className="data-[hover=true]:bg-transparent"
-                  href="/jobs"
-                  size="md"
-                  variant="light"
-                >
-                  {t.nav.jobs}
-                </Button>
-              </li>
-            ) : null}
+            <li>
+              <Button
+                as={Link}
+                className="data-[hover=true]:bg-transparent"
+                href="/jobs"
+                size="md"
+                variant="light"
+              >
+                {t.nav.jobs}
+              </Button>
+            </li>
             <li>
               <Button
                 as={Link}
@@ -273,19 +271,17 @@ export function Navbar({ permissions, session }: NavbarProps) {
                 <ThemeSwitch />
               </div>
             </li>
-            {permissions.canViewJobs ? (
-              <li>
-                <Button
-                  as={Link}
-                  className={`w-full justify-start ${focusStates.button}`}
-                  href="/jobs"
-                  variant="light"
-                  onPress={() => setIsMenuOpen(false)}
-                >
-                  {t.nav.jobs}
-                </Button>
-              </li>
-            ) : null}
+            <li>
+              <Button
+                as={Link}
+                className={`w-full justify-start ${focusStates.button}`}
+                href="/jobs"
+                variant="light"
+                onPress={() => setIsMenuOpen(false)}
+              >
+                {t.nav.jobs}
+              </Button>
+            </li>
             <li>
               <Button
                 as={Link}

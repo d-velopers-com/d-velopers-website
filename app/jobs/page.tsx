@@ -1,6 +1,5 @@
 import { PostStatus } from "@prisma/client";
 import { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 import {
   buildPostSearchConditions,
@@ -8,8 +7,7 @@ import {
   getPostsCount,
 } from "@/lib/posts";
 import { parseJobsSearchParams } from "@/lib/search-params";
-import { serializePosts } from "@/lib/serializers";
-import { getViewerContext } from "@/lib/viewer";
+import { serializePublicJobPosts } from "@/lib/serializers";
 
 import JobsClient from "./jobs-client";
 
@@ -18,7 +16,7 @@ const POSTS_PER_PAGE = 6;
 export const metadata: Metadata = {
   title: "Jobs",
   description: "Curated job opportunities shared by the D-velopers community.",
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
 };
 
 type JobsPageProps = {
@@ -26,19 +24,7 @@ type JobsPageProps = {
 };
 
 export default async function JobsPage({ searchParams }: JobsPageProps) {
-  const [viewer, rawSearchParams] = await Promise.all([
-    getViewerContext(),
-    searchParams,
-  ]);
-
-  if (!viewer.session.user) {
-    redirect("/login");
-  }
-
-  if (!viewer.permissions.canViewJobs) {
-    redirect("/");
-  }
-
+  const rawSearchParams = await searchParams;
   const { page, search } = parseJobsSearchParams(rawSearchParams);
   const searchConditions = buildPostSearchConditions(search);
   const totalPosts = await getPostsCount(
@@ -60,7 +46,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   return (
     <JobsClient
       currentPage={currentPage}
-      initialPosts={serializePosts(posts)}
+      initialPosts={serializePublicJobPosts(posts)}
       initialSearch={search}
       totalPages={totalPages}
       totalPosts={totalPosts}

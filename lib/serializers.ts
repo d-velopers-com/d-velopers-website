@@ -14,6 +14,15 @@ export interface SerializedPost {
   updatedAt: string;
 }
 
+export interface SerializedPublicJobPost {
+  id: string;
+  title: string;
+  iframe: string;
+  sourceUrl?: string | null;
+  embeddable: boolean;
+  createdAt: string;
+}
+
 type PublicUserRow = PublicUser & {
   description?: string | null;
   link?: string | null;
@@ -69,4 +78,23 @@ export function serializePost(post: PostData): SerializedPost {
 
 export function serializePosts(posts: PostData[]): SerializedPost[] {
   return posts.map(serializePost);
+}
+
+export function serializePublicJobPost(
+  post: PostData,
+): SerializedPublicJobPost {
+  return {
+    id: post.id,
+    title: post.title,
+    iframe: post.iframe,
+    sourceUrl: post.sourceUrl,
+    embeddable: post.embeddable,
+    createdAt: post.createdAt.toISOString(),
+  };
+}
+
+export function serializePublicJobPosts(
+  posts: PostData[],
+): SerializedPublicJobPost[] {
+  return posts.map(serializePublicJobPost);
 }
