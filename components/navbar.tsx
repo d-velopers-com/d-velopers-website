@@ -150,6 +150,17 @@ export function Navbar({ permissions, session }: NavbarProps) {
                 </Button>
               </li>
             ) : null}
+            <li>
+              <Button
+                as={Link}
+                className="data-[hover=true]:bg-transparent"
+                href="/products"
+                size="md"
+                variant="light"
+              >
+                {t.nav.products}
+              </Button>
+            </li>
             {status === "authenticated" && session?.user ? (
               <>
                 <li>
@@ -275,6 +286,17 @@ export function Navbar({ permissions, session }: NavbarProps) {
                 </Button>
               </li>
             ) : null}
+            <li>
+              <Button
+                as={Link}
+                className={`w-full justify-start ${focusStates.button}`}
+                href="/products"
+                variant="light"
+                onPress={() => setIsMenuOpen(false)}
+              >
+                {t.nav.products}
+              </Button>
+            </li>
 
             {status === "authenticated" ? (
               <>

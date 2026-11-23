@@ -10,6 +10,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
+      url: `${siteConfig.url}/products`,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
       url: `${siteConfig.url}/discord`,
       changeFrequency: "monthly",
       priority: 0.8,
