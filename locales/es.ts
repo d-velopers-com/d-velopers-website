@@ -217,11 +217,22 @@ export const es = {
     projectDescriptionPlaceholder: "¿Qué construiste?",
     projectUrl: "URL del proyecto",
     projectUrlPlaceholder: "https://ejemplo.com/proyecto",
+    projectCoverImageUrl: "URL de imagen de portada (opcional)",
+    projectCoverImageUrlPlaceholder: "https://ejemplo.com/portada.png",
+    projectCoverImageUrlHelp:
+      "Déjala vacía para usar la og:image del sitio del proyecto.",
+    projectCoverImageUrlError:
+      "Ingresa una URL HTTP o HTTPS válida para la imagen de portada.",
+    projectPreviewTitle: "Vista previa en vivo",
+    projectPreviewDescription: "Así se verá tu proyecto en la vitrina.",
+    projectPreviewUntitled: "Nombre del proyecto",
+    projectPreviewDomain: "sitio-del-proyecto.com",
     projectAccessRequired:
       "Necesitas un rol Developer, Pro o Elite de YouTube para agregar proyectos.",
     projectRequiredError: "Cada proyecto necesita un nombre y una URL.",
     projectUrlError: "Ingresa una URL HTTP o HTTPS válida para cada proyecto.",
-    projectLimitError: "Alcanzaste el límite de proyectos de tu rol de Discord.",
+    projectLimitError:
+      "Alcanzaste el límite de proyectos de tu rol de Discord.",
     contactEmail: "Email de Contacto",
     contactEmailPlaceholder: "tu.email@ejemplo.com",
     country: "País",

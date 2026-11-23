@@ -216,6 +216,16 @@ export const en = {
     projectDescriptionPlaceholder: "What did you build?",
     projectUrl: "Project URL",
     projectUrlPlaceholder: "https://example.com/project",
+    projectCoverImageUrl: "Cover image URL (optional)",
+    projectCoverImageUrlPlaceholder: "https://example.com/cover.png",
+    projectCoverImageUrlHelp: "Leave blank to use the project's og:image.",
+    projectCoverImageUrlError:
+      "Enter a valid HTTP or HTTPS URL for the cover image.",
+    projectPreviewTitle: "Live preview",
+    projectPreviewDescription:
+      "This is how your project will appear in the showcase.",
+    projectPreviewUntitled: "Project title",
+    projectPreviewDomain: "project-url.com",
     projectAccessRequired:
       "A Developer, Pro, or Elite YouTube role is required to add projects.",
     projectRequiredError: "Each project needs a title and a URL.",

@@ -14,6 +14,7 @@ import {
   TwitterIcon,
   YouTubeIcon,
 } from "@/components/icons";
+import ProjectShowcaseCard from "@/components/project-showcase-card";
 import { useLanguage } from "@/contexts/language-context";
 import { getCountryFlagUrl, getCountryName } from "@/lib/countries";
 import {
@@ -47,6 +48,7 @@ interface ProfileClientProps {
       title: string;
       description: string | null;
       url: string;
+      coverImageUrl: string | null;
       sortOrder: number;
     }[];
     joinedServerAt: string | null;
@@ -253,33 +255,27 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                     </h2>
                     <div className="grid gap-3 sm:grid-cols-2">
                       {user.projects.map((project) => (
-                        <a
+                        <ProjectShowcaseCard
                           key={project.id}
-                          className="group flex min-h-36 flex-col rounded-2xl border border-default-200/70 bg-content1 p-4 transition-colors hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          href={project.url}
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          <span className="flex items-start justify-between gap-3">
-                            <span className="font-semibold text-foreground">
-                              {project.title}
-                            </span>
-                            <span
-                              aria-label={t.profile.viewProject}
-                              className="text-primary transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                            >
-                              ↗
-                            </span>
-                          </span>
-                          {project.description ? (
-                            <span className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-default-600">
-                              {project.description}
-                            </span>
-                          ) : null}
-                          <span className="mt-auto pt-4 text-xs font-medium text-primary">
-                            {t.profile.viewProject}
-                          </span>
-                        </a>
+                          creator={{
+                            profilePublic: true,
+                            name: user.name || user.username,
+                            handler: user.handler,
+                            discordId: user.discordId,
+                            discriminator: user.discriminator,
+                            avatar: user.avatar,
+                          }}
+                          headingLevel="h3"
+                          labels={{
+                            openProject: t.profile.viewProject,
+                            createdBy: t.products.createdBy,
+                            communityMember: t.products.communityMember,
+                            noDescription: t.products.noDescription,
+                            untitledProject: t.dashboard.projectPreviewUntitled,
+                            domainPlaceholder: t.dashboard.projectPreviewDomain,
+                          }}
+                          project={project}
+                        />
                       ))}
                     </div>
                   </section>

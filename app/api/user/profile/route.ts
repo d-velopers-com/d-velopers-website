@@ -546,19 +546,23 @@ export async function PATCH(request: Request) {
 
     for (const project of projects) {
       if (!project || typeof project !== "object" || Array.isArray(project)) {
-        return NextResponse.json(
-          { error: "Invalid project" },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: "Invalid project" }, { status: 400 });
       }
 
-      const title = typeof project.title === "string" ? project.title.trim() : "";
+      const title =
+        typeof project.title === "string" ? project.title.trim() : "";
       const url = typeof project.url === "string" ? project.url.trim() : "";
       const description =
         project.description === null || project.description === undefined
           ? null
           : typeof project.description === "string"
             ? project.description.trim() || null
+            : undefined;
+      const coverImageUrl =
+        project.coverImageUrl === null || project.coverImageUrl === undefined
+          ? null
+          : typeof project.coverImageUrl === "string"
+            ? project.coverImageUrl.trim() || null
             : undefined;
 
       if (!title || title.length > 100) {
@@ -568,9 +572,28 @@ export async function PATCH(request: Request) {
         );
       }
 
-      if (description === undefined || (description && description.length > 500)) {
+      if (
+        description === undefined ||
+        (description && description.length > 500)
+      ) {
         return NextResponse.json(
           { error: "Project descriptions must be 500 characters or less" },
+          { status: 400 },
+        );
+      }
+
+      if (
+        coverImageUrl === undefined ||
+        (coverImageUrl !== null &&
+          (!isSafeExternalUrl(coverImageUrl) ||
+            coverImageUrl.length > 2048 ||
+            (() => {
+              const imageUrl = new URL(coverImageUrl);
+              return Boolean(imageUrl.username || imageUrl.password);
+            })()))
+      ) {
+        return NextResponse.json(
+          { error: "Cover image URLs must be valid HTTP or HTTPS URLs" },
           { status: 400 },
         );
       }
@@ -591,18 +614,23 @@ export async function PATCH(request: Request) {
         );
       }
 
-      projectData.push({ title, description, url: normalizedUrl });
+      const normalizedCoverImageUrl = coverImageUrl
+        ? new URL(coverImageUrl).href
+        : null;
+
+      projectData.push({
+        title,
+        description,
+        url: normalizedUrl,
+        coverImageUrl: normalizedCoverImageUrl,
+      });
     }
   }
 
   let user;
 
   try {
-    user = await updateUserProfile(
-      session.discordId,
-      updateData,
-      projectData,
-    );
+    user = await updateUserProfile(session.discordId, updateData, projectData);
   } catch (error) {
     if (error instanceof ProjectLimitExceededError) {
       return NextResponse.json(

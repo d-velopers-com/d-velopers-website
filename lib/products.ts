@@ -16,6 +16,7 @@ export interface ProductListItem {
   title: string;
   description: string | null;
   url: string;
+  coverImageUrl: string | null;
   creator: ProductCreator;
 }
 
@@ -78,7 +79,10 @@ function decodeCursor(token: string): ProductsCursor {
 
 function encodeCursor(cursor: ProductsCursor) {
   return Buffer.from(
-    JSON.stringify({ id: cursor.id, createdAt: cursor.createdAt.toISOString() }),
+    JSON.stringify({
+      id: cursor.id,
+      createdAt: cursor.createdAt.toISOString(),
+    }),
   ).toString("base64url");
 }
 
@@ -102,6 +106,7 @@ export async function getProductsPage(
       title: true,
       description: true,
       url: true,
+      coverImageUrl: true,
       createdAt: true,
       user: {
         select: {
@@ -127,6 +132,7 @@ export async function getProductsPage(
       title: row.title,
       description: row.description,
       url: row.url,
+      coverImageUrl: row.coverImageUrl,
       creator: row.user.isPublic
         ? {
             profilePublic: true,

@@ -27,6 +27,7 @@ import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 
 import { CountrySelect } from "@/components/country-select";
+import ProjectShowcaseCard from "@/components/project-showcase-card";
 import { useLanguage } from "@/contexts/language-context";
 import {
   cardStyles,
@@ -56,6 +57,7 @@ interface ProjectDraft {
   title: string;
   description: string;
   url: string;
+  coverImageUrl: string;
 }
 
 function toProjectDrafts(projects: ViewerProfile["projects"]): ProjectDraft[] {
@@ -64,6 +66,7 @@ function toProjectDrafts(projects: ViewerProfile["projects"]): ProjectDraft[] {
     title: project.title,
     description: project.description || "",
     url: project.url,
+    coverImageUrl: project.coverImageUrl || "",
   }));
 }
 
@@ -383,6 +386,31 @@ export default function DashboardClient({
       return;
     }
 
+    const hasInvalidCoverImageUrl = projects.some((project) => {
+      const value = project.coverImageUrl.trim();
+      if (!value) {
+        return false;
+      }
+
+      try {
+        const imageUrl = new URL(value);
+
+        return (
+          !["http:", "https:"].includes(imageUrl.protocol) ||
+          Boolean(imageUrl.username || imageUrl.password) ||
+          value.length > 2048
+        );
+      } catch {
+        return true;
+      }
+    });
+
+    if (hasInvalidCoverImageUrl) {
+      toast.error(t.dashboard.projectCoverImageUrlError);
+
+      return;
+    }
+
     setSaving(true);
     const result = await updateProfile({
       description: description.trim() || null,
@@ -402,6 +430,7 @@ export default function DashboardClient({
               title: project.title.trim(),
               description: project.description.trim() || null,
               url: project.url.trim(),
+              coverImageUrl: project.coverImageUrl.trim() || null,
             })),
           }
         : {}),
@@ -429,8 +458,9 @@ export default function DashboardClient({
         return;
       }
 
-      const isProjectLimitError =
-        result.error?.includes("Project limit exceeded");
+      const isProjectLimitError = result.error?.includes(
+        "Project limit exceeded",
+      );
 
       if (isProjectLimitError && typeof result.limit === "number") {
         setActiveProjectLimit(result.limit);
@@ -1396,9 +1426,12 @@ export default function DashboardClient({
             <section className="flex flex-col gap-3 rounded-xl border border-default-200/70 bg-default-50/40 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-col gap-1">
-                  <span className={typography.label}>{t.dashboard.projects}</span>
+                  <span className={typography.label}>
+                    {t.dashboard.projects}
+                  </span>
                   <span className={typography.captionMuted}>
-                    {projects.length}/{activeProjectLimit} {t.dashboard.projectsCount}
+                    {projects.length}/{activeProjectLimit}{" "}
+                    {t.dashboard.projectsCount}
                   </span>
                 </div>
                 <Button
@@ -1410,7 +1443,12 @@ export default function DashboardClient({
                   onPress={() =>
                     updateProjects((current) => [
                       ...current,
-                      { title: "", description: "", url: "" },
+                      {
+                        title: "",
+                        description: "",
+                        url: "",
+                        coverImageUrl: "",
+                      },
                     ])
                   }
                 >
@@ -1427,7 +1465,7 @@ export default function DashboardClient({
               {projects.map((project, index) => (
                 <div
                   key={project.id || `project-${index}`}
-                  className="flex flex-col gap-3 rounded-lg border border-default-200/70 bg-content1 p-3"
+                  className="flex flex-col gap-4 rounded-lg border border-default-200/70 bg-content1 p-3 sm:p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className={typography.labelSmall}>
@@ -1440,70 +1478,141 @@ export default function DashboardClient({
                       variant="light"
                       onPress={() =>
                         updateProjects((current) =>
-                          current.filter((_, projectIndex) => projectIndex !== index),
+                          current.filter(
+                            (_, projectIndex) => projectIndex !== index,
+                          ),
                         )
                       }
                     >
                       {t.dashboard.removeProject}
                     </Button>
                   </div>
-                  <Input
-                    isDisabled={saving}
-                    isRequired
-                    label={t.dashboard.projectTitle}
-                    labelPlacement="outside"
-                    maxLength={100}
-                    placeholder={t.dashboard.projectTitlePlaceholder}
-                    value={project.title}
-                    variant="bordered"
-                    onChange={(event) =>
-                      updateProjects((current) =>
-                        current.map((item, projectIndex) =>
-                          projectIndex === index
-                            ? { ...item, title: event.target.value }
-                            : item,
-                        ),
-                      )
-                    }
-                  />
-                  <Textarea
-                    isDisabled={saving}
-                    label={t.dashboard.projectDescription}
-                    labelPlacement="outside"
-                    maxLength={500}
-                    maxRows={4}
-                    placeholder={t.dashboard.projectDescriptionPlaceholder}
-                    value={project.description}
-                    variant="bordered"
-                    onChange={(event) =>
-                      updateProjects((current) =>
-                        current.map((item, projectIndex) =>
-                          projectIndex === index
-                            ? { ...item, description: event.target.value }
-                            : item,
-                        ),
-                      )
-                    }
-                  />
-                  <Input
-                    isDisabled={saving}
-                    isRequired
-                    label={t.dashboard.projectUrl}
-                    labelPlacement="outside"
-                    placeholder={t.dashboard.projectUrlPlaceholder}
-                    type="url"
-                    value={project.url}
-                    variant="bordered"
-                    onChange={(event) =>
-                      updateProjects((current) =>
-                        current.map((item, projectIndex) =>
-                          projectIndex === index
-                            ? { ...item, url: event.target.value }
-                            : item,
-                        ),
-                      )
-                    }
-                  />
+                  <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:items-start">
+                    <div className="flex min-w-0 flex-col gap-4">
+                      <Input
+                        isDisabled={saving}
+                        isRequired
+                        label={t.dashboard.projectTitle}
+                        labelPlacement="outside"
+                        maxLength={100}
+                        placeholder={t.dashboard.projectTitlePlaceholder}
+                        value={project.title}
+                        variant="bordered"
+                        onChange={(event) =>
+                          updateProjects((current) =>
+                            current.map((item, projectIndex) =>
+                              projectIndex === index
+                                ? { ...item, title: event.target.value }
+                                : item,
+                            ),
+                          )
+                        }
+                      />
+                      <Textarea
+                        isDisabled={saving}
+                        label={t.dashboard.projectDescription}
+                        labelPlacement="outside"
+                        maxLength={500}
+                        maxRows={4}
+                        placeholder={t.dashboard.projectDescriptionPlaceholder}
+                        value={project.description}
+                        variant="bordered"
+                        onChange={(event) =>
+                          updateProjects((current) =>
+                            current.map((item, projectIndex) =>
+                              projectIndex === index
+                                ? { ...item, description: event.target.value }
+                                : item,
+                            ),
+                          )
+                        }
+                      />
+                      <Input
+                        isDisabled={saving}
+                        isRequired
+                        label={t.dashboard.projectUrl}
+                        labelPlacement="outside"
+                        placeholder={t.dashboard.projectUrlPlaceholder}
+                        type="url"
+                        value={project.url}
+                        variant="bordered"
+                        onChange={(event) =>
+                          updateProjects((current) =>
+                            current.map((item, projectIndex) =>
+                              projectIndex === index
+                                ? { ...item, url: event.target.value }
+                                : item,
+                            ),
+                          )
+                        }
+                      />
+                      <Input
+                        isDisabled={saving}
+                        description={t.dashboard.projectCoverImageUrlHelp}
+                        label={t.dashboard.projectCoverImageUrl}
+                        labelPlacement="outside"
+                        maxLength={2048}
+                        placeholder={
+                          t.dashboard.projectCoverImageUrlPlaceholder
+                        }
+                        type="url"
+                        value={project.coverImageUrl}
+                        variant="bordered"
+                        onChange={(event) =>
+                          updateProjects((current) =>
+                            current.map((item, projectIndex) =>
+                              projectIndex === index
+                                ? { ...item, coverImageUrl: event.target.value }
+                                : item,
+                            ),
+                          )
+                        }
+                      />
+                    </div>
+                    <section
+                      className="min-w-0 space-y-2"
+                      aria-labelledby={`project-preview-${index}`}
+                    >
+                      <div>
+                        <h4
+                          className={typography.label}
+                          id={`project-preview-${index}`}
+                        >
+                          {t.dashboard.projectPreviewTitle}
+                        </h4>
+                        <p className={typography.captionMuted}>
+                          {t.dashboard.projectPreviewDescription}
+                        </p>
+                      </div>
+                      <ProjectShowcaseCard
+                        creator={{
+                          profilePublic: initialProfile.isPublic,
+                          name:
+                            initialProfile.name ||
+                            session.user?.username ||
+                            null,
+                          handler: initialProfile.handler,
+                          discordId: session.user?.id || null,
+                          discriminator: session.user?.discriminator || null,
+                          avatar: session.user?.avatar || null,
+                        }}
+                        headingLevel="h3"
+                        labels={{
+                          openProject: t.products.openProduct,
+                          createdBy: t.products.createdBy,
+                          communityMember: t.products.communityMember,
+                          noDescription: t.products.noDescription,
+                          untitledProject: t.dashboard.projectPreviewUntitled,
+                          domainPlaceholder: t.dashboard.projectPreviewDomain,
+                        }}
+                        preview
+                        project={{
+                          ...project,
+                          coverImageUrl: project.coverImageUrl || null,
+                        }}
+                      />
+                    </section>
+                  </div>
                 </div>
               ))}
             </section>

@@ -25,6 +25,7 @@ export interface ProfileProject {
   title: string;
   description: string | null;
   url: string;
+  coverImageUrl: string | null;
   sortOrder: number;
 }
 
@@ -110,6 +111,7 @@ function serializeProfile(
           title: project.title,
           description: project.description,
           url: project.url,
+          coverImageUrl: project.coverImageUrl,
           sortOrder: project.sortOrder,
         }))
       : [],

@@ -9,6 +9,7 @@ export interface UserProjectInput {
   title: string;
   description: string | null;
   url: string;
+  coverImageUrl: string | null;
 }
 
 export class ProjectLimitExceededError extends Error {
@@ -229,6 +230,7 @@ export async function getUserByDiscordId(discordId: string) {
           title: true,
           description: true,
           url: true,
+          coverImageUrl: true,
           sortOrder: true,
         },
       },
@@ -280,6 +282,7 @@ export async function getUserByHandler(handler: string) {
           title: true,
           description: true,
           url: true,
+          coverImageUrl: true,
           sortOrder: true,
         },
       },
@@ -404,6 +407,7 @@ export async function updateUserProfile(
             title: project.title,
             description: project.description,
             url: project.url,
+            coverImageUrl: project.coverImageUrl,
             sortOrder,
           })),
         });
@@ -419,6 +423,7 @@ export async function updateUserProfile(
               title: true,
               description: true,
               url: true,
+              coverImageUrl: true,
               sortOrder: true,
             },
           },
@@ -456,6 +461,7 @@ export async function updateUserProfile(
               title: true,
               description: true,
               url: true,
+              coverImageUrl: true,
               sortOrder: true,
             },
           },
@@ -475,6 +481,7 @@ export async function updateUserProfile(
           title: true,
           description: true,
           url: true,
+          coverImageUrl: true,
           sortOrder: true,
         },
       },
