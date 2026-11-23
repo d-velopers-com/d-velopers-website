@@ -102,7 +102,7 @@ export function parseOGMetadata(html: string, originalUrl: string): OGMetadata {
     try {
       const baseUrl = new URL(originalUrl);
 
-      metadata.image = new URL(metadata.image, baseUrl.origin).href;
+      metadata.image = new URL(metadata.image, baseUrl).href;
     } catch {
       // Keep as-is if URL parsing fails
     }

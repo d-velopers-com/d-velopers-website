@@ -145,6 +145,14 @@ export async function GET(request: NextRequest) {
       safeTarget.url.href,
     );
 
+    if (metadata.image) {
+      try {
+        metadata.image = (await assertSafeRemoteUrl(metadata.image)).url.href;
+      } catch {
+        metadata.image = undefined;
+      }
+    }
+
     cache.set(safeTarget.url.href, metadata);
 
     return NextResponse.json(metadata, {

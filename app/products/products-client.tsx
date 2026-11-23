@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProductListItem, ProductsPage } from "@/lib/products";
+import type { OGMetadata } from "@/types/og-metadata";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -23,25 +24,152 @@ function getHostname(url: string) {
   }
 }
 
+function ProductIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M4.75 7.25 12 3.5l7.25 3.75v9.5L12 20.5l-7.25-3.75v-9.5Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.6"
+      />
+      <path
+        d="m5 7.5 7 3.75 7-3.75M12 11.5v8.5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.6"
+      />
+    </svg>
+  );
+}
+
+function getSafeImageUrl(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  try {
+    const imageUrl = new URL(value);
+    if (
+      (imageUrl.protocol !== "https:" && imageUrl.protocol !== "http:") ||
+      imageUrl.username ||
+      imageUrl.password
+    ) {
+      return null;
+    }
+
+    return imageUrl.href;
+  } catch {
+    return null;
+  }
+}
+
+function ProductPreviewImage({ product }: { product: ProductListItem }) {
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [hasImageError, setHasImageError] = useState(false);
+
+  useEffect(() => {
+    const preview = previewRef.current;
+    if (!preview) {
+      return;
+    }
+
+    let isActive = true;
+    let controller: AbortController | null = null;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) {
+          return;
+        }
+
+        observer.disconnect();
+        controller = new AbortController();
+
+        void fetch(`/api/og-metadata?url=${encodeURIComponent(product.url)}`, {
+          signal: controller.signal,
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              return;
+            }
+
+            const metadata = (await response.json()) as OGMetadata;
+            const safeImageUrl = getSafeImageUrl(metadata.image);
+            if (isActive && safeImageUrl) {
+              setImageUrl(safeImageUrl);
+            }
+          })
+          .catch(() => {})
+          .finally(() => {
+            controller = null;
+          });
+      },
+      { rootMargin: "400px 0px" },
+    );
+
+    observer.observe(preview);
+
+    return () => {
+      isActive = false;
+      observer.disconnect();
+      controller?.abort();
+    };
+  }, [product.url]);
+
+  return (
+    <div
+      className="relative aspect-[16/7] overflow-hidden bg-primary/[0.04]"
+      ref={previewRef}
+    >
+      {imageUrl && !hasImageError ? (
+        <Image
+          alt=""
+          aria-hidden="true"
+          className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+          fill
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          sizes="(min-width: 768px) 50vw, 100vw"
+          src={imageUrl}
+          unoptimized
+          onError={() => setHasImageError(true)}
+        />
+      ) : (
+        <div className="flex h-full items-center justify-center text-primary/40">
+          <ProductIcon className="h-10 w-10" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CreatorAvatar({ creator }: { creator: ProductListItem["creator"] }) {
   const initial = creator.name?.trim().charAt(0).toUpperCase() || "D";
 
   return (
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-sm font-semibold text-primary ring-1 ring-default-200/70">
+    <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-sm font-semibold text-primary ring-1 ring-default-200/70">
       {creator.profilePublic && creator.discordId ? (
         <Image
           alt=""
           aria-hidden="true"
           className="h-full w-full object-cover"
-          height={40}
-          sizes="40px"
+          height={48}
+          sizes="48px"
           src={getDiscordAvatarProxyUrl(
             creator.discordId,
             creator.avatar,
             creator.discriminator || "0",
-            80,
+            96,
           )}
-          width={40}
+          width={48}
         />
       ) : (
         initial
@@ -55,74 +183,70 @@ function ProductCard({ product }: { product: ProductListItem }) {
   const domain = getHostname(product.url);
 
   return (
-    <article className="group flex h-full min-h-[280px] flex-col rounded-2xl border border-default-200/70 bg-content1 p-5 transition-colors hover:border-primary/40">
-      <div className="mb-5 flex items-start justify-between gap-4">
-        <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/15 bg-primary/10 text-primary">
-          <svg
-            aria-hidden="true"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-default-200/70 bg-content1 transition-colors hover:border-primary/40">
+      <a
+        aria-label={`${t.products.openProduct}: ${product.title}`}
+        className="block overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+        href={product.url}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <ProductPreviewImage product={product} />
+      </a>
+
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <h2 className="text-xl font-semibold leading-snug text-foreground sm:text-2xl">
+          <a
+            aria-label={`${t.products.openProduct}: ${product.title}`}
+            className="flex items-start justify-between gap-4 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            href={product.url}
+            rel="noopener noreferrer"
+            target="_blank"
           >
-            <path
-              d="M4.75 7.25 12 3.5l7.25 3.75v9.5L12 20.5l-7.25-3.75v-9.5Z"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.6"
-            />
-            <path
-              d="m5 7.5 7 3.75 7-3.75M12 11.5v8.5"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.6"
-            />
-          </svg>
-        </span>
-        <a
-          aria-label={`${t.products.openProduct}: ${product.title}`}
-          className="inline-flex min-h-10 items-center gap-2 rounded-full border border-default-200/70 px-3 text-xs font-semibold text-default-600 transition-colors hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          href={product.url}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          {t.products.openProduct}
-          <span aria-hidden="true" className="text-sm">
-            ↗
-          </span>
-        </a>
-      </div>
-
-      <p className="mb-2 truncate font-mono text-xs text-primary">{domain}</p>
-      <h2 className="line-clamp-2 text-xl font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
-        {product.title}
-      </h2>
-      <p className="mt-3 line-clamp-3 min-h-[4.5rem] text-sm leading-6 text-default-600">
-        {product.description || t.products.noDescription}
-      </p>
-
-      <div className="mt-auto flex items-center gap-3 border-t border-default-200/60 pt-4">
-        <CreatorAvatar creator={product.creator} />
-        <div className="min-w-0">
-          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-default-500">
-            {t.products.createdBy}
-          </p>
-          {product.creator.profilePublic && product.creator.handler ? (
-            <Link
-              className="mt-0.5 block truncate text-sm font-medium text-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              href={`/users/${product.creator.handler}`}
+            <span className="line-clamp-2 min-w-0">{product.title}</span>
+            <svg
+              aria-hidden="true"
+              className="-mr-1 h-7 w-7 shrink-0 text-primary"
+              fill="none"
+              viewBox="0 0 24 24"
             >
-              {product.creator.name}
-              <span className="ml-1 font-normal text-default-500">
-                @{product.creator.handler}
-              </span>
-            </Link>
-          ) : (
-            <p className="mt-0.5 truncate text-sm font-medium text-default-500">
-              {t.products.communityMember}
-            </p>
-          )}
+              <path
+                d="M7 17 17 7M7 7h10v10"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+              />
+            </svg>
+          </a>
+        </h2>
+        <p className="mt-1 truncate font-mono text-sm text-default-500">
+          {domain}
+        </p>
+        <p className="mt-3 line-clamp-2 min-h-12 text-sm leading-6 text-default-600">
+          {product.description || t.products.noDescription}
+        </p>
+
+        <div className="mt-auto flex items-center gap-3 border-t border-default-200/60 pt-4">
+          <CreatorAvatar creator={product.creator} />
+          <div className="min-w-0">
+            <span className="sr-only">{t.products.createdBy}</span>
+            {product.creator.profilePublic && product.creator.handler ? (
+              <Link
+                className="block truncate text-sm font-semibold text-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                href={`/users/${product.creator.handler}`}
+              >
+                {product.creator.name}
+                <span className="mt-0.5 block truncate font-normal text-default-500">
+                  @{product.creator.handler}
+                </span>
+              </Link>
+            ) : (
+              <p className="text-sm font-medium text-default-500">
+                {t.products.communityMember}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </article>
@@ -133,21 +257,20 @@ function ProductCardSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="motion-safe:animate-pulse flex min-h-[280px] flex-col rounded-2xl border border-default-200/60 bg-content1 p-5"
+      className="motion-safe:animate-pulse flex h-full flex-col overflow-hidden rounded-2xl border border-default-200/60 bg-content1"
     >
-      <div className="mb-5 flex items-start justify-between">
-        <div className="h-11 w-11 rounded-xl bg-default-100" />
-        <div className="h-10 w-28 rounded-full bg-default-100" />
-      </div>
-      <div className="h-3 w-1/3 rounded bg-default-100" />
-      <div className="mt-3 h-6 w-4/5 rounded bg-default-100" />
-      <div className="mt-4 h-3 w-full rounded bg-default-100" />
-      <div className="mt-2 h-3 w-11/12 rounded bg-default-100" />
-      <div className="mt-auto flex items-center gap-3 border-t border-default-200/60 pt-4">
-        <div className="h-10 w-10 rounded-full bg-default-100" />
-        <div className="space-y-2">
-          <div className="h-2.5 w-20 rounded bg-default-100" />
-          <div className="h-3 w-32 rounded bg-default-100" />
+      <div className="aspect-[16/7] w-full bg-default-100" />
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <div className="h-6 w-4/5 rounded bg-default-100" />
+        <div className="mt-2 h-3 w-1/3 rounded bg-default-100" />
+        <div className="mt-4 h-3 w-full rounded bg-default-100" />
+        <div className="mt-2 h-3 w-11/12 rounded bg-default-100" />
+        <div className="mt-auto flex items-center gap-3 border-t border-default-200/60 pt-4">
+          <div className="h-12 w-12 rounded-full bg-default-100" />
+          <div className="space-y-2">
+            <div className="h-3 w-32 rounded bg-default-100" />
+            <div className="h-3 w-20 rounded bg-default-100" />
+          </div>
         </div>
       </div>
     </div>
@@ -265,7 +388,7 @@ export default function ProductsClient({
         </div>
 
         {products.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
