@@ -17,7 +17,11 @@ export const accessByRole = {
     developer: [
       ...parseRoleIds(process.env.PROJECT_DEVELOPER_ROLE_IDS),
     ],
-    pro: parseRoleIds(process.env.PROJECT_PRO_ROLE_IDS),
+    pro: [
+      ...parseRoleIds(process.env.PROJECT_PRO_ROLE_IDS),
+      // Keep the established Pro role active if a deployment omits the env var.
+      "1017483667267932323",
+    ],
     elite: [
       ...parseRoleIds(process.env.PROJECT_ELITE_ROLE_IDS),
       "1179604467163865199",
